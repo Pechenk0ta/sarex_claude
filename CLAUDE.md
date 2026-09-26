@@ -21,8 +21,8 @@
 | Схемы и настройки | Pydantic v2, `pydantic-settings` (конфиг из переменных окружения) | |
 | Фоновые задачи | отдельный контейнер `worker` с APScheduler (`AsyncIOScheduler`) | без Redis/Celery: на VPS с 1–2 ГБ RAM (раздел 12.1) лишний брокер не нужен, а нагрузка — десятки уведомлений в день |
 | Интерфейс координатора | серверный рендеринг: Jinja2 + HTMX (+ минимальный CSS, без сборщика) | CRM-доска и формы (раздел 7) не требуют SPA; нет Node.js-тулчейна и отдельного фронтенд-контейнера. React из раздела 10 ТЗ сознательно не используется |
-| Отправка почты | SMTP ящика системы в Microsoft 365 (`smtp.office365.com:587`, STARTTLS) через `aiosmtplib` с аутентификацией XOAUTH2; токен — `msal` (client credentials) | решение 1 раздела 9 ТЗ: вся переписка видна в Outlook; способ входа спрятан в `services/mail/auth.py`, чтобы при переезде ящика (например, на Яндекс 360 с паролем приложения) менялся только он |
-| Приём ответов | IMAP-поллинг того же ящика в воркере (`outlook.office365.com:993`, `aioimaplib`, XOAUTH2 тем же токеном), уведомление находится по plus-адресу `rd+<токен>@домен` из заголовков `To`/`Delivered-To`; за интерфейсом `InboundMailSource` | обработанные письма помечаются флагом/папкой в ящике, а не удаляются; повторная обработка одного письма (по `Message-ID`) ничего не меняет |
+| Отправка почты | SMTP ящика системы в Google (`smtp.gmail.com:587`, STARTTLS, `SMTP_AUTH=password` с паролем приложения) через `aiosmtplib` | решение 1 раздела 9 ТЗ: вся переписка видна в Gmail; сервис ящика меняется только настройками. Вход в Microsoft 365 через OAuth2 (`SMTP_AUTH=oauth2`, `msal`) оставлен в `services/mail/auth.py` на случай возврата |
+| Приём ответов | IMAP-поллинг того же ящика в воркере (`imap.gmail.com:993`, `aioimaplib`, тот же пароль приложения), уведомление находится по plus-адресу `rd+<токен>@домен` из заголовков `To`/`Delivered-To`; за интерфейсом `InboundMailSource` | обработанные письма помечаются флагом/папкой в ящике, а не удаляются; повторная обработка одного письма (по `Message-ID`) ничего не меняет |
 | ИИ-классификация | YandexGPT Lite (Yandex Cloud) за интерфейсом `Classifier`, запасной вариант — `KeywordClassifier` | раздел 9 ТЗ, решение 7: данные в РФ, около 0,4 ₽ за ответ; структурированный JSON `category / confidence / reasoning` (раздел 4.2 ТЗ) |
 | Аутентификация | логин/пароль, хеш `argon2` (`pwdlib`), серверная сессия в cookie | SSO — открытый вопрос раздела 8; закладываем замену через отдельный модуль `auth` |
 | Инструменты | `uv` (зависимости и lock-файл), `ruff` (lint + format), `mypy`, `pytest` + `pytest-asyncio` | |
@@ -61,7 +61,7 @@
 │   │   ├── reminders.py        # логика напоминаний и эскалации (раздел 4.3)
 │   │   ├── workdays.py         # расчёт рабочих дней с учётом таблицы holidays
 │   │   ├── classifier/         # ИИ-классификатор + keyword fallback + промпт
-│   │   ├── mail/               # auth.py (OAuth2 M365), sender.py (SMTP), inbound.py (IMAP), templates/
+│   │   ├── mail/               # sender.py (SMTP), auth.py (OAuth2, если вернёмся на M365), inbound.py (IMAP), templates/
 │   │   └── telegram/           # задел под раздел 11, в MVP пусто
 │   ├── auth/                   # логин, сессии, зависимость current_user
 │   ├── scripts/                # служебные команды: seed_demo (демо-данные из макетов), create_admin
@@ -102,7 +102,7 @@
 Правила:
 - Наружу открыты только 80/443 (и 22 для SSH на уровне хоста). Postgres и app — только во внутренней сети compose.
 - Каждому сервису задан `mem_limit` и `restart: unless-stopped`; суммарно должно помещаться в 1 ГБ RAM с запасом.
-- Секреты (`DATABASE_URL`, `MS_TENANT_ID` / `MS_CLIENT_ID` / `MS_CLIENT_SECRET` приложения Entra ID, адрес ящика, `YANDEX_API_KEY`, `YANDEX_FOLDER_ID`, `SECRET_KEY`) — только в `.env` на сервере, в git попадает лишь `.env.example`.
+- Секреты (`DATABASE_URL`, адрес ящика и `SMTP_PASSWORD` — пароль приложения Google, `YANDEX_API_KEY`, `YANDEX_FOLDER_ID`, `SECRET_KEY`) — только в `.env` на сервере, в git попадает лишь `.env.example`.
 - Бэкап: ежедневный `deploy/backup.sh` (cron хоста) → `pg_dump -Fc` → копия во внешнее хранилище, хранить минимум 14 дней. Потеря БД = потеря всей истории ознакомлений, поэтому восстановление из бэкапа проверяется до запуска в работу.
 - Логи — в stdout контейнеров (docker сам ротирует при `json-file` с `max-size`).
 - CI/CD (раздел 12.4) — позже: GitHub Actions, при мерже в `main` — сборка образа и `docker compose pull && docker compose up -d` по SSH.
