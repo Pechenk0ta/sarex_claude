@@ -94,7 +94,9 @@ def test_ack_token_roundtrip_and_tampering() -> None:
     notification_id = uuid.uuid4()
     token = make_ack_token(SETTINGS, notification_id)
     assert read_ack_token(SETTINGS, token) == notification_id
-    assert read_ack_token(SETTINGS, token[:-2] + "xx") is None
+    # Change the first character: all its bits count (the signature's last one has ignored bits).
+    tampered = ("J" if token[0] != "J" else "K") + token[1:]
+    assert read_ack_token(SETTINGS, tampered) is None
     other = Settings(_env_file=None, secret_key="z" * 32)
     assert read_ack_token(other, token) is None
     assert ack_url(SETTINGS, notification_id).startswith("https://rd.company.ru/ack/")
