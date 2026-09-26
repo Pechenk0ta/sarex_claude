@@ -59,6 +59,7 @@ async def deliver_pending(
                         html=payload["html"],
                         reply_to=payload["reply_to"],
                         message_id=payload["message_id"],
+                        in_reply_to=payload.get("in_reply_to"),
                     )
                 )
             except MailSendError as error:

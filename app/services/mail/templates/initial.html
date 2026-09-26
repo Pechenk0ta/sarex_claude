@@ -3,6 +3,7 @@
 <table role="presentation" width="100%" style="max-width:620px;margin:0 auto;background:#ffffff;border:1px solid #e7e9f0;border-radius:8px">
 <tr><td style="padding:24px">
 <p style="margin:0 0 12px">Добрый день!</p>
+{% if overdue %}<p style="margin:0 0 12px;padding:8px 12px;background:#fbe4e2;color:#b3322b;border-radius:4px"><b>Повторное уведомление:</b> срок подтверждения ознакомления истёк {{ deadline }}, а ознакомление пока не подтверждено.</p>{% endif %}
 <p style="margin:0 0 12px">Выпущена рабочая документация по проекту <b>{{ project }}</b>, {{ corpus }}.</p>
 <p style="margin:0 0 12px">Документация: <a href="{{ sarex_link }}" style="color:#1f35c8">{{ sarex_link }}</a></p>
 {% if message %}
@@ -11,7 +12,7 @@
 <div style="white-space:pre-wrap">{{ message }}</div>
 </div>
 {% endif %}
-<p style="margin:0 0 16px">Пожалуйста, подтвердите ознакомление до <b>{{ deadline }}</b>.</p>
+<p style="margin:0 0 16px">{% if overdue %}Пожалуйста, подтвердите ознакомление как можно скорее.{% else %}Пожалуйста, подтвердите ознакомление до <b>{{ deadline }}</b>.{% endif %}</p>
 <p style="margin:0 0 16px"><a href="{{ ack_url }}" style="display:inline-block;padding:10px 18px;background:#1f35c8;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold">Подтверждаю ознакомление</a></p>
 <p style="margin:0 0 12px;color:#6b7185">Если есть вопросы или замечания по документации, просто ответьте на это письмо — ответ получит координатор.</p>
 <p style="margin:0;color:#6b7185">{{ initiator }}, координатор ДП</p>
