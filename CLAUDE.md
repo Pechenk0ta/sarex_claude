@@ -5,7 +5,9 @@
 
 ## Статус проекта
 
-Кода пока нет, есть только ТЗ. Стек ниже выбран и зафиксирован; раздел 10 ТЗ («Рекомендуемый стек, для обсуждения») этим закрыт.
+Кода пока нет: есть ТЗ, утверждённые макеты (`mockups/index.html`) и план разработки по этапам (`docs/PLAN.md`). Стек ниже выбран и зафиксирован; раздел 10 ТЗ («Рекомендуемый стек, для обсуждения») этим закрыт.
+
+Макеты утверждены: вёрстка шаблонов повторяет их. Меняться может только цветовая гамма, поэтому все цвета — CSS-переменные в одном блоке `:root` файла `app/web/static/app.css` (плюс тёмная тема), без цветов, заданных напрямую в правилах.
 
 ## Стек
 
@@ -71,7 +73,9 @@
 │   └── backup.sh               # pg_dump + ротация, запускается cron'ом на хосте
 ├── Dockerfile                  # один образ для app и worker (разные command)
 ├── docker-compose.yml          # prod: app, worker, db, caddy
-├── docker-compose.override.yml # dev: проброс портов, reload, без caddy
+├── docker-compose.override.yml # dev: проброс портов, reload, Mailpit для писем, без caddy
+├── docs/PLAN.md                # план разработки по этапам
+├── mockups/index.html          # утверждённые статичные макеты экранов
 ├── pyproject.toml / uv.lock
 ├── .env.example                # все переменные с пояснениями, без реальных значений
 ├── TZ_uvedomlenie_podryadchikov.md
@@ -104,7 +108,7 @@
 Локальный запуск:
 ```bash
 cp .env.example .env
-docker compose up --build        # с override: app на localhost:8000, БД на localhost:5432
+docker compose up --build        # с override: app на localhost:8000, БД на localhost:5432, письма — в Mailpit на localhost:8025
 docker compose exec app alembic upgrade head
 ```
 
