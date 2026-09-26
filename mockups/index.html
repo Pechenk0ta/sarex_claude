@@ -6,21 +6,22 @@
 <title>Ознакомление с РД</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap">
 <style>
 :root {
-  --bg: #f3f5f4;
+  --bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #f8faf9;
-  --ink: #1b2422;
-  --muted: #5b6763;
-  --faint: #8a9591;
-  --line: #dce2df;
-  --line-strong: #c3ccc8;
-  --accent: #245b7a;
+  --surface-2: #f5f6f9;
+  --ink: #1c2233;
+  --muted: #6b7185;
+  --faint: #a2a7b6;
+  --line: #e7e9f0;
+  --line-strong: #d7dae4;
+  --accent: #1f35c8;
   --accent-ink: #ffffff;
-  --accent-soft: #e3eef4;
-  --focus: #3b82b0;
+  --accent-soft: #eef0fd;
+  --focus: #4a5ee0;
+  --shadow: 0 1px 3px rgb(28 34 51 / .06);
 
   --ok: #2e7a4d;        --ok-bg: #e2f2e8;
   --ask: #6346b8;       --ask-bg: #ece7fa;
@@ -30,16 +31,18 @@
   --review: #a3346f;    --review-bg: #fae6f0;
 
   --radius: 6px;
-  --sans: "IBM Plex Sans", "Segoe UI", Roboto, Arial, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --sans: "Manrope", "Segoe UI", Roboto, Arial, sans-serif;
+  --mono: "Manrope", "Segoe UI", Roboto, Arial, sans-serif;
+  --code: "JetBrains Mono", ui-monospace, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #131918; --surface: #1b2321; --surface-2: #202a28;
-    --ink: #e4ebe8; --muted: #a2afaa; --faint: #76837e;
-    --line: #2d3835; --line-strong: #3c4945;
-    --accent: #6aaed4; --accent-ink: #0d1a22; --accent-soft: #1d3240; --focus: #8cc4e4;
+    --bg: #12141c; --surface: #181b25; --surface-2: #1e2230;
+    --ink: #e6e8f0; --muted: #9ba1b4; --faint: #6c7286;
+    --line: #2a2f3e; --line-strong: #363c4e;
+    --accent: #7d8cff; --accent-ink: #0e1130; --accent-soft: #222848; --focus: #9aa6ff;
+    --shadow: 0 1px 3px rgb(0 0 0 / .3);
     --ok: #6cc893; --ok-bg: #173226;
     --ask: #b3a0f2; --ask-bg: #2a2344;
     --wait: #a9bcc6; --wait-bg: #243036;
@@ -50,10 +53,11 @@
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #131918; --surface: #1b2321; --surface-2: #202a28;
-  --ink: #e4ebe8; --muted: #a2afaa; --faint: #76837e;
-  --line: #2d3835; --line-strong: #3c4945;
-  --accent: #6aaed4; --accent-ink: #0d1a22; --accent-soft: #1d3240; --focus: #8cc4e4;
+  --bg: #12141c; --surface: #181b25; --surface-2: #1e2230;
+  --ink: #e6e8f0; --muted: #9ba1b4; --faint: #6c7286;
+  --line: #2a2f3e; --line-strong: #363c4e;
+  --accent: #7d8cff; --accent-ink: #0e1130; --accent-soft: #222848; --focus: #9aa6ff;
+  --shadow: 0 1px 3px rgb(0 0 0 / .3);
   --ok: #6cc893; --ok-bg: #173226;
   --ask: #b3a0f2; --ask-bg: #2a2344;
   --wait: #a9bcc6; --wait-bg: #243036;
@@ -68,9 +72,10 @@ body {
   background: var(--bg);
   color: var(--ink);
   font: 14px/1.5 var(--sans);
+  font-feature-settings: "tnum";
 }
 h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; }
-h1 { font-size: 22px; line-height: 1.25; }
+h1 { font-size: 26px; line-height: 1.25; font-weight: 600; letter-spacing: -.01em; }
 h2 { font-size: 16px; }
 h3 { font-size: 14px; }
 p { margin: 0; }
@@ -79,47 +84,58 @@ button, input, select, textarea { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 .muted { color: var(--muted); }
-.label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+.label { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
 
 /* ---------- mockup switcher (не часть интерфейса) ---------- */
 .switcher {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
-  padding: 8px 16px; background: var(--ink); color: var(--bg); font-size: 12px;
+  padding: 6px 20px; background: var(--surface-2); color: var(--muted); font-size: 12px; border-bottom: 1px dashed var(--line-strong);
 }
 .switcher b { font-weight: 500; opacity: .7; }
 .switcher nav { display: flex; flex-wrap: wrap; gap: 4px; }
 .switcher a {
-  color: var(--bg); text-decoration: none; padding: 3px 10px; border-radius: 99px;
+  color: var(--muted); text-decoration: none; padding: 3px 10px; border-radius: 99px;
   border: 1px solid transparent;
 }
-.switcher a[aria-current="page"] { border-color: currentColor; }
+.switcher a[aria-current="page"] { border-color: var(--accent); color: var(--accent); }
 
 /* ---------- app shell ---------- */
 .topbar {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px;
-  padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; align-items: stretch; gap: 0 40px; min-height: 64px;
+  padding-inline: 20px; background: var(--surface); box-shadow: 0 1px 0 var(--line), var(--shadow);
+  position: relative; z-index: 1;
 }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 18px; letter-spacing: -.01em; }
 .brand-mark {
-  width: 26px; height: 26px; border-radius: 5px; background: var(--accent); color: var(--accent-ink);
-  display: grid; place-items: center; font: 600 12px var(--mono);
+  width: 30px; height: 30px; border-radius: 8px; background: var(--accent); color: var(--accent-ink);
+  display: grid; place-items: center; font: 700 12px var(--sans);
 }
-.topnav { display: flex; flex-wrap: wrap; gap: 4px; }
+.topnav { display: flex; flex-wrap: wrap; gap: 28px; }
 .topnav a {
-  padding: 6px 12px; border-radius: var(--radius); color: var(--muted); text-decoration: none; font-weight: 500;
+  display: flex; align-items: center; color: var(--ink); text-decoration: none; font-weight: 500; font-size: 13px;
+  border-bottom: 2px solid transparent; padding-top: 2px;
 }
-.topnav a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
-.user { margin-left: auto; display: flex; align-items: center; gap: 10px; color: var(--muted); }
+.topnav a:hover { color: var(--accent); }
+.topnav a[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); }
+.topnav a.dd::after { content: ""; width: 6px; height: 6px; margin-left: 7px; margin-top: -3px; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); opacity: .6; }
+.user { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.user-text { display: grid; line-height: 1.25; }
+.user-role { font-size: 10px; color: var(--muted); }
+.user-name { font-size: 12px; font-weight: 600; }
 .avatar {
-  width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--line);
-  display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--ink);
+  width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-ink);
+  display: grid; place-items: center; font-size: 11px; font-weight: 700;
 }
-main { max-width: 1320px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 48px; display: grid; gap: 20px; }
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 8px; border: 0; background: var(--surface-2); color: var(--muted);
+  display: grid; place-items: center; font-size: 15px;
+}
+main { max-width: 1680px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 48px; display: grid; gap: 20px; }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 8px 14px; border-radius: var(--radius); border: 1px solid var(--line-strong);
-  background: var(--surface); cursor: pointer; font-weight: 500; text-decoration: none; color: var(--ink);
+  padding: 9px 16px; border-radius: var(--radius); border: 1px solid var(--line-strong);
+  background: var(--surface); cursor: pointer; font-weight: 600; font-size: 13px; text-decoration: none; color: var(--ink);
   white-space: nowrap;
 }
 .btn:hover { border-color: var(--muted); }
@@ -131,7 +147,7 @@ main { max-width: 1320px; margin: 0 auto; padding-inline: 16px; padding-block: 2
 .field { display: grid; gap: 6px; }
 .field > span { font-weight: 500; }
 .input, .select {
-  width: 100%; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: var(--radius);
+  width: 100%; padding: 9px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius); font-size: 13px;
   background: var(--surface);
 }
 .hint { font-size: 12px; color: var(--muted); }
@@ -155,10 +171,9 @@ main { max-width: 1320px; margin: 0 auto; padding-inline: 16px; padding-block: 2
 .page-head .sub { color: var(--muted); margin-top: 2px; }
 .filters {
   display: flex; flex-wrap: wrap; gap: 12px; align-items: end;
-  padding: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
 }
 .filters .field { min-width: 150px; flex: 1 1 150px; }
-.filters .field > span { font-size: 12px; color: var(--muted); font-weight: 500; }
+.filters .field > span { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
 
 .summary { display: flex; flex-wrap: wrap; gap: 8px; }
 .summary a {
@@ -168,16 +183,17 @@ main { max-width: 1320px; margin: 0 auto; padding-inline: 16px; padding-block: 2
 }
 .summary .n { font: 500 13px var(--mono); }
 
-.board-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.board-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
 table.board { border-collapse: collapse; width: 100%; min-width: 980px; }
 .board th, .board td { border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); vertical-align: top; text-align: left; }
 .board th:last-child, .board td:last-child { border-right: 0; }
 .board tbody tr:last-child td, .board tbody tr:last-child th { border-bottom: 0; }
-.board thead th { padding: 10px 12px; background: var(--surface-2); font-weight: 500; }
+.board thead th { padding: 10px 12px; background: var(--surface-2); font-weight: 600; font-size: 12px; }
+.board thead th:first-child, .tbl thead th { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .board thead .set { display: block; font-weight: 600; }
-.board thead .set-meta { display: block; font: 12px var(--mono); color: var(--muted); }
+.board thead .set-meta { display: block; font-size: 11px; font-weight: 500; color: var(--muted); }
 .board thead a.sarex { font-size: 12px; }
-.board tbody th { padding: 12px; width: 150px; background: var(--surface-2); }
+.board tbody th { padding: 12px; width: 150px; background: var(--surface); }
 .board tbody th .corp { display: block; font-weight: 600; }
 .board tbody th .corp-meta { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
 .board td { padding: 6px; }
@@ -220,7 +236,7 @@ table.board { border-collapse: collapse; width: 100%; min-width: 980px; }
 
 /* ---------- send form ---------- */
 .two-col { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
 .panel-head { padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .panel-body { padding: 16px; display: grid; gap: 18px; }
 .steps { display: grid; gap: 18px; }
@@ -283,12 +299,12 @@ textarea.input { resize: vertical; min-height: 80px; line-height: 1.5; }
 }
 .ev-body { padding-block: 10px; display: grid; gap: 6px; min-width: 0; }
 .ev-title { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-weight: 500; }
-.chan { font: 11px var(--mono); color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 0 5px; }
+.chan { font: 500 11px var(--sans); color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 0 5px; }
 details.raw { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
 details.raw summary { cursor: pointer; padding: 6px 10px; font-size: 13px; color: var(--accent); }
 details.raw pre {
   margin: 0; padding: 12px; border-top: 1px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere;
-  font: 12.5px/1.55 var(--mono); color: var(--ink); background: var(--surface-2);
+  font: 12.5px/1.55 var(--code); color: var(--ink); background: var(--surface-2);
 }
 
 /* ---------- login ---------- */
@@ -330,8 +346,8 @@ details.raw pre {
 .sub-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
 .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
 table.tbl { border-collapse: collapse; width: 100%; }
-.tbl th, .tbl td { padding: 8px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
-.tbl thead th { background: var(--surface-2); font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+.tbl th, .tbl td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+.tbl thead th { background: var(--surface-2); font-weight: 600; white-space: nowrap; padding-block: 12px; }
 .tbl tbody tr:last-child td { border-bottom: 0; }
 .tbl td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 .tbl .row-actions { text-align: right; white-space: nowrap; }
@@ -355,7 +371,7 @@ table.tbl { border-collapse: collapse; width: 100%; }
 @media (max-width: 860px) {
   .two-col, .refs-grid { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
-  .user span { display: none; }
+  .user-text { display: none; }
 }
 @media (max-width: 560px) {
   .ev { grid-template-columns: 18px 1fr; }
@@ -386,9 +402,9 @@ table.tbl { border-collapse: collapse; width: 100%; }
     <nav class="topnav">
       <a href="#board" aria-current="page">Доска</a>
       <a href="#send">Отправить уведомление</a>
-      <a href="#refs">Справочники</a>
+      <a href="#refs" class="dd">Справочники</a>
     </nav>
-    <div class="user"><span>Смирнова А. В., координатор ДП</span><div class="avatar">АС</div></div>
+    <div class="user"><div class="avatar">АС</div><div class="user-text"><span class="user-role">Координатор ДП</span><span class="user-name">Анна Смирнова</span></div><span class="icon-btn" title="Выйти" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H6"/><path d="M10.5 11 13.5 8l-3-3"/><path d="M13.5 8H6.5"/></svg></span></div>
   </header>
   <main>
     <div class="page-head">
@@ -501,9 +517,9 @@ table.tbl { border-collapse: collapse; width: 100%; }
     <nav class="topnav">
       <a href="#board">Доска</a>
       <a href="#send" aria-current="page">Отправить уведомление</a>
-      <a href="#refs">Справочники</a>
+      <a href="#refs" class="dd">Справочники</a>
     </nav>
-    <div class="user"><span>Смирнова А. В., координатор ДП</span><div class="avatar">АС</div></div>
+    <div class="user"><div class="avatar">АС</div><div class="user-text"><span class="user-role">Координатор ДП</span><span class="user-name">Анна Смирнова</span></div><span class="icon-btn" title="Выйти" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H6"/><path d="M10.5 11 13.5 8l-3-3"/><path d="M13.5 8H6.5"/></svg></span></div>
   </header>
   <main>
     <div class="page-head">
@@ -601,9 +617,9 @@ table.tbl { border-collapse: collapse; width: 100%; }
     <nav class="topnav">
       <a href="#board" aria-current="page">Доска</a>
       <a href="#send">Отправить уведомление</a>
-      <a href="#refs">Справочники</a>
+      <a href="#refs" class="dd">Справочники</a>
     </nav>
-    <div class="user"><span>Смирнова А. В., координатор ДП</span><div class="avatar">АС</div></div>
+    <div class="user"><div class="avatar">АС</div><div class="user-text"><span class="user-role">Координатор ДП</span><span class="user-name">Анна Смирнова</span></div><span class="icon-btn" title="Выйти" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H6"/><path d="M10.5 11 13.5 8l-3-3"/><path d="M13.5 8H6.5"/></svg></span></div>
   </header>
   <main>
     <div class="card-head">
@@ -728,9 +744,9 @@ table.tbl { border-collapse: collapse; width: 100%; }
     <nav class="topnav">
       <a href="#board">Доска</a>
       <a href="#send">Отправить уведомление</a>
-      <a href="#refs" aria-current="page">Справочники</a>
+      <a href="#refs" class="dd" aria-current="page">Справочники</a>
     </nav>
-    <div class="user"><span>Кузнецов П. Р., администратор</span><div class="avatar">ПК</div></div>
+    <div class="user"><div class="avatar">ПК</div><div class="user-text"><span class="user-role">Администратор</span><span class="user-name">Павел Кузнецов</span></div><span class="icon-btn" title="Выйти" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H6"/><path d="M10.5 11 13.5 8l-3-3"/><path d="M13.5 8H6.5"/></svg></span></div>
   </header>
   <main>
     <div class="page-head">
