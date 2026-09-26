@@ -246,6 +246,8 @@ table.board { border-collapse: collapse; width: 100%; min-width: 980px; }
 .mail-meta dd { margin: 0; overflow-wrap: anywhere; }
 .mail-body { padding: 16px; display: grid; gap: 12px; max-width: 62ch; }
 .mail-body .mail-btn { justify-self: start; }
+.mail-note { display: grid; gap: 4px; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 4px 4px 0; white-space: pre-wrap; }
+textarea.input { resize: vertical; min-height: 80px; line-height: 1.5; }
 
 /* ---------- card ---------- */
 .crumbs { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px; }
@@ -398,8 +400,8 @@ table.tbl { border-collapse: collapse; width: 100%; }
     </div>
 
     <form class="filters" aria-label="Фильтры доски">
-      <label class="field"><span>Объект</span>
-        <select class="select" id="f-object"><option>ЖК «Северная долина», 3-я очередь</option><option>ЖК «Речной квартал»</option></select></label>
+      <label class="field"><span>Проект</span>
+        <select class="select" id="f-project"><option>ЖК «Северная долина», 3-я очередь</option><option>ЖК «Речной квартал»</option></select></label>
       <label class="field"><span>Корпус</span>
         <select class="select" id="f-corpus"><option>Все корпуса</option><option>Корпус 1</option><option>Корпус 2</option></select></label>
       <label class="field"><span>Подрядчик</span>
@@ -506,7 +508,7 @@ table.tbl { border-collapse: collapse; width: 100%; }
   <main>
     <div class="page-head">
       <div>
-        <h1>Отправить уведомление подрядчикам объекта</h1>
+        <h1>Отправить уведомление подрядчикам проекта</h1>
         <p class="sub">Каждый подрядчик получит отдельное письмо со ссылкой на РД и кнопкой «Подтверждаю ознакомление» и подтверждает ознакомление сам за себя.</p>
       </div>
     </div>
@@ -516,8 +518,8 @@ table.tbl { border-collapse: collapse; width: 100%; }
         <div class="panel-body steps">
           <div class="step done">
             <span class="step-no">1</span>
-            <label class="field"><span>Объект</span>
-              <select class="select" id="s-object"><option>ЖК «Северная долина», 3-я очередь</option><option>ЖК «Речной квартал»</option></select></label>
+            <label class="field"><span>Проект</span>
+              <select class="select" id="s-project"><option>ЖК «Северная долина», 3-я очередь</option><option>ЖК «Речной квартал»</option></select></label>
           </div>
           <div class="step done">
             <span class="step-no">2</span>
@@ -536,8 +538,16 @@ table.tbl { border-collapse: collapse; width: 100%; }
           <div class="step done">
             <span class="step-no">4</span>
             <div class="field">
-              <span>Получатели: все подрядчики объекта</span>
-              <span class="hint">Уведомление получат все подрядчики, привязанные к объекту, независимо от договора и вида работ. Снимите галочку, чтобы исключить подрядчика из этой рассылки.</span>
+              <label for="s-message"><span style="font-weight:500">Сопроводительное сообщение</span> <span class="muted">(необязательно)</span></label>
+              <textarea class="input" id="s-message" rows="4">В изм. 0 выпущены планы сетей освещения и силового оборудования секций 4–5. Обратите внимание на листы 12–14: изменена трасса кабеля в осях 1–3.</textarea>
+              <span class="hint">Попадёт в письмо и в напоминания, одинаково для всех получателей.</span>
+            </div>
+          </div>
+          <div class="step done">
+            <span class="step-no">5</span>
+            <div class="field">
+              <span>Получатели: все подрядчики проекта</span>
+              <span class="hint">Уведомление получат все подрядчики, привязанные к проекту, независимо от договора и вида работ. Снимите галочку, чтобы исключить подрядчика из этой рассылки.</span>
               <div class="checklist">
                 <label class="check"><input type="checkbox" id="c-1" checked><span>ООО «СтройМонолит»<small>pto@stroymonolit.ru</small></span><span class="chan">email + tg</span></label>
                 <label class="check"><input type="checkbox" id="c-2" checked><span>ООО «ТеплоМонтаж»<small>info@teplomontazh.ru</small></span><span class="chan">email</span></label>
@@ -548,7 +558,7 @@ table.tbl { border-collapse: collapse; width: 100%; }
             </div>
           </div>
           <div class="step">
-            <span class="step-no">5</span>
+            <span class="step-no">6</span>
             <div class="field">
               <span>Срок ответа</span>
               <p class="mono">10 рабочих дней · до 09.10.2026</p>
@@ -557,7 +567,7 @@ table.tbl { border-collapse: collapse; width: 100%; }
           </div>
         </div>
         <div class="form-foot">
-          <span class="muted" id="s-count">5 из 5 подрядчиков объекта</span>
+          <span class="muted" id="s-count">5 из 5 подрядчиков проекта</span>
           <button class="btn btn-primary" type="submit" id="s-submit">Отправить уведомления: 5</button>
         </div>
       </form>
@@ -571,8 +581,9 @@ table.tbl { border-collapse: collapse; width: 100%; }
         </dl>
         <div class="mail-body">
           <p>Добрый день!</p>
-          <p>Выпущен комплект рабочей документации <b>ЭОМ, изм. 0</b> по объекту ЖК «Северная долина», 3-я очередь, корпус 2.</p>
+          <p>Выпущен комплект рабочей документации <b>ЭОМ, изм. 0</b> по проекту ЖК «Северная долина», 3-я очередь, корпус 2.</p>
           <p>Документация: <a href="#send">sarex.example.ru/project/sd-3/docs/EOM-rev0</a></p>
+          <div class="mail-note" id="prev-message-box"><span class="label">Сообщение координатора</span><p id="prev-message">В изм. 0 выпущены планы сетей освещения и силового оборудования секций 4–5. Обратите внимание на листы 12–14: изменена трасса кабеля в осях 1–3.</p></div>
           <p>Пожалуйста, подтвердите ознакомление до <b>09.10.2026</b>.</p>
           <span class="btn btn-primary mail-btn">Подтверждаю ознакомление</span>
           <p class="muted">Если есть вопросы или замечания по документации, просто ответьте на это письмо — ответ получит координатор.</p>
@@ -643,10 +654,14 @@ table.tbl { border-collapse: collapse; width: 100%; }
 
 Добрый день!
 
-Выпущен комплект рабочей документации КЖ.1, изм. 2 по объекту
+Выпущен комплект рабочей документации КЖ.1, изм. 2 по проекту
 ЖК «Северная долина», 3-я очередь, корпус 2.
 
 Документация: https://sarex.example.ru/project/sd-3/docs/KZH1-rev2
+
+Сообщение координатора:
+В изм. 2 изменено армирование плиты перекрытия на отм. +6.600
+(узлы 3–5). Прошу проверить до начала вязки арматуры на 3-м этаже.
 
 Пожалуйста, подтвердите ознакомление до 25.09.2026.
 [Подтверждаю ознакомление]</pre></details>
@@ -726,29 +741,29 @@ table.tbl { border-collapse: collapse; width: 100%; }
     </div>
 
     <div class="tabs" role="tablist" aria-label="Разделы справочников">
-      <button type="button" role="tab" id="t-objects" aria-controls="p-objects" aria-selected="true">Объекты и корпуса<span class="n">3</span></button>
+      <button type="button" role="tab" id="t-projects" aria-controls="p-projects" aria-selected="true">Проекты и корпуса<span class="n">3</span></button>
       <button type="button" role="tab" id="t-contractors" aria-controls="p-contractors" aria-selected="false">Подрядчики<span class="n">6</span></button>
       <button type="button" role="tab" id="t-users" aria-controls="p-users" aria-selected="false">Пользователи<span class="n">5</span></button>
       <button type="button" role="tab" id="t-calendar" aria-controls="p-calendar" aria-selected="false">Производственный календарь</button>
     </div>
 
-    <!-- Объекты и корпуса -->
-    <div role="tabpanel" id="p-objects" aria-labelledby="t-objects">
+    <!-- Проекты и корпуса -->
+    <div role="tabpanel" id="p-projects" aria-labelledby="t-projects">
       <div class="refs-grid">
         <div class="obj-list">
-          <button class="btn btn-primary" type="button" data-toast="Макет: здесь откроется форма нового объекта.">+ Добавить объект</button>
+          <button class="btn btn-primary" type="button" data-toast="Макет: здесь откроется форма нового проекта.">+ Добавить проект</button>
           <button class="obj" type="button" aria-current="true"><span class="t">ЖК «Северная долина», 3-я очередь</span><span class="m">4 корпуса · 5 подрядчиков · 13 уведомлений</span></button>
           <button class="obj" type="button"><span class="t">ЖК «Речной квартал»</span><span class="m">2 корпуса · 3 подрядчика · 6 уведомлений</span></button>
           <button class="obj archived" type="button"><span class="t">БЦ «Литейный»</span><span class="m">Неактивен · 1 корпус · 21 уведомление в истории</span></button>
         </div>
 
-        <form class="panel" id="obj-form" aria-label="Объект">
-          <div class="panel-head"><h2>ЖК «Северная долина», 3-я очередь</h2><label class="switch"><input type="checkbox" id="o-active" checked> Активен</label></div>
+        <form class="panel" id="obj-form" aria-label="Проект">
+          <div class="panel-head"><h2>ЖК «Северная долина», 3-я очередь</h2><label class="switch"><input type="checkbox" id="p-active" checked> Активен</label></div>
           <div class="panel-body">
             <div class="form-grid">
-              <label class="field wide"><span>Наименование</span><input class="input" id="o-name" value="ЖК «Северная долина», 3-я очередь"></label>
-              <label class="field wide"><span>Адрес</span><input class="input" id="o-address" value="г. Санкт-Петербург, Парголово, ул. Николая Рубцова, участок 12"></label>
-              <label class="field wide"><span>Email руководителя проекта</span><input class="input" id="o-pm" type="email" value="i.petrov@company-domain.ru"><span class="hint">На этот адрес уходят эскалации после 10 р.д. без ответа.</span></label>
+              <label class="field wide"><span>Наименование</span><input class="input" id="p-name" value="ЖК «Северная долина», 3-я очередь"></label>
+              <label class="field wide"><span>Адрес</span><input class="input" id="p-address" value="г. Санкт-Петербург, Парголово, ул. Николая Рубцова, участок 12"></label>
+              <label class="field wide"><span>Email руководителя проекта</span><input class="input" id="p-pm" type="email" value="i.petrov@company-domain.ru"><span class="hint">На этот адрес уходят эскалации после 10 р.д. без ответа.</span></label>
             </div>
 
             <div class="field">
@@ -768,7 +783,7 @@ table.tbl { border-collapse: collapse; width: 100%; }
             </div>
 
             <div class="field">
-              <div class="sub-head"><h3>Подрядчики на объекте</h3><span class="hint">Все они по умолчанию получают каждую рассылку по объекту. Договор и вид работ не учитываются.</span></div>
+              <div class="sub-head"><h3>Подрядчики на проекте</h3><span class="hint">Все они по умолчанию получают каждую рассылку по проекту. Договор и вид работ не учитываются.</span></div>
               <div class="chips">
                 <span class="chip">ООО «СтройМонолит»<button type="button" aria-label="Убрать СтройМонолит">×</button></span>
                 <span class="chip">ООО «ТеплоМонтаж»<button type="button" aria-label="Убрать ТеплоМонтаж">×</button></span>
@@ -776,7 +791,7 @@ table.tbl { border-collapse: collapse; width: 100%; }
                 <span class="chip">ООО «ЭлектроСети-Сервис»<button type="button" aria-label="Убрать ЭлектроСети-Сервис">×</button></span>
                 <span class="chip">ООО «ФасадПро»<button type="button" aria-label="Убрать ФасадПро">×</button></span>
               </div>
-              <div class="add-row"><select class="select" id="o-add-contractor"><option>Выберите подрядчика из справочника…</option><option>ООО «ЛифтСтрой»</option></select><button class="btn" type="button" data-toast="Макет: подрядчик привязан к объекту.">Привязать</button></div>
+              <div class="add-row"><select class="select" id="p-add-contractor"><option>Выберите подрядчика из справочника…</option><option>ООО «ЛифтСтрой»</option></select><button class="btn" type="button" data-toast="Макет: подрядчик привязан к проекту.">Привязать</button></div>
             </div>
           </div>
           <div class="form-foot"><span class="muted">Изменено 19.09.2026, Кузнецов П. Р.</span><button class="btn btn-primary" type="submit">Сохранить</button></div>
@@ -793,14 +808,14 @@ table.tbl { border-collapse: collapse; width: 100%; }
         </div>
         <div class="tbl-wrap" style="border:0;border-radius:0">
           <table class="tbl">
-            <thead><tr><th>Организация</th><th>Email для уведомлений</th><th>Telegram</th><th>Объекты</th><th></th></tr></thead>
+            <thead><tr><th>Организация</th><th>Email для уведомлений</th><th>Telegram</th><th>Проекты</th><th></th></tr></thead>
             <tbody>
               <tr><td>ООО «СтройМонолит»</td><td>pto@stroymonolit.ru</td><td class="tg-yes">Привязан</td><td>Северная долина, Речной квартал</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
               <tr><td>ООО «ТеплоМонтаж»</td><td>info@teplomontazh.ru</td><td class="tg-no">Не привязан · <button class="linkbtn" type="button" data-toast="Макет: ссылка на бота отправлена на info@teplomontazh.ru.">отправить ссылку</button></td><td>Северная долина</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
               <tr><td>ООО «АкваИнж»</td><td>pto@akvainzh.ru<span class="bounce">Письма не доставляются с 21.09, проверьте адрес</span></td><td class="tg-no">Не привязан</td><td>Северная долина</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
               <tr><td>ООО «ЭлектроСети-Сервис»</td><td>eom@es-service.ru</td><td class="tg-no">Не привязан</td><td>Северная долина, Речной квартал</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
               <tr><td>ООО «ФасадПро»</td><td>tender@fasadpro.ru</td><td class="tg-yes">Привязан</td><td>Северная долина</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
-              <tr><td>ООО «ЛифтСтрой»</td><td>office@liftstroy.ru</td><td class="tg-no">Не привязан</td><td class="muted">Не привязан к объектам</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ЛифтСтрой»</td><td>office@liftstroy.ru</td><td class="tg-no">Не привязан</td><td class="muted">Не привязан к проектам</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
             </tbody>
           </table>
         </div>
@@ -925,17 +940,24 @@ table.tbl { border-collapse: collapse; width: 100%; }
     });
   });
   document.getElementById('obj-form').addEventListener('submit', function (e) {
-    e.preventDefault(); say('Макет: изменения объекта сохранены.');
+    e.preventDefault(); say('Макет: изменения проекта сохранены.');
   });
   var checks = Array.prototype.slice.call(document.querySelectorAll('#send-form .check input'));
   function recount() {
     var n = checks.filter(function (c) { return c.checked; }).length;
-    document.getElementById('s-count').textContent = n + ' из ' + checks.length + ' подрядчиков объекта';
+    document.getElementById('s-count').textContent = n + ' из ' + checks.length + ' подрядчиков проекта';
     var btn = document.getElementById('s-submit');
     btn.textContent = n ? 'Отправить уведомления: ' + n : 'Выберите хотя бы одного подрядчика';
     btn.disabled = !n;
   }
   checks.forEach(function (c) { c.addEventListener('change', recount); });
+  var msg = document.getElementById('s-message');
+  function syncMessage() {
+    var text = msg.value.trim();
+    document.getElementById('prev-message').textContent = text;
+    document.getElementById('prev-message-box').hidden = !text;
+  }
+  msg.addEventListener('input', syncMessage);
   document.querySelectorAll('[data-toast]').forEach(function (b) {
     b.addEventListener('click', function () { say(b.getAttribute('data-toast')); });
   });
