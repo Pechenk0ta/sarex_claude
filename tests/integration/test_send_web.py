@@ -1,33 +1,17 @@
 import re
 import uuid
-from collections.abc import Sequence
 
 import httpx
-import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.models import EventType, Notification, NotificationStatus
 from app.services.ack_tokens import make_ack_token
-from app.web.mail_deps import get_deliverer
 from tests.integration.factories import project_with_contractors
 from tests.integration.web_helpers import csrf, login
 
 LINK = "https://sarex.example.ru/project/sd-3/docs/OV-rev1"
-
-
-@pytest.fixture
-def delivered(client: httpx.AsyncClient) -> list[uuid.UUID]:
-    """Replaces real SMTP delivery: records which letters the request queued for sending."""
-    calls: list[uuid.UUID] = []
-
-    async def fake(event_ids: Sequence[uuid.UUID]) -> None:
-        calls.extend(event_ids)
-
-    app = client._transport.app  # type: ignore[attr-defined]
-    app.dependency_overrides[get_deliverer] = lambda: fake
-    return calls
 
 
 async def test_coordinator_sends_mailing(

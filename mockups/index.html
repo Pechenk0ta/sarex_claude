@@ -209,6 +209,9 @@ table.board { border-collapse: collapse; width: 100%; min-width: 980px; }
   border-left: 3px solid var(--st, var(--line-strong));
 }
 .n-item:hover { background: var(--surface-2); }
+.n-link { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; flex: 1 1 100%; color: inherit; text-decoration: none; }
+.n-status { display: flex; gap: 6px; flex: 1 1 100%; }
+.n-status .select { padding: 2px 6px; font-size: 12px; }
 .n-item .who { font-size: 13px; flex: 1 1 100%; }
 .n-item .days { font: 12px var(--mono); color: var(--muted); flex: 1 1 96px; display: flex; gap: 8px; align-items: center; white-space: nowrap; }
 .bar { flex: 1; height: 4px; border-radius: 2px; background: var(--line); position: relative; overflow: hidden; }
@@ -467,7 +470,7 @@ table.tbl { border-collapse: collapse; width: 100%; }
             <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">2 из 4</b></span><span class="pill s-soon">Истекает ×2</span></span><span class="seg"><i class="soon"></i><i class="soon"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">4 подрядчиков · 1 исключён</span></summary>
               <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">21.09 · за 1 р.д.</span></a><a class="n-item soon" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-soon">Истекает</span><span class="days">5 из 10 р.д.<span class="bar"><i style="width:50%"></i></span></span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">22.09 · за 2 р.д.</span></a><a class="n-item soon" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-soon">Истекает</span><span class="days">5 из 10 р.д.<span class="bar"><i style="width:50%"></i></span></span></a><span class="n-item off"><span class="who">ФасадПро</span><span class="days">исключён из рассылки</span></span></div></details></td>
             <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">1 из 5</b></span><span class="pill s-wait">Ожидание ×4</span></span><span class="seg"><i class="wait"></i><i class="wait"></i><i class="wait"></i><i class="wait"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
-              <div class="list"><a class="n-item wait" href="#card"><span class="who">СтройМонолит</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><a class="n-item wait" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">24.09 · за 1 р.д.</span></a><a class="n-item wait" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><a class="n-item wait" href="#card"><span class="who">ФасадПро</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a></div></details></td>
+              <div class="list"><div class="n-item wait"><a class="n-link" href="#card"><span class="who">СтройМонолит</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><form class="n-status"><select class="select" aria-label="Изменить статус" data-toast-select="Макет: статус изменён, событие записано в историю."><option>Изменить статус…</option><option>Ожидает ответа</option><option>Ознакомлен</option><option>Есть вопросы</option><option>Не принята</option></select></form></div><div class="n-item wait"><a class="n-link" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><form class="n-status"><select class="select" aria-label="Изменить статус" data-toast-select="Макет: статус изменён, событие записано в историю."><option>Изменить статус…</option><option>Ожидает ответа</option><option>Ознакомлен</option><option>Есть вопросы</option><option>Не принята</option></select></form></div><div class="n-item ok"><a class="n-link" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">24.09 · за 1 р.д.</span></a><form class="n-status"><select class="select" aria-label="Изменить статус" data-toast-select="Макет: статус изменён, событие записано в историю."><option>Изменить статус…</option><option>Ожидает ответа</option><option>Ознакомлен</option><option>Есть вопросы</option><option>Не принята</option></select></form></div><div class="n-item wait"><a class="n-link" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><form class="n-status"><select class="select" aria-label="Изменить статус" data-toast-select="Макет: статус изменён, событие записано в историю."><option>Изменить статус…</option><option>Ожидает ответа</option><option>Ознакомлен</option><option>Есть вопросы</option><option>Не принята</option></select></form></div><div class="n-item wait"><a class="n-link" href="#card"><span class="who">ФасадПро</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><form class="n-status"><select class="select" aria-label="Изменить статус" data-toast-select="Макет: статус изменён, событие записано в историю."><option>Изменить статус…</option><option>Ожидает ответа</option><option>Ознакомлен</option><option>Есть вопросы</option><option>Не принята</option></select></form></div></div></details></td>
           </tr>
           <tr>
             <th scope="row"><span class="corp">Корпус 2</span><span class="corp-meta">секции 4–5</span></th>
@@ -583,8 +586,9 @@ table.tbl { border-collapse: collapse; width: 100%; }
           <div class="step">
             <span class="step-no">6</span>
             <div class="field">
-              <span>Срок ответа</span>
-              <p class="mono">10 рабочих дней · до 09.10.2026</p>
+              <label for="s-deadline"><span style="font-weight:500">Срок ответа</span></label>
+              <input class="input" id="s-deadline" type="date" value="2026-10-09" style="width:auto">
+              <span class="hint">По умолчанию 10 рабочих дней — до 09.10.2026. Можно выбрать другой рабочий день.</span>
               <span class="hint">Напоминания уйдут на 1-й и 3-й рабочий день, эскалация РП — после 10-го.</span>
             </div>
           </div>
@@ -661,6 +665,11 @@ table.tbl { border-collapse: collapse; width: 100%; }
         <button class="btn btn-sm" type="button" data-toast="Ответ засчитан как вопрос. Статус: «Есть вопросы».">Вопрос</button>
         <button class="btn btn-sm" type="button" data-toast="Ответ засчитан как замечание. Статус: «Есть вопросы».">Замечание</button>
         <button class="btn btn-sm btn-danger" type="button" data-toast="Статус: «Не принята». Письмо ушло инициатору (Смирнова А. В.) и РП (i.petrov@company-domain.ru).">Не принята</button>
+      </div>
+      <div class="actions">
+        <span class="label" style="align-self:center">Срок ответа:</span>
+        <input class="input" type="date" value="2026-10-02" style="width:auto" aria-label="Новый срок ответа">
+        <button class="btn btn-sm" type="button" data-toast="Срок ответа продлён до 02.10.2026. Статус «Эскалировано РП» снят.">Изменить срок</button>
       </div>
     </section>
 
@@ -988,6 +997,9 @@ table.tbl { border-collapse: collapse; width: 100%; }
   msg.addEventListener('input', syncMessage);
   document.querySelectorAll('[data-toast]').forEach(function (b) {
     b.addEventListener('click', function () { say(b.getAttribute('data-toast')); });
+  });
+  document.querySelectorAll('[data-toast-select]').forEach(function (s) {
+    s.addEventListener('change', function () { say(s.getAttribute('data-toast-select')); s.selectedIndex = 0; });
   });
 })();
 </script>

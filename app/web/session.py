@@ -47,7 +47,8 @@ async def verify_csrf(request: Request) -> None:
 
 
 def flash(request: Request, message: str, kind: str = "ok") -> None:
-    request.session.setdefault(_FLASH_KEY, []).append([kind, message])
+    # Reassign instead of appending in place: the session is saved only when a key is set.
+    request.session[_FLASH_KEY] = [*request.session.get(_FLASH_KEY, []), [kind, message]]
 
 
 def pop_flashes(request: Request) -> list[list[str]]:

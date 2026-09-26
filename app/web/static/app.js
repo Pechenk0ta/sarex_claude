@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
         corpus_id: el.value,
         sarex_link: form.querySelector("[name='sarex_link']").value,
         message: form.querySelector("[name='message']").value,
+        deadline: form.querySelector("[name='deadline']").value,
       });
       window.location.assign(`/send?${params}`);
     });
@@ -44,6 +45,14 @@ document.addEventListener("DOMContentLoaded", () => {
     previewBox.hidden = !message.value.trim();
   };
   message?.addEventListener("input", syncMessage);
+
+  // The chosen deadline in the preview.
+  const deadline = document.getElementById("s-deadline");
+  const previewDeadline = document.getElementById("prev-deadline");
+  deadline?.addEventListener("change", () => {
+    const [y, m, d] = deadline.value.split("-");
+    if (previewDeadline && d) previewDeadline.textContent = `${d}.${m}.${y}`;
+  });
 
   // Contractors who already got this link for this corpus are unchecked by default.
   const link = document.getElementById("s-link");
@@ -77,6 +86,27 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         el.form.submit();
       }
+    });
+  });
+});
+
+// Manual status change: the board select submits at once; «Не принята» asks first,
+// because it sends a letter to the initiator and the project manager.
+const REJECT_QUESTION = "Отметить «Не принята»? Инициатору и РП уйдёт письмо.";
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("[data-status-select]").forEach((el) => {
+    el.addEventListener("change", () => {
+      if (!el.value) return;
+      if (el.value === "rejected" && !window.confirm(REJECT_QUESTION)) {
+        el.value = "";
+        return;
+      }
+      el.form.submit();
+    });
+  });
+  document.querySelectorAll("button[data-confirm]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      if (!window.confirm(button.dataset.confirm)) event.preventDefault();
     });
   });
 });

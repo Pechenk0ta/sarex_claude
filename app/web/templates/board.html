@@ -7,7 +7,7 @@
   {%- elif item.display == 'late' -%}
     {{ item.elapsed }} р.д. без ответа
   {%- else -%}
-    {{ item.elapsed }} из {{ workdays }} р.д.<span class="bar"><i style="width:{{ [item.elapsed * 100 // workdays, 100] | min }}%"></i></span>
+    {{ item.elapsed }} из {{ item.term }} р.д.<span class="bar"><i style="width:{{ [item.elapsed * 100 // [item.term, 1] | max, 100] | min }}%"></i></span>
   {%- endif -%}
 {%- endmacro %}
 {% block content %}
@@ -88,8 +88,22 @@
               <span class="sum-more">{{ cell.total }} подрядчиков{% if cell.excluded %} · не получили: {{ cell.excluded | length }}{% endif %}</span>
             </summary>
             <div class="list">
+              {% set cell_key = corpus.id|string ~ '|' ~ col.sarex_link %}
+              {% set back = board_url ~ ('&' if '?' in board_url else '?') ~ 'open=' ~ (cell_key | urlencode) %}
               {% for item in cell.items %}
-              <a class="n-item {{ item.display.value }}" href="/notifications/{{ item.notification.id }}"><span class="who">{{ item.contractor.name }}</span><span class="pill s-{{ item.display.value }}">{{ short[item.display] }}</span><span class="days">{{ days(item) }}</span></a>
+              {% set n = item.notification %}
+              <div class="n-item {{ item.display.value }}">
+                <a class="n-link" href="/notifications/{{ n.id }}"><span class="who">{{ item.contractor.name }}</span><span class="pill s-{{ item.display.value }}">{{ short[item.display] }}</span><span class="days">{{ days(item) }}</span></a>
+                <form class="n-status" method="post" action="/notifications/{{ n.id }}/status">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+                  <input type="hidden" name="back" value="{{ back }}">
+                  <select class="select" name="status" aria-label="Изменить статус: {{ item.contractor.name }}" data-status-select required>
+                    <option value="">Изменить статус…</option>
+                    {% for s in manual_statuses %}{% if s != n.status or n.needs_manual_review %}<option value="{{ s.value }}">{{ status_labels[s] }}</option>{% endif %}{% endfor %}
+                  </select>
+                  <noscript><button class="btn btn-sm" type="submit">Сохранить</button></noscript>
+                </form>
+              </div>
               {% endfor %}
               {% for c in cell.excluded %}
               <span class="n-item off"><span class="who">{{ c.name }}</span><span class="days">не получал эту рассылку</span></span>

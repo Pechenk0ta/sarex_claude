@@ -3,8 +3,8 @@
 {% block title %}{{ card.contractor.name }} · Ознакомление с РД{% endblock %}
 {% set event_titles = {
   'sent': 'Отправлено уведомление',
-  'reminder_1': 'Напоминание, 1-й р.д.',
-  'reminder_3': 'Напоминание, 3-й р.д.',
+  'reminder_1': 'Напоминание: 1-й р.д. просрочки',
+  'reminder_3': 'Напоминание: 3-й р.д. просрочки',
   'reply_ack': 'Подтверждено ознакомление',
   'reply_question': 'Ответ подрядчика: вопрос или замечание',
   'reply_rejection': 'Ответ подрядчика: РД не принята',
@@ -12,11 +12,13 @@
   'rejection_notified': 'Письмо о непринятии инициатору и РП',
   'escalated': 'Эскалация руководителю проекта',
   'category_overridden': 'Категория ответа изменена вручную',
+  'status_changed': 'Статус изменён вручную',
+  'deadline_changed': 'Срок ответа изменён',
 } %}
 {% set event_dots = {
   'sent': 'var(--accent)', 'reply_ack': 'var(--ok)', 'reply_question': 'var(--ask)',
   'reply_rejection': 'var(--rej)', 'rejection_notified': 'var(--rej)', 'reply_unclear': 'var(--review)',
-  'escalated': 'var(--late)',
+  'escalated': 'var(--late)', 'status_changed': 'var(--ink)', 'deadline_changed': 'var(--ink)',
 } %}
 {% set categories = {
   'acknowledgement': 'подтверждение', 'question': 'вопрос', 'objection': 'замечание',
@@ -33,7 +35,7 @@
 
 <div class="facts">
   <div class="fact"><span class="label">Отправлено</span><span class="v">{{ n.sent_at | local_dt }}</span></div>
-  <div class="fact"><span class="label">Срок ответа</span><span class="v">{{ n.deadline_at | local_dt('%d.%m.%Y') }} · {{ card.elapsed }} из {{ workdays }} р.д.</span></div>
+  <div class="fact"><span class="label">Срок ответа</span><span class="v">{{ n.deadline_at | local_dt('%d.%m.%Y') }} · {{ card.elapsed }} из {{ card.deadline_workdays }} р.д.</span></div>
   <div class="fact"><span class="label">Напоминания</span><span class="v">{{ n.reminder_count }} из 2{% if n.last_reminder_at %} · последнее {{ n.last_reminder_at | local_dt('%d.%m') }}{% endif %}</span></div>
   <div class="fact"><span class="label">Рассылка</span><span class="v">{{ card.mailing_total }} подрядчиков · ознакомлены {{ card.mailing_acknowledged }}</span></div>
   <div class="fact"><span class="label">Канал</span><span class="v">{{ 'Email' if n.channel == 'email' else 'Telegram' }}</span></div>
@@ -41,6 +43,34 @@
   <div class="fact"><span class="label">Инициатор</span><span class="v">{{ card.initiator.full_name }}</span></div>
   <div class="fact"><span class="label">Документация</span><span class="v"><a href="{{ n.sarex_link }}" target="_blank" rel="noopener noreferrer">Открыть в Sarex ↗</a></span></div>
 </div>
+
+<section class="panel" aria-label="Решение координатора">
+  <div class="panel-head"><h2>Решение координатора</h2><span class="hint">Каждое изменение попадает в историю с вашим именем.</span></div>
+  <div class="panel-body manual">
+    <form class="manual-row" method="post" action="/notifications/{{ n.id }}/status">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <span class="label">Статус</span>
+      <div class="actions">
+        {% for s in manual_statuses %}
+        {% set current = s == n.status and not n.needs_manual_review %}
+        <button class="btn btn-sm{% if s == 'rejected' %} btn-danger{% endif %}" type="submit" name="status" value="{{ s.value }}"{% if current %} disabled aria-pressed="true"{% endif %}{% if s == 'rejected' %} data-confirm="Отметить «Не принята»? Инициатору и РП уйдёт письмо."{% endif %}>{{ status_labels[s] }}</button>
+        {% endfor %}
+      </div>
+      <input class="input" name="comment" maxlength="2000" placeholder="Комментарий, необязательно: например, «подтвердил по телефону»" aria-label="Комментарий к смене статуса">
+    </form>
+    {% if n.status not in ('acknowledged', 'rejected') %}
+    <form class="manual-row" method="post" action="/notifications/{{ n.id }}/deadline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <label class="label" for="c-deadline">Срок ответа</label>
+      <div class="actions">
+        <input class="input" id="c-deadline" type="date" name="deadline" value="{{ n.deadline_at | local_dt('%Y-%m-%d') }}" min="{{ tomorrow | string }}" required>
+        <button class="btn btn-sm" type="submit">Изменить срок</button>
+      </div>
+      <span class="hint">Только рабочий день. Если РП уже получил эскалацию, после продления статус снова «Ожидает ответа».</span>
+    </form>
+    {% endif %}
+  </div>
+</section>
 
 {% if n.message %}
 <section class="panel" aria-label="Сопроводительное сообщение">
@@ -77,7 +107,7 @@
           {% elif delivery == 'sent' %}<p class="muted">Отправлено на {{ e.payload.get('to') }}</p>
           {% elif e.payload.get('to') %}<p class="muted">Кому: {{ e.payload['to'] if e.payload['to'] is string else e.payload['to'] | join(', ') }}</p>{% endif %}
           {% if e.raw_content %}
-          <details class="raw"{% if e.type.value.startswith('reply_') and e.type.value != 'reply_ack' %} open{% endif %}><summary>Исходный текст</summary><pre>{{ e.raw_content }}</pre></details>
+          <details class="raw"{% if (e.type.value.startswith('reply_') and e.type.value != 'reply_ack') or e.type.value in ('status_changed', 'deadline_changed') %} open{% endif %}><summary>Исходный текст</summary><pre>{{ e.raw_content }}</pre></details>
           {% endif %}
         </div>
       </li>

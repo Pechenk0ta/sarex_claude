@@ -93,9 +93,9 @@
       <div class="step">
         <span class="step-no">6</span>
         <div class="field">
-          <span>Срок ответа</span>
-          <p>{{ workdays }} рабочих дней · до {{ deadline | ru_date }}</p>
-          <span class="hint">Напоминания уйдут на 1-й и 3-й рабочий день, эскалация РП — после {{ workdays }}-го.</span>
+          <label for="s-deadline"><span style="font-weight:500">Срок ответа</span></label>
+          <input class="input" id="s-deadline" name="deadline" type="date" value="{{ deadline.isoformat() }}" min="{{ tomorrow.isoformat() }}" required style="width:auto">
+          <span class="hint">По умолчанию {{ workdays }} рабочих дней — до {{ default_deadline | ru_date }}. Можно выбрать другой рабочий день. Если срок пройдёт без ответа, подрядчику уйдут напоминания на 1-й и 3-й рабочий день просрочки, а РП — письмо в 1-й день просрочки.</span>
         </div>
       </div>
     </div>
@@ -114,7 +114,7 @@
       <p>Выпущена рабочая документация по проекту <b>{{ project.name }}</b>, {% set current = corpuses | selectattr("id", "equalto", corpus_id) | first %}<span id="prev-corpus">{{ current.name if current else "выбранный корпус" }}</span>.</p>
       <p>Документация: ссылка из поля «Ссылка на РД в Sarex»</p>
       <div class="mail-note" id="prev-message-box" {% if not message %}hidden{% endif %}><span class="label">Сообщение координатора</span><p id="prev-message">{{ message }}</p></div>
-      <p>Пожалуйста, подтвердите ознакомление до <b>{{ deadline | ru_date }}</b>.</p>
+      <p>Пожалуйста, подтвердите ознакомление до <b id="prev-deadline">{{ deadline | ru_date }}</b>.</p>
       <span class="btn btn-primary mail-btn">Подтверждаю ознакомление</span>
       <p class="muted">Если есть вопросы или замечания по документации, просто ответьте на это письмо — ответ получит координатор.</p>
       <p class="muted">{{ user.full_name }}, координатор ДП</p>

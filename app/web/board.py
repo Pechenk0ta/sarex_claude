@@ -1,19 +1,26 @@
 """CRM board (TZ 7.1) and notification card (TZ 7.3), as HTML pages and JSON (TZ 5)."""
 
 import uuid
-from datetime import UTC, date, datetime
-from typing import Any
+from collections.abc import Awaitable, Callable
+from datetime import UTC, date, datetime, timedelta
+from typing import Annotated, Any
+from urllib.parse import urlencode
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Request, status
+from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.db import SessionDep
-from app.models import Channel, Corpus, Project
+from app.models import Channel, Corpus, Notification, NotificationStatus, Project
 from app.services import board as boards
+from app.services import notifications
+from app.services.errors import ValidationError
 from app.services.workdays import local_date
 from app.web.deps import CurrentUser
+from app.web.mail_deps import Deliverer, get_deliverer
+from app.web.session import flash, verify_csrf
 from app.web.templating import render
 
 router = APIRouter()
@@ -95,7 +102,9 @@ async def board_page(
         short=boards.SHORT_LABELS,
         displays=list(boards.Display),
         open_cell=open,
-        workdays=get_settings().deadline_workdays,
+        board_url=_board_url(request),
+        manual_statuses=notifications.MANUAL_STATUSES,
+        status_labels=notifications.STATUS_LABELS,
     )
 
 
@@ -112,8 +121,111 @@ async def card_page(
         section="board",
         card=card,
         labels=boards.LABELS,
-        workdays=get_settings().deadline_workdays,
         tz=get_settings().app_timezone,
+        manual_statuses=notifications.MANUAL_STATUSES,
+        status_labels=notifications.STATUS_LABELS,
+        tomorrow=_today() + timedelta(days=1),
+    )
+
+
+# --- manual changes (TZ 7.1, 7.3) -----------------------------------------------------------
+
+
+def _board_url(request: Request) -> str:
+    """The board with its current filters, without the opened cell."""
+    query = urlencode([(k, v) for k, v in request.query_params.multi_items() if k != "open"])
+    return f"/?{query}" if query else "/"
+
+
+def _safe_back(back: str, default: str) -> str:
+    """Only local paths: the form field must not turn into an open redirect."""
+    if back.startswith("/") and not back.startswith("//") and "\\" not in back:
+        return back
+    return default
+
+
+async def _manual_change(
+    request: Request,
+    session: AsyncSession,
+    action: Callable[[], Awaitable[str]],
+    back: str,
+) -> RedirectResponse:
+    try:
+        message = await action()
+        await session.commit()
+        flash(request, message)
+    except ValidationError as error:
+        await session.rollback()
+        flash(request, error.message, "error")
+    return RedirectResponse(back, status_code=status.HTTP_303_SEE_OTHER)
+
+
+async def _notification(session: AsyncSession, notification_id: uuid.UUID) -> Notification:
+    notification = await session.get(Notification, notification_id, with_for_update=True)
+    if notification is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Уведомление не найдено.")
+    return notification
+
+
+@router.post("/notifications/{notification_id}/status", dependencies=[Depends(verify_csrf)])
+async def change_status(
+    request: Request,
+    session: SessionDep,
+    user: CurrentUser,
+    background: BackgroundTasks,
+    deliver: Annotated[Deliverer, Depends(get_deliverer)],
+    notification_id: uuid.UUID,
+    new_status: Annotated[str, Form(alias="status")] = "",
+    comment: Annotated[str, Form()] = "",
+    back: Annotated[str, Form()] = "",
+) -> RedirectResponse:
+    notification = await _notification(session, notification_id)
+    statuses = {s.value: s for s in NotificationStatus}
+    letters: list[uuid.UUID] = []
+
+    async def action() -> str:
+        chosen = statuses.get(new_status)
+        if chosen is None:
+            raise ValidationError("Выберите статус из списка.", "status")
+        letters.extend(
+            await notifications.set_status(
+                session, get_settings(), notification, chosen, user=user, comment=comment
+            )
+        )
+        label = notifications.STATUS_LABELS[chosen]
+        if letters:
+            return f"Статус: «{label}». Письмо о непринятии уходит инициатору и РП."
+        return f"Статус: «{label}»."
+
+    response = await _manual_change(
+        request, session, action, _safe_back(back, f"/notifications/{notification_id}")
+    )
+    if letters:
+        background.add_task(deliver, letters)
+    return response
+
+
+@router.post("/notifications/{notification_id}/deadline", dependencies=[Depends(verify_csrf)])
+async def change_deadline(
+    request: Request,
+    session: SessionDep,
+    user: CurrentUser,
+    notification_id: uuid.UUID,
+    deadline: Annotated[str, Form()] = "",
+    back: Annotated[str, Form()] = "",
+) -> RedirectResponse:
+    notification = await _notification(session, notification_id)
+
+    async def action() -> str:
+        try:
+            day = date.fromisoformat(deadline)
+        except ValueError as exc:
+            raise ValidationError("Укажите дату срока ответа.", "deadline") from exc
+        await notifications.change_deadline(session, get_settings(), notification, day, user=user)
+        return f"Новый срок ответа: {day:%d.%m.%Y}."
+
+    return await _manual_change(
+        request, session, action, _safe_back(back, f"/notifications/{notification_id}")
     )
 
 
@@ -174,6 +286,7 @@ def _cell_json(cell: boards.Cell | None) -> dict[str, Any] | None:
                 "contractor": i.contractor.name,
                 "display": i.display.value,
                 "workdays_elapsed": i.elapsed,
+                "workdays_term": i.term,
             }
             for i in cell.items
         ],

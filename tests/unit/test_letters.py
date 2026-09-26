@@ -71,13 +71,32 @@ def test_email_message_headers_and_parts() -> None:
     assert "rd@company.ru" in message["From"]
     assert message.get_body(("html",)) is not None
     assert message.get_body(("plain",)) is not None
+    assert message["In-Reply-To"] is None
+
+
+def test_reminder_continues_the_thread() -> None:
+    letter = _letter(None)
+    message = to_email_message(
+        SETTINGS,
+        to=letter.to,
+        subject=letter.subject,
+        text=letter.text,
+        html=letter.html,
+        reply_to=letter.reply_to,
+        message_id="<new@company.ru>",
+        in_reply_to="<first@company.ru>",
+    )
+    assert message["In-Reply-To"] == "<first@company.ru>"
+    assert message["References"] == "<first@company.ru>"
 
 
 def test_ack_token_roundtrip_and_tampering() -> None:
     notification_id = uuid.uuid4()
     token = make_ack_token(SETTINGS, notification_id)
     assert read_ack_token(SETTINGS, token) == notification_id
-    assert read_ack_token(SETTINGS, token[:-2] + "xx") is None
+    # Change the first character: all its bits count (the signature's last one has ignored bits).
+    tampered = ("J" if token[0] != "J" else "K") + token[1:]
+    assert read_ack_token(SETTINGS, tampered) is None
     other = Settings(_env_file=None, secret_key="z" * 32)
     assert read_ack_token(other, token) is None
     assert ack_url(SETTINGS, notification_id).startswith("https://rd.company.ru/ack/")
