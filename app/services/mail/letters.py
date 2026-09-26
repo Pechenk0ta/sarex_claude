@@ -94,3 +94,36 @@ def to_email_message(
     message.set_content(text)
     message.add_alternative(html, subtype="html")
     return message
+
+
+def rejection_letter(
+    settings: Settings,
+    *,
+    to: list[str],
+    project: str,
+    corpus: str,
+    contractor: str,
+    sarex_link: str,
+    sent_on: date,
+    reply_text: str,
+    card_url: str,
+) -> Letter:
+    """«РД не принята» to the initiator and the project manager (TZ 4.2, section 6 template 5)."""
+    context = {
+        "project": project,
+        "corpus": corpus,
+        "contractor": contractor,
+        "sarex_link": sarex_link,
+        "sent_on": f"{sent_on:%d.%m.%Y}",
+        "reply_text": reply_text,
+        "card_url": card_url,
+    }
+    domain = settings.mail_address.partition("@")[2] or "localhost"
+    return Letter(
+        to=", ".join(dict.fromkeys(to)),
+        subject=f"РД не принята · {contractor} · {project}, {corpus}",
+        text=_env.get_template("rejection.txt").render(context),
+        html=_env.get_template("rejection.html").render(context),
+        reply_to=settings.mail_address,
+        message_id=make_msgid(domain=domain),
+    )

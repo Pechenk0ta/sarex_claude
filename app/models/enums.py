@@ -37,6 +37,8 @@ class EventType(StrEnum):
     REJECTION_NOTIFIED = "rejection_notified"
     ESCALATED = "escalated"
     CATEGORY_OVERRIDDEN = "category_overridden"
+    STATUS_CHANGED = "status_changed"
+    DEADLINE_CHANGED = "deadline_changed"
 
 
 class UserRole(StrEnum):

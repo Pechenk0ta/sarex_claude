@@ -62,8 +62,9 @@ SHORT_LABELS = {
 
 
 def display_status(
-    notification: Notification, today: date, calendar: Calendar, timezone: str, deadline_days: int
+    notification: Notification, today: date, calendar: Calendar, timezone: str
 ) -> Display:
+    """`calendar` must cover the notification's deadline."""
     if notification.status is NotificationStatus.REJECTED:
         return Display.REJECTED
     if notification.needs_manual_review:
@@ -74,10 +75,10 @@ def display_status(
         return Display.QUESTIONS
     if notification.status is NotificationStatus.ACKNOWLEDGED:
         return Display.OK
-    if today > local_date(notification.deadline_at, timezone):
+    deadline_day = local_date(notification.deadline_at, timezone)
+    if today > deadline_day:
         return Display.LATE
-    elapsed = workdays_between(local_date(notification.sent_at, timezone), today, calendar)
-    if deadline_days - elapsed <= SOON_REMAINING_WORKDAYS:
+    if workdays_between(today, deadline_day, calendar) <= SOON_REMAINING_WORKDAYS:
         return Display.SOON
     return Display.WAITING
 
@@ -89,6 +90,7 @@ class Item:
     display: Display
     elapsed: int  # working days since sending (until the reply, if there is one)
     replied_on: date | None
+    term: int  # working days from sending to the deadline
 
 
 @dataclass
@@ -192,13 +194,14 @@ async def build_board(
     )
 
     earliest = min((local_date(n.sent_at, tz) for n, _ in rows), default=today)
-    calendar = await _calendar(session, earliest, today)
+    latest = max((local_date(n.deadline_at, tz) for n, _ in rows), default=today)
+    calendar = await _calendar(session, earliest, max(today, latest))
 
     columns: dict[str, Column] = {}
     cells: dict[tuple[uuid.UUID, str], Cell] = {}
     counts: Counter[Display] = Counter()
     for notification, contractor in rows:
-        display = display_status(notification, today, calendar, tz, settings.deadline_workdays)
+        display = display_status(notification, today, calendar, tz)
         if filters.display and display is not filters.display:
             continue
         sent_day = local_date(notification.sent_at, tz)
@@ -207,7 +210,8 @@ async def build_board(
         elapsed = workdays_between(sent_day, replied_on or today, calendar)
         columns.setdefault(notification.sarex_link, Column(notification.sarex_link, sent_day))
         cell = cells.setdefault((notification.corpus_id, notification.sarex_link), Cell([], []))
-        cell.items.append(Item(notification, contractor, display, elapsed, replied_on))
+        term = workdays_between(sent_day, local_date(notification.deadline_at, tz), calendar)
+        cell.items.append(Item(notification, contractor, display, elapsed, replied_on, term))
         counts[display] += 1
 
     if not (filters.contractor_id or filters.display or filters.channel):
@@ -241,6 +245,7 @@ class Card:
     events: list[NotificationEvent]
     display: Display
     elapsed: int
+    deadline_workdays: int  # working days from sending to the deadline
     mailing_total: int
     mailing_acknowledged: int
 
@@ -253,7 +258,8 @@ async def build_card(
         return None
     tz = settings.app_timezone
     sent_day = local_date(notification.sent_at, tz)
-    calendar = await _calendar(session, sent_day, max(today, sent_day))
+    deadline_day = local_date(notification.deadline_at, tz)
+    calendar = await _calendar(session, sent_day, max(today, deadline_day))
     events = list(
         await session.scalars(
             select(NotificationEvent)
@@ -281,7 +287,8 @@ async def build_card(
         contractor=contractor,
         initiator=initiator,
         events=events,
-        display=display_status(notification, today, calendar, tz, settings.deadline_workdays),
+        display=display_status(notification, today, calendar, tz),
+        deadline_workdays=workdays_between(sent_day, deadline_day, calendar),
         elapsed=workdays_between(
             sent_day, local_date(reply_at, tz) if reply_at else today, calendar
         ),

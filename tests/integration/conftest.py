@@ -3,7 +3,8 @@
 Each test runs inside a transaction that is rolled back, so tests don't see each other's data.
 """
 
-from collections.abc import AsyncIterator, Iterator
+import uuid
+from collections.abc import AsyncIterator, Iterator, Sequence
 
 import httpx
 import pytest
@@ -15,6 +16,7 @@ from app.auth.ratelimit import login_limiter
 from app.config import get_settings
 from app.db import get_session
 from app.main import create_app
+from app.web.mail_deps import get_deliverer
 
 
 @pytest.fixture(scope="session")
@@ -60,3 +62,16 @@ def _reset_login_limiter() -> Iterator[None]:
     login_limiter._failures.clear()
     yield
     login_limiter._failures.clear()
+
+
+@pytest.fixture
+def delivered(client: httpx.AsyncClient) -> list[uuid.UUID]:
+    """Replaces real SMTP delivery: records which letters the request queued for sending."""
+    calls: list[uuid.UUID] = []
+
+    async def fake(event_ids: Sequence[uuid.UUID]) -> None:
+        calls.extend(event_ids)
+
+    app = client._transport.app  # type: ignore[attr-defined]
+    app.dependency_overrides[get_deliverer] = lambda: fake
+    return calls
