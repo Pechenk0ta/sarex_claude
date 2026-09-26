@@ -384,3 +384,5 @@ a.obj { text-decoration: none; color: var(--ink); }
 .topnav a.soon { color: var(--faint); cursor: default; }
 .topnav a.soon:hover { color: var(--faint); }
 button.icon-btn { cursor: pointer; }
+
+[hidden] { display: none !important; }

@@ -6,6 +6,11 @@ services:
       - "5432:5432"
 
   app:
+    environment:
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      SMTP_AUTH: none
+      SMTP_STARTTLS: "false"
     command: ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]
     ports:
       - "8000:8000"
@@ -14,6 +19,11 @@ services:
       - ./migrations:/srv/migrations
 
   worker:
+    environment:
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      SMTP_AUTH: none
+      SMTP_STARTTLS: "false"
     volumes:
       - ./app:/srv/app
 

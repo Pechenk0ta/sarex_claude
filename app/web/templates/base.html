@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap">
   <link rel="stylesheet" href="{{ url_for('static', path='app.css') }}">
+  <script src="{{ url_for('static', path='app.js') }}" defer></script>
 </head>
 <body>
 {% block body %}
@@ -15,7 +16,7 @@
     <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
     <nav class="topnav" aria-label="Разделы">
       <a class="soon" title="Появится на этапе 5">Доска</a>
-      <a class="soon" title="Появится на этапе 4">Отправить уведомление</a>
+      <a href="/send"{% if section == 'send' %} aria-current="page"{% endif %}>Отправить уведомление</a>
       <a href="/refs" class="dd"{% if section == 'refs' %} aria-current="page"{% endif %}>Справочники</a>
     </nav>
     {% if user %}
