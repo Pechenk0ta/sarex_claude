@@ -35,7 +35,7 @@
 
 Готово, когда: `docker compose up` поднимает приложение, `/health` отвечает, CI зелёный.
 
-## Этап 2. Модель данных и рабочие дни — M
+## Этап 2. Модель данных и рабочие дни — M ✅
 
 - SQLAlchemy-модели по разделу 3 ТЗ: `projects`, `corpuses`, `contractors`, `project_contractors`, `users`, `notifications`, `notification_events`, `holidays`. Первая миграция Alembic.
 - `services/workdays.py`: сколько рабочих дней прошло, какая дата будет через N рабочих дней, с учётом таблицы `holidays`.

@@ -17,6 +17,7 @@ docker compose up --build
 ```
 
 - приложение: http://localhost:8000, проверка: http://localhost:8000/health
+- демо-данные как в макетах: `docker compose exec app python -m app.scripts.seed_demo`
 - документация API: http://localhost:8000/api/docs
 - письма (Mailpit): http://localhost:8025
 
@@ -25,6 +26,7 @@ docker compose up --build
 ```bash
 uv sync
 uv run alembic upgrade head
+uv run python -m app.scripts.seed_demo   # демо-данные, необязательно
 uv run uvicorn app.main:app --reload
 uv run python -m app.worker
 ```

@@ -1,15 +1,32 @@
-from sqlalchemy import MetaData
-from sqlalchemy.orm import DeclarativeBase
+"""SQLAlchemy models, TZ section 3. Import everything here so Alembic sees all tables."""
 
-# Explicit constraint names keep Alembic migrations stable and reviewable.
-NAMING_CONVENTION = {
-    "ix": "ix_%(column_0_label)s",
-    "uq": "uq_%(table_name)s_%(column_0_name)s",
-    "ck": "ck_%(table_name)s_%(constraint_name)s",
-    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-    "pk": "pk_%(table_name)s",
-}
+from app.models.base import Base
+from app.models.contractor import Contractor
+from app.models.enums import (
+    AiCategory,
+    Channel,
+    EventType,
+    NotificationStatus,
+    UserRole,
+)
+from app.models.holiday import Holiday
+from app.models.notification import Notification, NotificationEvent
+from app.models.project import Corpus, Project, ProjectContractor
+from app.models.user import User
 
-
-class Base(DeclarativeBase):
-    metadata = MetaData(naming_convention=NAMING_CONVENTION)
+__all__ = [
+    "AiCategory",
+    "Base",
+    "Channel",
+    "Contractor",
+    "Corpus",
+    "EventType",
+    "Holiday",
+    "Notification",
+    "NotificationEvent",
+    "NotificationStatus",
+    "Project",
+    "ProjectContractor",
+    "User",
+    "UserRole",
+]
