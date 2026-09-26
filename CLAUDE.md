@@ -88,6 +88,8 @@
 
 ## Развёртывание (раздел 12 ТЗ)
 
+Пошаговая инструкция для сервера, обновлений и резервных копий — `deploy/README.md`.
+
 Целевой сервер: российский VPS (данные хранятся в РФ, раздел 9 ТЗ, решение 3) 1 vCPU / 1–2 ГБ RAM / 20–25 ГБ SSD, Ubuntu LTS, домен с HTTPS.
 
 Контейнеры `docker-compose.yml`:
@@ -95,7 +97,7 @@
 | Сервис | Образ | Назначение |
 |---|---|---|
 | `db` | `postgres:16-alpine` | данные в именованном volume; порт наружу не публикуется |
-| `app` | собственный | `alembic upgrade head` при старте, затем `uvicorn app.main:app` (1–2 воркера) |
+| `app` | собственный | `alembic upgrade head` при старте, затем `uvicorn app.main:app` (1 процесс: хватает для нагрузки и нужно для ограничителя попыток входа в памяти) |
 | `worker` | тот же образ | `python -m app.worker`; ровно один экземпляр |
 | `caddy` | `caddy:2-alpine` | 80/443, TLS, проксирование на `app:8000` |
 
@@ -103,7 +105,7 @@
 - Наружу открыты только 80/443 (и 22 для SSH на уровне хоста). Postgres и app — только во внутренней сети compose.
 - Каждому сервису задан `mem_limit` и `restart: unless-stopped`; суммарно должно помещаться в 1 ГБ RAM с запасом.
 - Секреты (`DATABASE_URL`, адрес ящика и `SMTP_PASSWORD` — пароль для внешнего приложения Mail.ru, `YANDEX_API_KEY`, `YANDEX_FOLDER_ID`, `SECRET_KEY`) — только в `.env` на сервере, в git попадает лишь `.env.example`.
-- Бэкап: ежедневный `deploy/backup.sh` (cron хоста) → `pg_dump -Fc` → копия во внешнее хранилище, хранить минимум 14 дней. Потеря БД = потеря всей истории ознакомлений, поэтому восстановление из бэкапа проверяется до запуска в работу.
+- Бэкап: ежедневный `deploy/backup.sh` (cron хоста) → `pg_dump -Fc` → копия во внешнее хранилище, хранить минимум 14 дней; проверка восстановления — `deploy/restore-check.sh`. Потеря БД = потеря всей истории ознакомлений, поэтому восстановление из бэкапа проверяется до запуска в работу.
 - Логи — в stdout контейнеров (docker сам ротирует при `json-file` с `max-size`).
 - CI/CD (раздел 12.4) — позже: GitHub Actions, при мерже в `main` — сборка образа и `docker compose pull && docker compose up -d` по SSH.
 
@@ -121,6 +123,7 @@ docker compose exec app alembic upgrade head
 - Типизация обязательна (`mypy --strict` для `app/`). SQLAlchemy-модели — только в стиле 2.0 (`Mapped`, `mapped_column`), без legacy `Query`.
 - Работа с БД — только async (`AsyncSession`). Одна сессия на запрос/задачу. Сервисы делают только `flush()`; фиксирует транзакцию вызывающий код: веб-обработчик — `commit()` после успешного вызова сервиса и `rollback()` при `ValidationError` (см. `_apply` в `app/web/refs.py`), фоновые задачи и скрипты — `async with session.begin()`.
 - Ошибки пользовательского ввода — `app.services.errors.ValidationError` с текстом на русском, который показывается пользователю как есть.
+- Неудачные входы ограничены (`app/auth/ratelimit.py`: 5 попыток за 15 минут на email и на IP), счётчики в памяти процесса — поэтому `app` работает одним процессом uvicorn.
 - Каждая форма с методом POST содержит скрытое поле `csrf_token` и проверяется зависимостью `verify_csrf`; изменения в справочниках — только для роли `admin` (зависимость `AdminUser`).
 - Все даты — `timestamptz`, в коде — timezone-aware `datetime` в UTC. Перевод в локальное время (`APP_TIMEZONE`, по умолчанию `Europe/Moscow`) — только при отображении и при расчёте рабочих дней.
 - Enum-ы из ТЗ (`status`, `channel`, `ai_category`, `event type`) — Python `enum.StrEnum`, в БД как `sa.Enum(..., native_enum=False)` (строка + CHECK), чтобы добавление значений не требовало `ALTER TYPE`.

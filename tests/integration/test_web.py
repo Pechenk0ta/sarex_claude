@@ -249,3 +249,13 @@ async def test_calendar_accepts_holidays_and_rejects_pointless_entries(
     assert "04.11.2026" in page.text
     assert "Суббота и воскресенье и так выходные" in page.text
     assert await session.get(Holiday, datetime(2026, 11, 7).date()) is None
+
+
+async def test_login_is_limited_after_repeated_failures(
+    client: httpx.AsyncClient, coordinator: User
+) -> None:
+    for _ in range(5):
+        assert (await _login(client, "coord@example.ru", "wrong")).status_code == 400
+    blocked = await _login(client, "coord@example.ru", COORD_PASSWORD)
+    assert blocked.status_code == 429
+    assert "Слишком много неудачных попыток" in blocked.text

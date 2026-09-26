@@ -8,7 +8,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_PROJECT_ENVIRONMENT=/opt/venv \
     PATH="/opt/venv/bin:$PATH"
 
-COPY --from=ghcr.io/astral-sh/uv:0.8 /uv /usr/local/bin/uv
+# uv from PyPI rather than ghcr.io: fewer registries to reach from a server in Russia.
+RUN pip install --no-cache-dir uv==0.8.17
 
 WORKDIR /srv
 
@@ -24,4 +25,4 @@ RUN useradd --system --uid 1000 --home /srv app && chown -R app /srv
 USER app
 
 EXPOSE 8000
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2 --proxy-headers --forwarded-allow-ips='*'"]
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips='*'"]

@@ -4,6 +4,7 @@ from urllib.parse import urlsplit
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 
+from app.auth.ratelimit import login_limiter
 from app.db import SessionDep
 from app.services.users import authenticate
 from app.web.session import login, logout, verify_csrf
@@ -35,8 +36,21 @@ async def login_submit(
     password: Annotated[str, Form()],
     next: Annotated[str, Form()] = "/",
 ) -> Any:
+    ip = request.client.host if request.client else "unknown"
+    keys = [f"email:{email.strip().lower()}", f"ip:{ip}"]
+    wait = login_limiter.blocked_for(keys)
+    if wait:
+        return render(
+            request,
+            "login.html",
+            status_code=429,
+            next=_safe_next(next),
+            email=email,
+            error=f"Слишком много неудачных попыток входа. Попробуйте через {wait // 60 + 1} мин.",
+        )
     user = await authenticate(session, email, password)
     if user is None:
+        login_limiter.failed(keys)
         return render(
             request,
             "login.html",
@@ -45,6 +59,7 @@ async def login_submit(
             email=email,
             error="Неверный email или пароль. Проверьте раскладку и попробуйте ещё раз.",
         )
+    login_limiter.succeeded(keys)
     login(request, user.id)
     return RedirectResponse(_safe_next(next), status_code=303)
 

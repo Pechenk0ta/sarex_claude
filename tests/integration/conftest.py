@@ -11,6 +11,7 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
+from app.auth.ratelimit import login_limiter
 from app.config import get_settings
 from app.db import get_session
 from app.main import create_app
@@ -52,3 +53,10 @@ async def client(session: AsyncSession) -> AsyncIterator[httpx.AsyncClient]:
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as http:
         yield http
+
+
+@pytest.fixture(autouse=True)
+def _reset_login_limiter() -> Iterator[None]:
+    login_limiter._failures.clear()
+    yield
+    login_limiter._failures.clear()
