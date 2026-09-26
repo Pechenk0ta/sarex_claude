@@ -16,11 +16,11 @@ from app.models import (
     Channel,
     Contractor,
     Corpus,
+    CorpusContractor,
     Notification,
     NotificationEvent,
     NotificationStatus,
     Project,
-    ProjectContractor,
     User,
 )
 from app.services.workdays import Calendar, load_calendar, local_date, workdays_between
@@ -178,13 +178,17 @@ async def build_board(
         query = query.where(Notification.channel == filters.channel)
     rows = (await session.execute(query)).all()
 
-    project_contractors = list(
-        await session.scalars(
-            select(Contractor)
-            .join(ProjectContractor, ProjectContractor.contractor_id == Contractor.id)
-            .where(ProjectContractor.project_id == project.id)
-            .order_by(Contractor.name)
-        )
+    assigned: dict[uuid.UUID, list[Contractor]] = {}
+    for corpus_id, contractor in await session.execute(
+        select(CorpusContractor.corpus_id, Contractor)
+        .join(Contractor, Contractor.id == CorpusContractor.contractor_id)
+        .join(Corpus, Corpus.id == CorpusContractor.corpus_id)
+        .where(Corpus.project_id == project.id)
+        .order_by(Contractor.name)
+    ):
+        assigned.setdefault(corpus_id, []).append(contractor)
+    project_contractors = sorted(
+        {c.id: c for group in assigned.values() for c in group}.values(), key=lambda c: c.name
     )
 
     earliest = min((local_date(n.sent_at, tz) for n, _ in rows), default=today)
@@ -207,9 +211,9 @@ async def build_board(
         counts[display] += 1
 
     if not (filters.contractor_id or filters.display or filters.channel):
-        for cell in cells.values():
+        for (corpus_id, _), cell in cells.items():
             got = {i.contractor.id for i in cell.items}
-            cell.excluded = [c for c in project_contractors if c.id not in got]
+            cell.excluded = [c for c in assigned.get(corpus_id, []) if c.id not in got]
 
     shown_corpuses = [
         c

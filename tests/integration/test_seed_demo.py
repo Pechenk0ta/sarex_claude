@@ -2,11 +2,11 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import (
+    CorpusContractor,
     EventType,
     Notification,
     NotificationEvent,
     NotificationStatus,
-    ProjectContractor,
 )
 from app.scripts.seed_demo import seed
 
@@ -32,7 +32,7 @@ async def test_demo_data_matches_mockup_board(session: AsyncSession) -> None:
         select(func.count()).select_from(Notification).where(Notification.needs_manual_review)
     )
     assert review == 1
-    assert await session.scalar(select(func.count()).select_from(ProjectContractor)) == 5
+    assert await session.scalar(select(func.count()).select_from(CorpusContractor)) == 3 * 5 + 2
 
 
 async def test_every_notification_has_sent_event_and_rejection_notified(

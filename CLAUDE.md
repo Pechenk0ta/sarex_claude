@@ -47,7 +47,7 @@
 │   ├── main.py                 # создание FastAPI-приложения, подключение роутеров
 │   ├── config.py               # Settings (pydantic-settings), все параметры из env
 │   ├── db.py                   # async engine, sessionmaker, зависимость get_session
-│   ├── models/                 # SQLAlchemy-модели по разделу 3 ТЗ: project, corpus, contractor, project_contractor, user,
+│   ├── models/                 # SQLAlchemy-модели по разделу 3 ТЗ: project, corpus, contractor, corpus_contractor, user,
 │   │                           #   notification, notification_event, holiday
 │   ├── schemas/                # Pydantic-схемы запросов/ответов API
 │   ├── api/                    # JSON API (раздел 5 ТЗ): projects, notifications,
@@ -142,7 +142,7 @@ docker compose exec app alembic upgrade head
 - Ссылки из писем по GET ничего не меняют (почтовые системы открывают их сами); действие — только POST со страницы.
 
 ### Модель данных
-- Таблицы и поля — строго по разделу 3 ТЗ (включая `project_contractors`, `users`, `holidays`, `notifications.needs_manual_review`, `projects.project_manager_email`). Новое поле или таблица сначала добавляется в ТЗ, потом в код.
+- Таблицы и поля — строго по разделу 3 ТЗ (включая `corpus_contractors`, `users`, `holidays`, `notifications.needs_manual_review`, `projects.project_manager_email`). Новое поле или таблица сначала добавляется в ТЗ, потом в код.
 
 ### Миграции
 - Любое изменение моделей — новая миграция Alembic (`alembic revision --autogenerate -m "..."`), сгенерированный файл обязательно просматривается и правится руками.

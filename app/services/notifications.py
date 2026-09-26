@@ -18,12 +18,12 @@ from app.models import (
     Channel,
     Contractor,
     Corpus,
+    CorpusContractor,
     EventType,
     Notification,
     NotificationEvent,
     NotificationStatus,
     Project,
-    ProjectContractor,
     User,
 )
 from app.services.ack_tokens import ack_url
@@ -73,21 +73,22 @@ class Recipient:
 
 async def recipients(
     session: AsyncSession,
-    project_id: uuid.UUID,
     corpus_id: uuid.UUID | None,
     sarex_link: str | None,
 ) -> list[Recipient]:
-    """Contractors of the project; `already_sent` if this corpus already got this link."""
+    """Contractors assigned to the corpus; `already_sent` if it already got this link."""
+    if corpus_id is None:
+        return []
     contractors = list(
         await session.scalars(
             select(Contractor)
-            .join(ProjectContractor, ProjectContractor.contractor_id == Contractor.id)
-            .where(ProjectContractor.project_id == project_id)
+            .join(CorpusContractor, CorpusContractor.contractor_id == Contractor.id)
+            .where(CorpusContractor.corpus_id == corpus_id)
             .order_by(Contractor.name)
         )
     )
     sent: set[uuid.UUID] = set()
-    if corpus_id and sarex_link:
+    if sarex_link:
         sent = set(
             await session.scalars(
                 select(Notification.contractor_id).where(
@@ -131,12 +132,10 @@ async def create_mailing(
     link = clean_sarex_link(sarex_link)
     text = clean_message(message)
 
-    candidates = {
-        r.contractor.id: r for r in await recipients(session, project.id, corpus.id, link)
-    }
+    candidates = {r.contractor.id: r for r in await recipients(session, corpus.id, link)}
     chosen = [candidates[cid] for cid in dict.fromkeys(contractor_ids) if cid in candidates]
     if len(chosen) != len(set(contractor_ids)):
-        raise ValidationError("Среди получателей есть подрядчик, не привязанный к проекту.")
+        raise ValidationError("Среди получателей есть подрядчик, не назначенный на этот корпус.")
     to_send = [r.contractor for r in chosen if not r.already_sent]
     skipped = [r.contractor for r in chosen if r.already_sent]
     if not to_send:

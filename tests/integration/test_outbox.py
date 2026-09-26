@@ -32,7 +32,7 @@ async def sessions(migrated_database: str) -> AsyncIterator[async_sessionmaker[A
     async with engine.begin() as connection:
         await connection.execute(
             text(
-                "TRUNCATE notification_events, notifications, project_contractors, corpuses, "
+                "TRUNCATE notification_events, notifications, corpus_contractors, corpuses, "
                 "contractors, projects, users, holidays CASCADE"
             )
         )

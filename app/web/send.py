@@ -1,4 +1,4 @@
-"""«Отправить уведомление» (TZ 7.2): a mailing to all contractors of a project."""
+"""«Отправить уведомление» (TZ 7.2): a mailing to all contractors of a corpus."""
 
 import uuid
 from datetime import UTC, datetime
@@ -59,8 +59,8 @@ async def _form_page(
             )
         )
         if corpus_id not in {c.id for c in corpuses}:
-            corpus_id = None
-        recipients = await notifications.recipients(session, project.id, corpus_id, sarex_link)
+            corpus_id = corpuses[0].id if len(corpuses) == 1 else None
+        recipients = await notifications.recipients(session, corpus_id, sarex_link)
     if selected is None:
         selected = {r.contractor.id for r in recipients if not r.already_sent}
     deadline = await notifications.deadline_for(session, settings, datetime.now(UTC))
@@ -89,20 +89,24 @@ async def send_page(
     user: CurrentUser,
     project_id: str | None = None,
     corpus_id: str | None = None,
+    sarex_link: str = "",
+    message: str = "",
 ) -> Any:
-    return await _form_page(request, session, user, _uuid(project_id), _uuid(corpus_id))
+    """Also reloaded when the corpus changes: its contractors become the recipients."""
+    return await _form_page(
+        request, session, user, _uuid(project_id), _uuid(corpus_id), sarex_link, message
+    )
 
 
 @router.get("/already-sent")
 async def already_sent(
     session: SessionDep,
     user: CurrentUser,
-    project_id: uuid.UUID,
     corpus_id: uuid.UUID,
     sarex_link: str = "",
 ) -> dict[str, list[str]]:
     """For the form script: who already got this link for this corpus."""
-    recipients = await notifications.recipients(session, project_id, corpus_id, sarex_link)
+    recipients = await notifications.recipients(session, corpus_id, sarex_link)
     return {"already_sent": [str(r.contractor.id) for r in recipients if r.already_sent]}
 
 

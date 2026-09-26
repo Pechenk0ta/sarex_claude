@@ -5,7 +5,7 @@ from app.models.base import Base, Timestamps, UUIDPk
 
 
 class Contractor(UUIDPk, Timestamps, Base):
-    """A contractor organisation, TZ 3.3. Projects are linked via `project_contractors`."""
+    """A contractor organisation, TZ 3.3. Corpuses are linked via `corpus_contractors`."""
 
     __tablename__ = "contractors"
 

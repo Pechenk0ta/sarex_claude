@@ -93,31 +93,52 @@
       </div>
     </section>
 
-    <section class="panel" aria-label="Подрядчики на проекте">
-      <div class="panel-head"><h2>Подрядчики на проекте</h2><span class="hint">Все они по умолчанию получают каждую рассылку по проекту. Договор и вид работ не учитываются.</span></div>
+    <section class="panel" aria-label="Подрядчики по корпусам">
+      <div class="panel-head"><h2>Подрядчики по корпусам</h2><span class="hint">Рассылка по корпусу по умолчанию уходит всем его подрядчикам. Договор и вид работ не учитываются.</span></div>
       <div class="panel-body">
-        <div class="chips">
-          {% for c in details.contractors %}
-            <span class="chip">{{ c.name }}
-              {% if is_admin %}
-              <form method="post" action="/refs/projects/{{ p.id }}/contractors/{{ c.id }}/unlink" class="inline-form">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
-                <button type="submit" aria-label="Убрать {{ c.name }}" title="Убрать из проекта">×</button>
-              </form>
-              {% endif %}
-            </span>
-          {% else %}
-            <span class="muted">Подрядчики не привязаны: рассылку по проекту отправить будет некому.</span>
-          {% endfor %}
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>Корпус</th><th>Подрядчики</th></tr></thead>
+            <tbody>
+            {% for row in details.corpuses %}
+              {% set k = row.corpus %}
+              <tr{% if not k.is_active %} class="off"{% endif %}>
+                <td>{{ k.name }}</td>
+                <td>
+                  <div class="chips">
+                  {% for c in row.contractors %}
+                    <span class="chip">{{ c.name }}
+                      {% if is_admin %}
+                      <form method="post" action="/refs/projects/{{ p.id }}/corpuses/{{ k.id }}/contractors/{{ c.id }}/unassign" class="inline-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+                        <button type="submit" aria-label="Убрать {{ c.name }} с корпуса {{ k.name }}" title="Убрать с корпуса">×</button>
+                      </form>
+                      {% endif %}
+                    </span>
+                  {% else %}
+                    <span class="muted">Никто не назначен: рассылку по корпусу отправить будет некому.</span>
+                  {% endfor %}
+                  </div>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="2" class="muted">Сначала добавьте корпус.</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
         </div>
-        {% if is_admin and details.available_contractors %}
+        {% if is_admin and details.corpuses and details.all_contractors %}
         <form class="add-row" method="post" action="/refs/projects/{{ p.id }}/contractors">
           <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
           <select class="select" id="p-add-contractor" name="contractor_id" required aria-label="Подрядчик">
             <option value="">Выберите подрядчика из справочника…</option>
-            {% for c in details.available_contractors %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+            {% for c in details.all_contractors %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
           </select>
-          <button class="btn" type="submit">Привязать</button>
+          <select class="select" id="p-add-corpus" name="corpus_id" aria-label="Корпус">
+            {% for row in details.corpuses %}<option value="{{ row.corpus.id }}">{{ row.corpus.name }}</option>{% endfor %}
+            <option value="">Все активные корпуса</option>
+          </select>
+          <button class="btn" type="submit">Назначить</button>
         </form>
         {% endif %}
       </div>

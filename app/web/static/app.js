@@ -10,12 +10,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("send-form");
   if (!form) return;
 
+  // Choosing another corpus reloads the form: recipients are the contractors of that corpus.
+  // The link and the message typed so far are carried over.
+  form.querySelectorAll("[data-reload-corpus]").forEach((el) => {
+    el.addEventListener("change", () => {
+      const params = new URLSearchParams({
+        project_id: form.querySelector("[name='project_id']").value,
+        corpus_id: el.value,
+        sarex_link: form.querySelector("[name='sarex_link']").value,
+        message: form.querySelector("[name='message']").value,
+      });
+      window.location.assign(`/send?${params}`);
+    });
+  });
+
   const checks = Array.from(form.querySelectorAll("input[name='contractor_ids']"));
   const button = document.getElementById("s-submit");
   const counter = document.getElementById("s-count");
   const recount = () => {
     const n = checks.filter((c) => c.checked && !c.disabled).length;
-    counter.textContent = `${n} из ${checks.length} подрядчиков проекта`;
+    counter.textContent = `${n} из ${checks.length} подрядчиков корпуса`;
     button.textContent = n ? `Отправить уведомления: ${n}` : "Выберите хотя бы одного подрядчика";
     button.disabled = !n;
   };
@@ -33,13 +47,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Contractors who already got this link for this corpus are unchecked by default.
   const link = document.getElementById("s-link");
-  const project = form.querySelector("[name='project_id']");
   const corpus = form.querySelector("[name='corpus_id']");
   const markAlreadySent = async () => {
     if (!corpus?.value || !link.value.trim()) return;
-    const params = new URLSearchParams({
-      project_id: project.value, corpus_id: corpus.value, sarex_link: link.value.trim(),
-    });
+    const params = new URLSearchParams({ corpus_id: corpus.value, sarex_link: link.value.trim() });
     try {
       const response = await fetch(`/send/already-sent?${params}`);
       if (!response.ok) return;
@@ -53,11 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (_) { /* the server checks again on submit */ }
   };
   link?.addEventListener("change", markAlreadySent);
-  corpus?.addEventListener("change", () => {
-    const label = document.getElementById("prev-corpus");
-    if (label && corpus.selectedIndex >= 0) label.textContent = corpus.options[corpus.selectedIndex].text;
-    markAlreadySent();
-  });
   markAlreadySent();
   recount();
 });

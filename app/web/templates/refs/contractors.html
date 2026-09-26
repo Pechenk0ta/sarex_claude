@@ -11,7 +11,7 @@
   {% endif %}
   <div class="tbl-wrap" style="border:0;border-radius:0">
     <table class="tbl">
-      <thead><tr><th>Организация</th><th>Email для уведомлений</th><th>Telegram</th><th>Проекты</th>{% if is_admin %}<th></th>{% endif %}</tr></thead>
+      <thead><tr><th>Организация</th><th>Email для уведомлений</th><th>Telegram</th><th>Проекты и корпуса</th>{% if is_admin %}<th></th>{% endif %}</tr></thead>
       <tbody>
       {% for row in rows %}
         {% set c = row.contractor %}
@@ -32,7 +32,7 @@
           <td>{{ c.name }}</td>
           <td>{{ c.email }}</td>
           <td class="{{ 'tg-yes' if c.telegram_chat_id else 'tg-no' }}">{{ 'Привязан' if c.telegram_chat_id else 'Не привязан' }}</td>
-          <td>{% if row.project_names %}{{ row.project_names | join(', ') }}{% else %}<span class="muted">Не привязан к проектам</span>{% endif %}</td>
+          <td>{% for a in row.assignments %}{{ a }}{% if not loop.last %}<br>{% endif %}{% else %}<span class="muted">Не назначен ни на один корпус</span>{% endfor %}</td>
           {% if is_admin %}<td class="row-actions"><a class="linkbtn" href="/refs/contractors?edit={{ c.id }}">Изменить</a></td>{% endif %}
         </tr>
         {% endif %}

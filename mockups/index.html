@@ -531,7 +531,7 @@ table.tbl { border-collapse: collapse; width: 100%; }
   <main>
     <div class="page-head">
       <div>
-        <h1>Отправить уведомление подрядчикам проекта</h1>
+        <h1>Отправить уведомление подрядчикам корпуса</h1>
         <p class="sub">Каждый подрядчик получит отдельное письмо со ссылкой на РД и кнопкой «Подтверждаю ознакомление» и подтверждает ознакомление сам за себя.</p>
       </div>
     </div>
@@ -569,8 +569,8 @@ table.tbl { border-collapse: collapse; width: 100%; }
           <div class="step done">
             <span class="step-no">5</span>
             <div class="field">
-              <span>Получатели: все подрядчики проекта</span>
-              <span class="hint">Уведомление получат все подрядчики, привязанные к проекту, независимо от договора и вида работ. Снимите галочку, чтобы исключить подрядчика из этой рассылки.</span>
+              <span>Получатели: все подрядчики корпуса</span>
+              <span class="hint">Уведомление получат все подрядчики, назначенные на выбранный корпус, независимо от договора и вида работ. Снимите галочку, чтобы исключить подрядчика из этой рассылки.</span>
               <div class="checklist">
                 <label class="check"><input type="checkbox" id="c-1" checked><span>ООО «СтройМонолит»<small>pto@stroymonolit.ru</small></span><span class="chan">email + tg</span></label>
                 <label class="check"><input type="checkbox" id="c-2" checked><span>ООО «ТеплоМонтаж»<small>info@teplomontazh.ru</small></span><span class="chan">email</span></label>
@@ -590,7 +590,7 @@ table.tbl { border-collapse: collapse; width: 100%; }
           </div>
         </div>
         <div class="form-foot">
-          <span class="muted" id="s-count">5 из 5 подрядчиков проекта</span>
+          <span class="muted" id="s-count">5 из 5 подрядчиков корпуса</span>
           <button class="btn btn-primary" type="submit" id="s-submit">Отправить уведомления: 5</button>
         </div>
       </form>
@@ -807,15 +807,19 @@ table.tbl { border-collapse: collapse; width: 100%; }
             </div>
 
             <div class="field">
-              <div class="sub-head"><h3>Подрядчики на проекте</h3><span class="hint">Все они по умолчанию получают каждую рассылку по проекту. Договор и вид работ не учитываются.</span></div>
-              <div class="chips">
-                <span class="chip">ООО «СтройМонолит»<button type="button" aria-label="Убрать СтройМонолит">×</button></span>
-                <span class="chip">ООО «ТеплоМонтаж»<button type="button" aria-label="Убрать ТеплоМонтаж">×</button></span>
-                <span class="chip">ООО «АкваИнж»<button type="button" aria-label="Убрать АкваИнж">×</button></span>
-                <span class="chip">ООО «ЭлектроСети-Сервис»<button type="button" aria-label="Убрать ЭлектроСети-Сервис">×</button></span>
-                <span class="chip">ООО «ФасадПро»<button type="button" aria-label="Убрать ФасадПро">×</button></span>
+              <div class="sub-head"><h3>Подрядчики по корпусам</h3><span class="hint">Рассылка по корпусу по умолчанию уходит всем его подрядчикам. Договор и вид работ не учитываются.</span></div>
+              <div class="tbl-wrap">
+                <table class="tbl">
+                  <thead><tr><th>Корпус</th><th>Подрядчики</th></tr></thead>
+                  <tbody>
+                    <tr><td>Корпус 1 · секции 1–3</td><td><div class="chips"><span class="chip">ООО «СтройМонолит»<button type="button" aria-label="Убрать СтройМонолит">×</button></span><span class="chip">ООО «ТеплоМонтаж»<button type="button" aria-label="Убрать ТеплоМонтаж">×</button></span><span class="chip">ООО «АкваИнж»<button type="button" aria-label="Убрать АкваИнж">×</button></span><span class="chip">ООО «ЭлектроСети-Сервис»<button type="button" aria-label="Убрать ЭлектроСети-Сервис">×</button></span><span class="chip">ООО «ФасадПро»<button type="button" aria-label="Убрать ФасадПро">×</button></span></div></td></tr>
+                    <tr><td>Корпус 2 · секции 4–5</td><td><div class="chips"><span class="chip">ООО «СтройМонолит»<button type="button" aria-label="Убрать СтройМонолит">×</button></span><span class="chip">ООО «ТеплоМонтаж»<button type="button" aria-label="Убрать ТеплоМонтаж">×</button></span><span class="chip">ООО «АкваИнж»<button type="button" aria-label="Убрать АкваИнж">×</button></span><span class="chip">ООО «ЭлектроСети-Сервис»<button type="button" aria-label="Убрать ЭлектроСети-Сервис">×</button></span><span class="chip">ООО «ФасадПро»<button type="button" aria-label="Убрать ФасадПро">×</button></span></div></td></tr>
+                    <tr><td>Корпус 3 · секции 6–8</td><td><div class="chips"><span class="chip">ООО «СтройМонолит»<button type="button" aria-label="Убрать СтройМонолит">×</button></span><span class="chip">ООО «ТеплоМонтаж»<button type="button" aria-label="Убрать ТеплоМонтаж">×</button></span><span class="chip">ООО «АкваИнж»<button type="button" aria-label="Убрать АкваИнж">×</button></span><span class="chip">ООО «ЭлектроСети-Сервис»<button type="button" aria-label="Убрать ЭлектроСети-Сервис">×</button></span><span class="chip">ООО «ФасадПро»<button type="button" aria-label="Убрать ФасадПро">×</button></span></div></td></tr>
+                    <tr><td>Корпус 4 · паркинг</td><td><div class="chips"><span class="chip">ООО «СтройМонолит»<button type="button" aria-label="Убрать СтройМонолит">×</button></span><span class="chip">ООО «ЭлектроСети-Сервис»<button type="button" aria-label="Убрать ЭлектроСети-Сервис">×</button></span></div></td></tr>
+                  </tbody>
+                </table>
               </div>
-              <div class="add-row"><select class="select" id="p-add-contractor"><option>Выберите подрядчика из справочника…</option><option>ООО «ЛифтСтрой»</option></select><button class="btn" type="button" data-toast="Макет: подрядчик привязан к проекту.">Привязать</button></div>
+              <div class="add-row"><select class="select" id="p-add-contractor"><option>Выберите подрядчика из справочника…</option><option>ООО «ЛифтСтрой»</option></select><select class="select" id="p-add-corpus"><option>Корпус 1 · секции 1–3</option><option>Корпус 2 · секции 4–5</option><option>Корпус 3 · секции 6–8</option><option>Корпус 4 · паркинг</option><option>Все активные корпуса</option></select><button class="btn" type="button" data-toast="Макет: подрядчик назначен на корпус.">Назначить</button></div>
             </div>
           </div>
           <div class="form-foot"><span class="muted">Изменено 19.09.2026, Кузнецов П. Р.</span><button class="btn btn-primary" type="submit">Сохранить</button></div>
@@ -832,14 +836,14 @@ table.tbl { border-collapse: collapse; width: 100%; }
         </div>
         <div class="tbl-wrap" style="border:0;border-radius:0">
           <table class="tbl">
-            <thead><tr><th>Организация</th><th>Email для уведомлений</th><th>Telegram</th><th>Проекты</th><th></th></tr></thead>
+            <thead><tr><th>Организация</th><th>Email для уведомлений</th><th>Telegram</th><th>Проекты и корпуса</th><th></th></tr></thead>
             <tbody>
-              <tr><td>ООО «СтройМонолит»</td><td>pto@stroymonolit.ru</td><td class="tg-yes">Привязан</td><td>Северная долина, Речной квартал</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
-              <tr><td>ООО «ТеплоМонтаж»</td><td>info@teplomontazh.ru</td><td class="tg-no">Не привязан · <button class="linkbtn" type="button" data-toast="Макет: ссылка на бота отправлена на info@teplomontazh.ru.">отправить ссылку</button></td><td>Северная долина</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
-              <tr><td>ООО «АкваИнж»</td><td>pto@akvainzh.ru<span class="bounce">Письма не доставляются с 21.09, проверьте адрес</span></td><td class="tg-no">Не привязан</td><td>Северная долина</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
-              <tr><td>ООО «ЭлектроСети-Сервис»</td><td>eom@es-service.ru</td><td class="tg-no">Не привязан</td><td>Северная долина, Речной квартал</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
-              <tr><td>ООО «ФасадПро»</td><td>tender@fasadpro.ru</td><td class="tg-yes">Привязан</td><td>Северная долина</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
-              <tr><td>ООО «ЛифтСтрой»</td><td>office@liftstroy.ru</td><td class="tg-no">Не привязан</td><td class="muted">Не привязан к проектам</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «СтройМонолит»</td><td>pto@stroymonolit.ru</td><td class="tg-yes">Привязан</td><td>Северная долина: корпуса 1–4<br>Речной квартал: корпус 1</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ТеплоМонтаж»</td><td>info@teplomontazh.ru</td><td class="tg-no">Не привязан · <button class="linkbtn" type="button" data-toast="Макет: ссылка на бота отправлена на info@teplomontazh.ru.">отправить ссылку</button></td><td>Северная долина: корпуса 1–3</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «АкваИнж»</td><td>pto@akvainzh.ru<span class="bounce">Письма не доставляются с 21.09, проверьте адрес</span></td><td class="tg-no">Не привязан</td><td>Северная долина: корпуса 1–3</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ЭлектроСети-Сервис»</td><td>eom@es-service.ru</td><td class="tg-no">Не привязан</td><td>Северная долина: корпуса 1–4<br>Речной квартал: корпус 1</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ФасадПро»</td><td>tender@fasadpro.ru</td><td class="tg-yes">Привязан</td><td>Северная долина: корпуса 1–3</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ЛифтСтрой»</td><td>office@liftstroy.ru</td><td class="tg-no">Не привязан</td><td class="muted">Не назначен ни на один корпус</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
             </tbody>
           </table>
         </div>
@@ -969,7 +973,7 @@ table.tbl { border-collapse: collapse; width: 100%; }
   var checks = Array.prototype.slice.call(document.querySelectorAll('#send-form .check input'));
   function recount() {
     var n = checks.filter(function (c) { return c.checked; }).length;
-    document.getElementById('s-count').textContent = n + ' из ' + checks.length + ' подрядчиков проекта';
+    document.getElementById('s-count').textContent = n + ' из ' + checks.length + ' подрядчиков корпуса';
     var btn = document.getElementById('s-submit');
     btn.textContent = n ? 'Отправить уведомления: ' + n : 'Выберите хотя бы одного подрядчика';
     btn.disabled = !n;

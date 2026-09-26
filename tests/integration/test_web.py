@@ -139,7 +139,7 @@ async def test_admin_creates_project_with_corpus_and_contractor(
     )
     page = await client.get(f"/refs/projects/{project.id}")
     assert "Корпус 1" in page.text
-    assert "Корпус добавлен." in page.text or "Подрядчик привязан" in page.text
+    assert "Подрядчик назначен на корпус." in page.text
     assert "ООО «АкваИнж»" in page.text
 
 

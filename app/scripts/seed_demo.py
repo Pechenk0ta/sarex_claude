@@ -19,13 +19,13 @@ from app.models import (
     AiCategory,
     Contractor,
     Corpus,
+    CorpusContractor,
     EventType,
     Holiday,
     Notification,
     NotificationEvent,
     NotificationStatus,
     Project,
-    ProjectContractor,
     User,
     UserRole,
 )
@@ -66,6 +66,7 @@ USERS = [
 
 CORPUSES = ["Корпус 1 · секции 1–3", "Корпус 2 · секции 4–5", "Корпус 3 · секции 6–8"]
 CORPUS_WITHOUT_MAILINGS = "Корпус 4 · паркинг"
+PARKING_CONTRACTORS = [0, 3]  # indexes in CONTRACTORS: СтройМонолит, ЭлектроСети-Сервис
 
 SETS = [  # (short name, sent date, Sarex link)
     ("АР", date(2026, 9, 2), "https://sarex.example.ru/project/sd-3/docs/AR-rev3"),
@@ -191,8 +192,12 @@ async def seed(session: AsyncSession, today: date = DEMO_TODAY) -> bool:
     session.add(Contractor(name=UNLINKED_CONTRACTOR[0], email=UNLINKED_CONTRACTOR[1]))
     session.add_all([*users, project, *corpuses, *contractors])
     await session.flush()
+    # Every contractor works on the residential corpuses; only two of them on the parking.
+    parking = [contractors[i] for i in PARKING_CONTRACTORS]
     session.add_all(
-        ProjectContractor(project_id=project.id, contractor_id=c.id) for c in contractors
+        CorpusContractor(corpus_id=corpus.id, contractor_id=c.id)
+        for corpus in corpuses
+        for c in (contractors if corpus.name != CORPUS_WITHOUT_MAILINGS else parking)
     )
 
     coordinator = users[0]

@@ -7,7 +7,7 @@ from datetime import date
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Contractor, Corpus, Holiday, Notification, Project, ProjectContractor
+from app.models import Contractor, Corpus, CorpusContractor, Holiday, Notification, Project
 from app.services.errors import ValidationError
 from app.services.validation import clean_email, clean_optional_text, clean_text
 
@@ -25,7 +25,10 @@ class ProjectRow:
 async def list_projects(session: AsyncSession) -> list[ProjectRow]:
     corpuses = select(func.count()).where(Corpus.project_id == Project.id).scalar_subquery()
     contractors = (
-        select(func.count()).where(ProjectContractor.project_id == Project.id).scalar_subquery()
+        select(func.count(func.distinct(CorpusContractor.contractor_id)))
+        .join(Corpus, Corpus.id == CorpusContractor.corpus_id)
+        .where(Corpus.project_id == Project.id)
+        .scalar_subquery()
     )
     notifications = (
         select(func.count()).where(Notification.project_id == Project.id).scalar_subquery()
@@ -42,14 +45,14 @@ async def list_projects(session: AsyncSession) -> list[ProjectRow]:
 class CorpusRow:
     corpus: Corpus
     notification_count: int
+    contractors: list[Contractor]
 
 
 @dataclass(frozen=True)
 class ProjectDetails:
     project: Project
     corpuses: list[CorpusRow]
-    contractors: list[Contractor]
-    available_contractors: list[Contractor]
+    all_contractors: list[Contractor]
 
 
 async def get_project(session: AsyncSession, project_id: uuid.UUID) -> ProjectDetails | None:
@@ -57,24 +60,26 @@ async def get_project(session: AsyncSession, project_id: uuid.UUID) -> ProjectDe
     if project is None:
         return None
     counts = select(func.count()).where(Notification.corpus_id == Corpus.id).scalar_subquery()
-    corpus_rows = await session.execute(
-        select(Corpus, counts).where(Corpus.project_id == project_id).order_by(Corpus.name)
-    )
-    linked = list(
-        await session.scalars(
-            select(Contractor)
-            .join(ProjectContractor, ProjectContractor.contractor_id == Contractor.id)
-            .where(ProjectContractor.project_id == project_id)
-            .order_by(Contractor.name)
+    corpus_rows = (
+        await session.execute(
+            select(Corpus, counts).where(Corpus.project_id == project_id).order_by(Corpus.name)
         )
+    ).all()
+    links = await session.execute(
+        select(CorpusContractor.corpus_id, Contractor)
+        .join(Contractor, Contractor.id == CorpusContractor.contractor_id)
+        .join(Corpus, Corpus.id == CorpusContractor.corpus_id)
+        .where(Corpus.project_id == project_id)
+        .order_by(Contractor.name)
     )
-    linked_ids = {c.id for c in linked}
+    by_corpus: dict[uuid.UUID, list[Contractor]] = {}
+    for corpus_id, contractor in links.all():
+        by_corpus.setdefault(corpus_id, []).append(contractor)
     everyone = await session.scalars(select(Contractor).order_by(Contractor.name))
     return ProjectDetails(
         project=project,
-        corpuses=[CorpusRow(*row) for row in corpus_rows.all()],
-        contractors=linked,
-        available_contractors=[c for c in everyone if c.id not in linked_ids],
+        corpuses=[CorpusRow(c, n, by_corpus.get(c.id, [])) for c, n in corpus_rows],
+        all_contractors=list(everyone),
     )
 
 
@@ -176,20 +181,28 @@ async def delete_corpus(session: AsyncSession, corpus: Corpus) -> None:
 @dataclass(frozen=True)
 class ContractorRow:
     contractor: Contractor
-    project_names: list[str]
+    assignments: list[str]
+    """«Проект: корпус, корпус» per project the contractor works on."""
 
 
 async def list_contractors(session: AsyncSession) -> list[ContractorRow]:
     contractors = list(await session.scalars(select(Contractor).order_by(Contractor.name)))
     links = await session.execute(
-        select(ProjectContractor.contractor_id, Project.name)
-        .join(Project, Project.id == ProjectContractor.project_id)
-        .order_by(Project.name)
+        select(CorpusContractor.contractor_id, Project.name, Corpus.name)
+        .join(Corpus, Corpus.id == CorpusContractor.corpus_id)
+        .join(Project, Project.id == Corpus.project_id)
+        .order_by(Project.name, Corpus.name)
     )
-    names: dict[uuid.UUID, list[str]] = {}
-    for contractor_id, project_name in links.all():
-        names.setdefault(contractor_id, []).append(project_name)
-    return [ContractorRow(c, names.get(c.id, [])) for c in contractors]
+    grouped: dict[uuid.UUID, dict[str, list[str]]] = {}
+    for contractor_id, project_name, corpus_name in links.all():
+        grouped.setdefault(contractor_id, {}).setdefault(project_name, []).append(corpus_name)
+    return [
+        ContractorRow(
+            c,
+            [f"{p}: {', '.join(names)}" for p, names in grouped.get(c.id, {}).items()],
+        )
+        for c in contractors
+    ]
 
 
 async def _check_contractor(
@@ -227,23 +240,37 @@ async def update_contractor(
     await session.flush()
 
 
-async def link_contractor(
-    session: AsyncSession, project: Project, contractor_id: uuid.UUID
-) -> None:
+async def assign_contractor(
+    session: AsyncSession, project: Project, contractor_id: uuid.UUID, corpus_id: uuid.UUID | None
+) -> int:
+    """Assign a contractor to one corpus of the project or, with `corpus_id=None`, to every
+    active corpus of it. Returns how many new assignments were made."""
     if await session.get(Contractor, contractor_id) is None:
         raise ValidationError("Выберите подрядчика из списка.", "contractor_id")
-    if await session.get(ProjectContractor, (project.id, contractor_id)) is None:
-        session.add(ProjectContractor(project_id=project.id, contractor_id=contractor_id))
-        await session.flush()
+    query = select(Corpus).where(Corpus.project_id == project.id)
+    query = query.where(Corpus.id == corpus_id) if corpus_id else query.where(Corpus.is_active)
+    corpuses = list(await session.scalars(query))
+    if not corpuses:
+        raise ValidationError(
+            "Выберите корпус этого проекта." if corpus_id else "У проекта нет активных корпусов.",
+            "corpus_id",
+        )
+    added = 0
+    for corpus in corpuses:
+        if await session.get(CorpusContractor, (corpus.id, contractor_id)) is None:
+            session.add(CorpusContractor(corpus_id=corpus.id, contractor_id=contractor_id))
+            added += 1
+    await session.flush()
+    return added
 
 
-async def unlink_contractor(
-    session: AsyncSession, project: Project, contractor_id: uuid.UUID
+async def unassign_contractor(
+    session: AsyncSession, corpus: Corpus, contractor_id: uuid.UUID
 ) -> None:
     await session.execute(
-        delete(ProjectContractor).where(
-            ProjectContractor.project_id == project.id,
-            ProjectContractor.contractor_id == contractor_id,
+        delete(CorpusContractor).where(
+            CorpusContractor.corpus_id == corpus.id,
+            CorpusContractor.contractor_id == contractor_id,
         )
     )
 

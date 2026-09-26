@@ -11,7 +11,7 @@ from app.models.enums import (
 )
 from app.models.holiday import Holiday
 from app.models.notification import Notification, NotificationEvent
-from app.models.project import Corpus, Project, ProjectContractor
+from app.models.project import Corpus, CorpusContractor, Project
 from app.models.user import User
 
 __all__ = [
@@ -20,13 +20,13 @@ __all__ = [
     "Channel",
     "Contractor",
     "Corpus",
+    "CorpusContractor",
     "EventType",
     "Holiday",
     "Notification",
     "NotificationEvent",
     "NotificationStatus",
     "Project",
-    "ProjectContractor",
     "User",
     "UserRole",
 ]

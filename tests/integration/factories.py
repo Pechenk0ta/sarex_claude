@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Contractor, Corpus, Project, ProjectContractor, User, UserRole
+from app.models import Contractor, Corpus, CorpusContractor, Project, User, UserRole
 from app.services.users import create_user
 
 
@@ -15,6 +15,6 @@ async def project_with_contractors(
     )
     session.add_all([project, corpus, *people])
     await session.flush()
-    session.add_all(ProjectContractor(project_id=project.id, contractor_id=c.id) for c in people)
+    session.add_all(CorpusContractor(corpus_id=corpus.id, contractor_id=c.id) for c in people)
     await session.flush()
     return project, corpus, people, user

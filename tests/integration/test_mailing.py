@@ -115,7 +115,7 @@ async def test_resend_goes_only_to_those_who_did_not_get_it(session: AsyncSessio
         ("inactive_project", "активный проект"),
         ("foreign_corpus", "корпус этого проекта"),
         ("bad_link", "с https://"),
-        ("stranger", "не привязанный к проекту"),
+        ("stranger", "не назначенный на этот корпус"),
         ("nobody", "Некому отправлять"),
     ],
 )

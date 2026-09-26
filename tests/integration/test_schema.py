@@ -8,13 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import (
     Contractor,
     Corpus,
+    CorpusContractor,
     EventType,
     Holiday,
     Notification,
     NotificationEvent,
     NotificationStatus,
     Project,
-    ProjectContractor,
     User,
     UserRole,
 )
@@ -28,7 +28,7 @@ async def _notification(session: AsyncSession) -> Notification:
     user = User(email="c@example.ru", full_name="Координатор", role=UserRole.COORDINATOR)
     session.add_all([project, corpus, contractor, user])
     await session.flush()
-    session.add(ProjectContractor(project_id=project.id, contractor_id=contractor.id))
+    session.add(CorpusContractor(corpus_id=corpus.id, contractor_id=contractor.id))
     notification = Notification(
         project_id=project.id,
         corpus_id=corpus.id,
@@ -141,10 +141,10 @@ async def test_calendar_loaded_from_holidays_table(session: AsyncSession) -> Non
     assert add_workdays(date(2026, 11, 2), 3, calendar) == date(2026, 11, 6)
 
 
-async def test_deleting_project_link_keeps_contractor(session: AsyncSession) -> None:
+async def test_deleting_corpus_link_keeps_contractor(session: AsyncSession) -> None:
     notification = await _notification(session)
     await session.execute(
-        text("DELETE FROM project_contractors WHERE contractor_id = :id"),
+        text("DELETE FROM corpus_contractors WHERE contractor_id = :id"),
         {"id": notification.contractor_id},
     )
     assert await session.scalar(select(func.count()).select_from(Contractor)) == 1

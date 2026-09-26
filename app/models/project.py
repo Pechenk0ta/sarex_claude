@@ -34,13 +34,13 @@ class Corpus(UUIDPk, Timestamps, Base):
     project: Mapped[Project] = relationship(back_populates="corpuses")
 
 
-class ProjectContractor(Base):
-    """Plain list of a project's contractors, no contract binding, TZ 3.3."""
+class CorpusContractor(Base):
+    """Contractors assigned to a corpus, no contract binding, TZ 3.3."""
 
-    __tablename__ = "project_contractors"
+    __tablename__ = "corpus_contractors"
 
-    project_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True
+    corpus_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("corpuses.id", ondelete="CASCADE"), primary_key=True
     )
     contractor_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("contractors.id", ondelete="CASCADE"), primary_key=True, index=True

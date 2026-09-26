@@ -186,41 +186,53 @@ async def delete_corpus(
 
 
 @router.post("/projects/{project_id}/contractors", dependencies=CSRF)
-async def link_contractor(
+async def assign_contractor(
     request: Request,
     session: SessionDep,
     user: AdminUser,
     project_id: uuid.UUID,
     contractor_id: FormStr,
+    corpus_id: FormStr = "",
 ) -> RedirectResponse:
+    """Assign a contractor to a corpus; an empty `corpus_id` means every active corpus."""
     project = await _project(session, project_id)
 
     async def action() -> None:
         try:
-            parsed = uuid.UUID(contractor_id)
+            contractor = uuid.UUID(contractor_id)
         except ValueError as exc:
             raise ValidationError("Выберите подрядчика из списка.") from exc
-        await directory.link_contractor(session, project, parsed)
+        try:
+            corpus = uuid.UUID(corpus_id) if corpus_id else None
+        except ValueError as exc:
+            raise ValidationError("Выберите корпус из списка.") from exc
+        await directory.assign_contractor(session, project, contractor, corpus)
 
     return await _apply(
-        request, session, action, "Подрядчик привязан к проекту.", f"/refs/projects/{project_id}"
+        request, session, action, "Подрядчик назначен на корпус.", f"/refs/projects/{project_id}"
     )
 
 
-@router.post("/projects/{project_id}/contractors/{contractor_id}/unlink", dependencies=CSRF)
-async def unlink_contractor(
+@router.post(
+    "/projects/{project_id}/corpuses/{corpus_id}/contractors/{contractor_id}/unassign",
+    dependencies=CSRF,
+)
+async def unassign_contractor(
     request: Request,
     session: SessionDep,
     user: AdminUser,
     project_id: uuid.UUID,
+    corpus_id: uuid.UUID,
     contractor_id: uuid.UUID,
 ) -> RedirectResponse:
-    project = await _project(session, project_id)
+    corpus = await directory.get_corpus(session, project_id, corpus_id)
+    if corpus is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Корпус не найден.")
     return await _apply(
         request,
         session,
-        lambda: directory.unlink_contractor(session, project, contractor_id),
-        "Подрядчик больше не получает рассылки по проекту.",
+        lambda: directory.unassign_contractor(session, corpus, contractor_id),
+        "Подрядчик больше не получает рассылки по этому корпусу.",
         f"/refs/projects/{project_id}",
     )
 
