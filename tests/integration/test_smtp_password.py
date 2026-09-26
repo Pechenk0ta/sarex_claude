@@ -1,4 +1,4 @@
-"""Password login to SMTP, as used with a Google app password (TZ section 9, decision 1)."""
+"""SMTP password login, as with a Mail.ru app password (TZ section 9, decision 1)."""
 
 import socket
 from collections.abc import Iterator
@@ -27,7 +27,7 @@ class _Inbox:
 def _authenticator(server: Any, session: Any, envelope: Any, mechanism: str, data: Any) -> Any:
     ok = (
         isinstance(data, LoginPassword)
-        and data.login == b"rd.company@gmail.com"
+        and data.login == b"rd.company@mail.ru"
         and data.password == APP_PASSWORD.encode()
     )
     return AuthResult(success=ok)
@@ -54,7 +54,7 @@ def server() -> Iterator[tuple[_Inbox, int]]:
 
 def _message() -> EmailMessage:
     message = EmailMessage()
-    message["From"] = "rd.company@gmail.com"
+    message["From"] = "rd.company@mail.ru"
     message["To"] = "pto@stroymonolit.ru"
     message["Subject"] = "Проверка"
     message.set_content("Текст")
@@ -66,7 +66,7 @@ def _settings(port: int, password: str) -> Settings:
     return Settings(
         smtp_timeout_seconds=3,
         _env_file=None,
-        mail_address="rd.company@gmail.com",
+        mail_address="rd.company@mail.ru",
         smtp_host="127.0.0.1",
         smtp_port=port,
         smtp_auth="password",

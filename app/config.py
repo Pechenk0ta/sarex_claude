@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     smtp_host: str = "localhost"
     smtp_port: int = 1025
     smtp_starttls: bool = False
+    smtp_ssl: bool = False  # implicit TLS from the first byte (port 465, e.g. Mail.ru)
     smtp_auth: Literal["none", "oauth2", "password"] = "none"
     smtp_password: SecretStr = SecretStr("")
     smtp_timeout_seconds: float = 30
