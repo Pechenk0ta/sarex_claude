@@ -401,7 +401,8 @@ async def change_deadline(
     user: User,
     now: datetime | None = None,
 ) -> None:
-    """New deadline set by a coordinator. An escalated notification goes back to waiting."""
+    """New deadline set by a coordinator. An escalated notification goes back to waiting and
+    the reminders after the deadline start over."""
     if notification.status in (NotificationStatus.ACKNOWLEDGED, NotificationStatus.REJECTED):
         raise ValidationError("Ответ уже получен: срок менять не нужно.", "deadline")
     moment = now or datetime.now(UTC)
@@ -411,6 +412,7 @@ async def change_deadline(
     if day == old_day:
         raise ValidationError("Срок и так такой.", "deadline")
     notification.deadline_at = deadline_at_day(settings, day)
+    notification.reminder_count = 0  # reminders come after the new deadline again (TZ 4.3)
     raw = (
         f"Срок ответа изменён вручную: {old_day:%d.%m.%Y} → {day:%d.%m.%Y}.\nКто: {user.full_name}."
     )

@@ -1,8 +1,8 @@
 """Daily reminders and escalation (TZ 4.3).
 
-Runs once a working day. Contractors who have not answered get a reminder on the 1st and the
-3rd working day (only before the deadline); when the deadline has passed, the notification is
-escalated and the project manager gets one letter per mailing.
+Runs once a working day. Nothing is sent before the deadline. After it, the contractor who has
+not answered gets a reminder on the 1st and the 3rd working day of delay, and on the 1st day the
+notification is escalated: the project manager gets one letter per mailing.
 
 Idempotent: candidates are locked with `FOR UPDATE SKIP LOCKED` and re-read under the lock, and
 every step moves `reminder_count` / `status` forward, so a second run on the same day finds
@@ -46,25 +46,33 @@ from app.services.workdays import (
 )
 
 
-def next_action(
+def next_actions(
     notification: Notification, today: date, calendar: Calendar, settings: Settings
-) -> EventType | None:
-    """What the daily job does with a notification today, if anything.
+) -> list[EventType]:
+    """What the daily job does with a notification today: nothing before the deadline.
 
-    `calendar` must cover the sending day .. today. If the job missed days, it catches up
-    with a single letter: the second reminder is sent instead of both.
+    After the deadline, counted in working days of delay: reminders to the contractor on the
+    1st and 3rd day, escalation to the project manager on the 1st day (all in `Settings`).
+    `calendar` must cover the deadline day .. today. If the job missed days, it catches up
+    with a single letter to the contractor: the second reminder instead of both.
     """
-    if notification.status is not NotificationStatus.SENT or notification.needs_manual_review:
-        return None  # answered, escalated already, or a reply waits for the coordinator
-    tz = settings.app_timezone
-    if today > local_date(notification.deadline_at, tz):
-        return EventType.ESCALATED
-    elapsed = workdays_between(local_date(notification.sent_at, tz), today, calendar)
-    if notification.reminder_count < 2 and elapsed >= settings.second_reminder_workdays:
-        return EventType.REMINDER_3
-    if notification.reminder_count == 0 and elapsed >= settings.first_reminder_workdays:
-        return EventType.REMINDER_1
-    return None
+    if notification.needs_manual_review or notification.status not in (
+        NotificationStatus.SENT,
+        NotificationStatus.ESCALATED,
+    ):
+        return []  # answered, or a reply waits for the coordinator
+    deadline_day = local_date(notification.deadline_at, settings.app_timezone)
+    if today <= deadline_day:
+        return []
+    overdue = workdays_between(deadline_day, today, calendar)
+    actions = []
+    if notification.reminder_count < 2 and overdue >= settings.second_reminder_workdays:
+        actions.append(EventType.REMINDER_3)
+    elif notification.reminder_count == 0 and overdue >= settings.first_reminder_workdays:
+        actions.append(EventType.REMINDER_1)
+    if notification.status is NotificationStatus.SENT and overdue >= settings.escalation_workdays:
+        actions.append(EventType.ESCALATED)
+    return actions
 
 
 @dataclass
@@ -109,7 +117,8 @@ async def run_reminders(
         await session.scalars(
             select(Notification)
             .where(
-                Notification.status == NotificationStatus.SENT,
+                Notification.status.in_([NotificationStatus.SENT, NotificationStatus.ESCALATED]),
+                Notification.deadline_at < moment,
                 Notification.needs_manual_review.is_(False),
             )
             .order_by(Notification.sent_at, Notification.id)
@@ -120,18 +129,18 @@ async def run_reminders(
     if not candidates:
         return result
     first_day = min(local_date(n.sent_at, tz) for n in candidates)
-    calendar = await load_calendar(session, first_day, today)
+    calendar = await load_calendar(session, first_day, today)  # also covers every deadline
 
     to_remind: list[tuple[Notification, EventType]] = []
     # One letter per mailing (and deadline: a single contractor's deadline may be extended).
     overdue: dict[tuple[uuid.UUID, str, datetime], list[Notification]] = defaultdict(list)
     for notification in candidates:
-        action = next_action(notification, today, calendar, settings)
-        if action is EventType.ESCALATED:
-            key = (notification.corpus_id, notification.sarex_link, notification.deadline_at)
-            overdue[key].append(notification)
-        elif action is not None:
-            to_remind.append((notification, action))
+        for action in next_actions(notification, today, calendar, settings):
+            if action is EventType.ESCALATED:
+                key = (notification.corpus_id, notification.sarex_link, notification.deadline_at)
+                overdue[key].append(notification)
+            else:
+                to_remind.append((notification, action))
 
     first_letters = await _first_letter_ids([n.id for n, _ in to_remind], session)
     for notification, action in to_remind:
@@ -184,7 +193,7 @@ async def _remind(
         deadline=local_date(notification.deadline_at, settings.app_timezone),
         ack_url=ack_url(settings, notification.id),
         initiator=initiator.full_name,
-        reminder=True,
+        overdue=True,
     )
     notification.reminder_count = 2 if action is EventType.REMINDER_3 else 1
     notification.last_reminder_at = moment

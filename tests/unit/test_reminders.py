@@ -6,17 +6,20 @@ import pytest
 
 from app.config import Settings
 from app.models import EventType, Notification, NotificationStatus
-from app.services.reminders import next_action
+from app.services.reminders import next_actions
 from app.worker import catch_up_needed
 
 SETTINGS = Settings(_env_file=None)
 SENT = datetime(2026, 9, 11, 7, 0, tzinfo=UTC)  # Fri 11.09 10:00 Moscow time
 DEADLINE = datetime(2026, 9, 25, 15, 0, tzinfo=UTC)  # Fri 25.09 18:00
 
+R1, R3, ESC = EventType.REMINDER_1, EventType.REMINDER_3, EventType.ESCALATED
+SENT_STATUS, ESCALATED = NotificationStatus.SENT, NotificationStatus.ESCALATED
+
 
 def _notification(**changes: object) -> Notification:
     fields: dict[str, object] = {
-        "status": NotificationStatus.SENT,
+        "status": SENT_STATUS,
         "needs_manual_review": False,
         "reminder_count": 0,
         "sent_at": SENT,
@@ -26,27 +29,28 @@ def _notification(**changes: object) -> Notification:
     return Notification(**fields)
 
 
-def _action(today: date, **changes: object) -> EventType | None:
-    return next_action(_notification(**changes), today, {}, SETTINGS)
+def _actions(today: date, settings: Settings = SETTINGS, **changes: object) -> list[EventType]:
+    return next_actions(_notification(**changes), today, {}, settings)
 
 
 @pytest.mark.parametrize(
-    ("today", "reminders_sent", "expected"),
+    ("today", "status", "reminders_sent", "expected"),
     [
-        (date(2026, 9, 11), 0, None),  # the sending day
-        (date(2026, 9, 14), 0, EventType.REMINDER_1),  # Mon: 1st working day
-        (date(2026, 9, 14), 1, None),  # the same day again
-        (date(2026, 9, 15), 1, None),
-        (date(2026, 9, 16), 1, EventType.REMINDER_3),  # Wed: 3rd working day
-        (date(2026, 9, 16), 0, EventType.REMINDER_3),  # missed days: one letter, not two
-        (date(2026, 9, 17), 2, None),
-        (date(2026, 9, 25), 2, None),  # deadline day: still in time
-        (date(2026, 9, 28), 2, EventType.ESCALATED),
-        (date(2026, 9, 28), 0, EventType.ESCALATED),  # no reminders after the deadline
+        (date(2026, 9, 14), SENT_STATUS, 0, []),  # nothing before the deadline
+        (date(2026, 9, 16), SENT_STATUS, 0, []),
+        (date(2026, 9, 25), SENT_STATUS, 0, []),  # the deadline day is still in time
+        (date(2026, 9, 28), SENT_STATUS, 0, [R1, ESC]),  # Mon: 1st working day of delay
+        (date(2026, 9, 28), ESCALATED, 1, []),  # the same day again
+        (date(2026, 9, 29), ESCALATED, 1, []),
+        (date(2026, 9, 30), ESCALATED, 1, [R3]),  # Wed: 3rd working day of delay
+        (date(2026, 10, 1), ESCALATED, 2, []),
+        (date(2026, 9, 30), SENT_STATUS, 0, [R3, ESC]),  # missed days: one reminder, not two
     ],
 )
-def test_schedule(today: date, reminders_sent: int, expected: EventType | None) -> None:
-    assert _action(today, reminder_count=reminders_sent) is expected
+def test_schedule(
+    today: date, status: NotificationStatus, reminders_sent: int, expected: list[EventType]
+) -> None:
+    assert _actions(today, status=status, reminder_count=reminders_sent) == expected
 
 
 @pytest.mark.parametrize(
@@ -55,36 +59,33 @@ def test_schedule(today: date, reminders_sent: int, expected: EventType | None) 
         NotificationStatus.ACKNOWLEDGED,
         NotificationStatus.HAS_QUESTIONS,
         NotificationStatus.REJECTED,
-        NotificationStatus.ESCALATED,
     ],
 )
-def test_answered_or_escalated_are_left_alone(status: NotificationStatus) -> None:
-    assert _action(date(2026, 9, 28), status=status) is None
+def test_answered_are_left_alone(status: NotificationStatus) -> None:
+    assert _actions(date(2026, 9, 28), status=status) == []
 
 
 def test_reply_waiting_for_coordinator_stops_reminders() -> None:
-    assert _action(date(2026, 9, 14), needs_manual_review=True) is None
+    assert _actions(date(2026, 9, 28), needs_manual_review=True) == []
 
 
 def test_holiday_moves_the_first_reminder() -> None:
-    calendar = {date(2026, 9, 14): False}
+    calendar = {date(2026, 9, 28): False}
     notification = _notification()
-    assert next_action(notification, date(2026, 9, 14), calendar, SETTINGS) is None
-    assert next_action(notification, date(2026, 9, 15), calendar, SETTINGS) is (
-        EventType.REMINDER_1
-    )
-
-
-def test_short_deadline_escalates_without_second_reminder() -> None:
-    short = datetime(2026, 9, 15, 15, 0, tzinfo=UTC)  # Tue 15.09
-    assert _action(date(2026, 9, 15), reminder_count=1, deadline_at=short) is None
-    assert _action(date(2026, 9, 16), reminder_count=1, deadline_at=short) is (EventType.ESCALATED)
+    assert next_actions(notification, date(2026, 9, 28), calendar, SETTINGS) == []
+    assert next_actions(notification, date(2026, 9, 29), calendar, SETTINGS) == [R1, ESC]
 
 
 def test_intervals_come_from_settings() -> None:
-    settings = Settings(_env_file=None, first_reminder_workdays=2, second_reminder_workdays=4)
-    assert next_action(_notification(), date(2026, 9, 14), {}, settings) is None
-    assert next_action(_notification(), date(2026, 9, 15), {}, settings) is EventType.REMINDER_1
+    settings = Settings(
+        _env_file=None,
+        first_reminder_workdays=2,
+        second_reminder_workdays=4,
+        escalation_workdays=4,
+    )
+    assert _actions(date(2026, 9, 28), settings) == []
+    assert _actions(date(2026, 9, 29), settings) == [R1]
+    assert _actions(date(2026, 10, 1), settings, reminder_count=1) == [R3, ESC]
 
 
 def test_catch_up_only_during_the_working_day() -> None:

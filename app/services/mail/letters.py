@@ -53,9 +53,9 @@ def initial_letter(
     deadline: date,
     ack_url: str,
     initiator: str,
-    reminder: bool = False,
+    overdue: bool = False,
 ) -> Letter:
-    """The notification to a contractor; `reminder` marks the repeated one (TZ 6, 1–2)."""
+    """The notification to a contractor; `overdue` is the reminder after the deadline (TZ 6)."""
     context = {
         "project": project,
         "corpus": corpus,
@@ -64,13 +64,17 @@ def initial_letter(
         "deadline": f"{deadline:%d.%m.%Y}",
         "ack_url": ack_url,
         "initiator": initiator,
-        "reminder": reminder,
+        "overdue": overdue,
     }
     domain = settings.mail_address.partition("@")[2] or "localhost"
-    subject = f"РД · {project}, {corpus} · подтвердите ознакомление до {deadline:%d.%m.%Y}"
+    subject = (
+        f"Срок истёк: РД · {project}, {corpus} · подтвердите ознакомление"
+        if overdue
+        else f"РД · {project}, {corpus} · подтвердите ознакомление до {deadline:%d.%m.%Y}"
+    )
     return Letter(
         to=to,
-        subject=f"Повторно: {subject}" if reminder else subject,
+        subject=subject,
         text=_env.get_template("initial.txt").render(context),
         html=_env.get_template("initial.html").render(context),
         reply_to=reply_address(settings, reply_token),

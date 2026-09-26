@@ -95,7 +95,7 @@
         <div class="field">
           <label for="s-deadline"><span style="font-weight:500">Срок ответа</span></label>
           <input class="input" id="s-deadline" name="deadline" type="date" value="{{ deadline.isoformat() }}" min="{{ tomorrow.isoformat() }}" required style="width:auto">
-          <span class="hint">По умолчанию {{ workdays }} рабочих дней — до {{ default_deadline | ru_date }}. Можно выбрать другой рабочий день. Напоминания уйдут на 1-й и 3-й рабочий день, эскалация РП — когда срок пройдёт без ответа.</span>
+          <span class="hint">По умолчанию {{ workdays }} рабочих дней — до {{ default_deadline | ru_date }}. Можно выбрать другой рабочий день. Если срок пройдёт без ответа, подрядчику уйдут напоминания на 1-й и 3-й рабочий день просрочки, а РП — письмо в 1-й день просрочки.</span>
         </div>
       </div>
     </div>
