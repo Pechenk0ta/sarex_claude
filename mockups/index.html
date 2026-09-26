@@ -1,0 +1,991 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ознакомление с РД</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+:root {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f5f6f9;
+  --ink: #1c2233;
+  --muted: #6b7185;
+  --faint: #a2a7b6;
+  --line: #e7e9f0;
+  --line-strong: #d7dae4;
+  --accent: #1f35c8;
+  --accent-ink: #ffffff;
+  --accent-soft: #eef0fd;
+  --focus: #4a5ee0;
+  --shadow: 0 1px 3px rgb(28 34 51 / .06);
+
+  --ok: #2e7a4d;        --ok-bg: #e2f2e8;
+  --ask: #6346b8;       --ask-bg: #ece7fa;
+  --wait: #4e6470;      --wait-bg: #e8eef1;
+  --soon: #a06207;      --soon-bg: #fbf0d9;
+  --late: #b3322b;      --late-bg: #fbe4e2;
+  --review: #a3346f;    --review-bg: #fae6f0;
+  --rej: #9e1c2c;       --rej-ink: #ffffff;
+
+  --radius: 6px;
+  --sans: "Manrope", "Segoe UI", Roboto, Arial, sans-serif;
+  --mono: "Manrope", "Segoe UI", Roboto, Arial, sans-serif;
+  --code: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #12141c; --surface: #181b25; --surface-2: #1e2230;
+    --ink: #e6e8f0; --muted: #9ba1b4; --faint: #6c7286;
+    --line: #2a2f3e; --line-strong: #363c4e;
+    --accent: #7d8cff; --accent-ink: #0e1130; --accent-soft: #222848; --focus: #9aa6ff;
+    --shadow: 0 1px 3px rgb(0 0 0 / .3);
+    --ok: #6cc893; --ok-bg: #173226;
+    --ask: #b3a0f2; --ask-bg: #2a2344;
+    --wait: #a9bcc6; --wait-bg: #243036;
+    --soon: #e8b458; --soon-bg: #3a2c12;
+    --late: #f08a82; --late-bg: #3d1d1b;
+    --review: #ec8fc0; --review-bg: #3b1d2d; --rej: #e0475a; --rej-ink: #1a0508;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #12141c; --surface: #181b25; --surface-2: #1e2230;
+  --ink: #e6e8f0; --muted: #9ba1b4; --faint: #6c7286;
+  --line: #2a2f3e; --line-strong: #363c4e;
+  --accent: #7d8cff; --accent-ink: #0e1130; --accent-soft: #222848; --focus: #9aa6ff;
+  --shadow: 0 1px 3px rgb(0 0 0 / .3);
+  --ok: #6cc893; --ok-bg: #173226;
+  --ask: #b3a0f2; --ask-bg: #2a2344;
+  --wait: #a9bcc6; --wait-bg: #243036;
+  --soon: #e8b458; --soon-bg: #3a2c12;
+  --late: #f08a82; --late-bg: #3d1d1b;
+  --review: #ec8fc0; --review-bg: #3b1d2d; --rej: #e0475a; --rej-ink: #1a0508;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.5 var(--sans);
+  font-feature-settings: "tnum";
+}
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; }
+h1 { font-size: 26px; line-height: 1.25; font-weight: 600; letter-spacing: -.01em; }
+h2 { font-size: 16px; }
+h3 { font-size: 14px; }
+p { margin: 0; }
+a { color: var(--accent); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.label { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+
+/* ---------- mockup switcher (не часть интерфейса) ---------- */
+.switcher {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+  padding: 6px 20px; background: var(--surface-2); color: var(--muted); font-size: 12px; border-bottom: 1px dashed var(--line-strong);
+}
+.switcher b { font-weight: 500; opacity: .7; }
+.switcher nav { display: flex; flex-wrap: wrap; gap: 4px; }
+.switcher a {
+  color: var(--muted); text-decoration: none; padding: 3px 10px; border-radius: 99px;
+  border: 1px solid transparent;
+}
+.switcher a[aria-current="page"] { border-color: var(--accent); color: var(--accent); }
+
+/* ---------- app shell ---------- */
+.topbar {
+  display: flex; flex-wrap: wrap; align-items: stretch; gap: 0 40px; min-height: 64px;
+  padding-inline: 20px; background: var(--surface); box-shadow: 0 1px 0 var(--line), var(--shadow);
+  position: relative; z-index: 1;
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 18px; letter-spacing: -.01em; }
+.brand-mark {
+  width: 30px; height: 30px; border-radius: 8px; background: var(--accent); color: var(--accent-ink);
+  display: grid; place-items: center; font: 700 12px var(--sans);
+}
+.topnav { display: flex; flex-wrap: wrap; gap: 28px; }
+.topnav a {
+  display: flex; align-items: center; color: var(--ink); text-decoration: none; font-weight: 500; font-size: 13px;
+  border-bottom: 2px solid transparent; padding-top: 2px;
+}
+.topnav a:hover { color: var(--accent); }
+.topnav a[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); }
+.topnav a.dd::after { content: ""; width: 6px; height: 6px; margin-left: 7px; margin-top: -3px; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); opacity: .6; }
+.user { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.user-text { display: grid; line-height: 1.25; }
+.user-role { font-size: 10px; color: var(--muted); }
+.user-name { font-size: 12px; font-weight: 600; }
+.avatar {
+  width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-ink);
+  display: grid; place-items: center; font-size: 11px; font-weight: 700;
+}
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 8px; border: 0; background: var(--surface-2); color: var(--muted);
+  display: grid; place-items: center; font-size: 15px;
+}
+main { max-width: 1680px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 48px; display: grid; gap: 20px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 16px; border-radius: var(--radius); border: 1px solid var(--line-strong);
+  background: var(--surface); cursor: pointer; font-weight: 600; font-size: 13px; text-decoration: none; color: var(--ink);
+  white-space: nowrap;
+}
+.btn:hover { border-color: var(--muted); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { filter: brightness(1.08); border-color: var(--accent); }
+.btn-sm { padding: 4px 10px; font-size: 13px; }
+.btn-danger { color: var(--rej); border-color: var(--rej); }
+.btn-danger:hover { background: var(--rej); color: var(--rej-ink); border-color: var(--rej); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.field { display: grid; gap: 6px; }
+.field > span { font-weight: 500; }
+.input, .select {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius); font-size: 13px;
+  background: var(--surface);
+}
+.hint { font-size: 12px; color: var(--muted); }
+
+/* ---------- status pills ---------- */
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 99px;
+  font-size: 12px; font-weight: 500; white-space: nowrap; line-height: 1.5;
+}
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.s-ok     { color: var(--ok);     background: var(--ok-bg); }
+.s-ask    { color: var(--ask);    background: var(--ask-bg); }
+.s-wait   { color: var(--wait);   background: var(--wait-bg); }
+.s-soon   { color: var(--soon);   background: var(--soon-bg); }
+.s-late   { color: var(--late);   background: var(--late-bg); }
+.s-review { color: var(--review); background: var(--review-bg); }
+.s-rej    { color: var(--rej-ink); background: var(--rej); font-weight: 600; }
+.s-rej::before { content: "✕"; width: auto; height: auto; background: none; font-size: 10px; line-height: 1; }
+.s-review::before { border-radius: 1px; transform: rotate(45deg); }
+
+/* ---------- board ---------- */
+.page-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+.page-head .sub { color: var(--muted); margin-top: 2px; }
+.filters {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: end;
+}
+.filters .field { min-width: 150px; flex: 1 1 150px; }
+.filters .field > span { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+
+.summary { display: flex; flex-wrap: wrap; gap: 8px; }
+.summary a {
+  display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px 6px 8px;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+  text-decoration: none; color: var(--ink);
+}
+.summary .n { font: 500 13px var(--mono); }
+
+.board-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+table.board { border-collapse: collapse; width: 100%; min-width: 980px; }
+.board th, .board td { border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); vertical-align: top; text-align: left; }
+.board th:last-child, .board td:last-child { border-right: 0; }
+.board tbody tr:last-child td, .board tbody tr:last-child th { border-bottom: 0; }
+.board thead th { padding: 10px 12px; background: var(--surface-2); font-weight: 600; font-size: 12px; }
+.board thead th:first-child, .tbl thead th { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.board thead .set { display: block; font-weight: 600; }
+.board thead .set-meta { display: block; font-size: 11px; font-weight: 500; color: var(--muted); }
+.board thead a.sarex { font-size: 12px; }
+.board tbody th { padding: 12px; width: 150px; background: var(--surface); }
+.board tbody th .corp { display: block; font-weight: 600; }
+.board tbody th .corp-meta { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
+.board td { padding: 6px; }
+.cell { display: grid; gap: 4px; }
+.n-item {
+  display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center;
+  padding: 6px 8px; border-radius: 4px; text-decoration: none; color: var(--ink);
+  border-left: 3px solid var(--st, var(--line-strong));
+}
+.n-item:hover { background: var(--surface-2); }
+.n-item .who { font-size: 13px; flex: 1 1 100%; }
+.n-item .days { font: 12px var(--mono); color: var(--muted); flex: 1 1 96px; display: flex; gap: 8px; align-items: center; white-space: nowrap; }
+.bar { flex: 1; height: 4px; border-radius: 2px; background: var(--line); position: relative; overflow: hidden; }
+.bar i { position: absolute; inset: 0 auto 0 0; background: var(--st); border-radius: 2px; }
+.n-item.ok { --st: var(--ok); } .n-item.ask { --st: var(--ask); } .n-item.wait { --st: var(--wait); }
+.n-item.soon { --st: var(--soon); } .n-item.late { --st: var(--late); } .n-item.review { --st: var(--review); } .n-item.rej { --st: var(--rej); }
+.n-item.review { background: repeating-linear-gradient(135deg, transparent 0 6px, var(--review-bg) 6px 12px); }
+.empty-cell { display: grid; place-items: center; min-height: 52px; color: var(--faint); font-size: 12px; }
+.cell-sum > summary {
+  list-style: none; cursor: pointer; display: grid; gap: 6px; padding: 8px; border-radius: 4px;
+}
+.cell-sum > summary::-webkit-details-marker { display: none; }
+.cell-sum > summary:hover { background: var(--surface-2); }
+.sum-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 8px; }
+.sum-count { font-size: 13px; }
+.sum-count b { font-weight: 500; }
+.seg { display: flex; gap: 2px; height: 6px; }
+.seg i { flex: 1; border-radius: 2px; }
+.seg .ok { background: var(--ok); } .seg .ask { background: var(--ask); } .seg .wait { background: var(--line-strong); }
+.seg .soon { background: var(--soon); } .seg .late { background: var(--late); } .seg .review { background: var(--review); } .seg .rej { background: var(--rej); }
+.sum-more { font-size: 12px; color: var(--accent); }
+.sum-more::after { content: " ▾"; }
+.cell-sum[open] .sum-more::after { content: " ▴"; }
+.cell-sum .list { display: grid; gap: 4px; padding: 2px 0 4px; border-top: 1px dashed var(--line); margin-top: 2px; }
+.n-item.off { color: var(--faint); border-left-color: var(--line); }
+.n-item.off .days { color: var(--faint); }
+.empty-cell a { color: var(--muted); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--muted); align-items: center; }
+
+/* ---------- send form ---------- */
+.two-col { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+.panel-head { padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.panel-body { padding: 16px; display: grid; gap: 18px; }
+.steps { display: grid; gap: 18px; }
+.step { display: grid; grid-template-columns: 26px 1fr; gap: 12px; }
+.step-no {
+  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid var(--line-strong); font: 500 12px var(--mono); color: var(--muted);
+}
+.step.done .step-no { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.checklist { display: grid; gap: 6px; }
+.check {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
+  padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+}
+.check:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.check small { color: var(--muted); display: block; }
+.warn-note { font-size: 12px; color: var(--soon); }
+.form-foot { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 14px 16px; border-top: 1px solid var(--line); }
+
+.mail { font-size: 13px; }
+.mail-meta { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.mail-meta dt { color: var(--muted); }
+.mail-meta dd { margin: 0; overflow-wrap: anywhere; }
+.mail-body { padding: 16px; display: grid; gap: 12px; max-width: 62ch; }
+.mail-body .mail-btn { justify-self: start; }
+.mail-note { display: grid; gap: 4px; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 4px 4px 0; white-space: pre-wrap; }
+textarea.input { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+/* ---------- card ---------- */
+.crumbs { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px; }
+.crumbs a { color: var(--muted); }
+.card-head { display: grid; gap: 10px; }
+.card-title { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.fact { background: var(--surface); padding: 10px 12px; display: grid; gap: 2px; }
+.fact .v { font-weight: 500; overflow-wrap: anywhere; }
+
+.review-box {
+  border: 1px solid var(--review); border-radius: var(--radius); background: var(--surface);
+  display: grid; gap: 12px; padding: 16px;
+}
+.review-box .head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.conf { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.conf .bar { width: 140px; flex: none; height: 6px; }
+.conf .bar i { background: var(--review); }
+.conf .bar .thr { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); left: 70%; }
+.reason { padding: 10px 12px; background: var(--surface-2); border-radius: 4px; color: var(--muted); font-size: 13px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; }
+.ev { display: grid; grid-template-columns: 116px 18px 1fr; gap: 0 12px; }
+.ev-time { font: 12px var(--mono); color: var(--muted); padding-top: 12px; text-align: right; }
+.ev-rail { position: relative; }
+.ev-rail::before { content: ""; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--line); }
+.ev:first-child .ev-rail::before { top: 16px; }
+.ev:last-child .ev-rail::before { bottom: calc(100% - 16px); }
+.ev-rail::after {
+  content: ""; position: absolute; left: 3px; top: 12px; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--dot, var(--line-strong));
+}
+.ev-body { padding-block: 10px; display: grid; gap: 6px; min-width: 0; }
+.ev-title { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-weight: 500; }
+.chan { font: 500 11px var(--sans); color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 0 5px; }
+details.raw { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+details.raw summary { cursor: pointer; padding: 6px 10px; font-size: 13px; color: var(--accent); }
+details.raw pre {
+  margin: 0; padding: 12px; border-top: 1px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere;
+  font: 12.5px/1.55 var(--code); color: var(--ink); background: var(--surface-2);
+}
+
+/* ---------- login ---------- */
+.login-wrap { min-height: 70vh; display: grid; place-items: center; }
+.login { width: 100%; max-width: 380px; display: grid; gap: 16px; padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.login .brand { margin-bottom: 4px; }
+.err { font-size: 13px; color: var(--late); background: var(--late-bg); padding: 8px 10px; border-radius: 4px; }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: var(--radius); font-size: 13px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / .18);
+}
+
+.note-mock { font-size: 12px; color: var(--faint); }
+
+/* ---------- справочники ---------- */
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line); }
+.tabs button {
+  border: 0; background: none; padding: 8px 12px; margin-bottom: -1px; cursor: pointer;
+  color: var(--muted); font-weight: 500; border-bottom: 2px solid transparent;
+}
+.tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tabs .n { font: 12px var(--mono); color: var(--faint); margin-left: 4px; }
+.refs-grid { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.obj-list { display: grid; gap: 6px; }
+.obj {
+  display: grid; gap: 2px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); text-align: left; cursor: pointer; width: 100%;
+}
+.obj[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.obj .t { font-weight: 600; }
+.obj .m { font-size: 12px; color: var(--muted); }
+.obj.archived .t { color: var(--muted); }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+.form-grid .wide { grid-column: 1 / -1; }
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.switch input { width: 34px; height: 20px; accent-color: var(--accent); }
+.sub-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+table.tbl { border-collapse: collapse; width: 100%; }
+.tbl th, .tbl td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+.tbl thead th { background: var(--surface-2); font-weight: 600; white-space: nowrap; padding-block: 12px; }
+.tbl tbody tr:last-child td { border-bottom: 0; }
+.tbl td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.tbl .row-actions { text-align: right; white-space: nowrap; }
+.tbl tr.off td { color: var(--faint); }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--accent); cursor: pointer; text-decoration: underline; font-size: 13px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 10px; border: 1px solid var(--line-strong);
+  border-radius: 99px; font-size: 13px; background: var(--surface);
+}
+.chip button { border: 0; background: none; cursor: pointer; color: var(--muted); width: 20px; height: 20px; border-radius: 50%; line-height: 1; }
+.chip button:hover { background: var(--surface-2); color: var(--ink); }
+.add-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.add-row .input, .add-row .select { flex: 1 1 200px; width: auto; }
+.tg-yes { color: var(--ok); } .tg-no { color: var(--faint); }
+.bounce { display: block; font-size: 12px; color: var(--late); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.toolbar .input { max-width: 320px; }
+.cal-note { padding: 10px 12px; background: var(--surface-2); border-radius: 4px; font-size: 13px; color: var(--muted); max-width: 80ch; }
+
+@media (max-width: 860px) {
+  .two-col, .refs-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .user-text { display: none; }
+}
+@media (max-width: 560px) {
+  .ev { grid-template-columns: 18px 1fr; }
+  .ev-time { grid-column: 2; grid-row: 1; text-align: left; padding-top: 10px; }
+  .ev-rail { grid-column: 1; grid-row: 1 / span 2; }
+  .ev-body { grid-column: 2; padding-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="switcher" role="navigation" aria-label="Экраны макета">
+  <b>Макет · экраны:</b>
+  <nav>
+    <a href="#board">CRM-доска (7.1)</a>
+    <a href="#send">Отправка (7.2)</a>
+    <a href="#card">Карточка уведомления (7.3)</a>
+    <a href="#refs">Справочники</a>
+    <a href="#login">Вход</a>
+  </nav>
+</div>
+
+<!-- ======================= 7.1 CRM-доска ======================= -->
+<section id="board" data-screen>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+    <nav class="topnav">
+      <a href="#board" aria-current="page">Доска</a>
+      <a href="#send">Отправить уведомление</a>
+      <a href="#refs" class="dd">Справочники</a>
+    </nav>
+    <div class="user"><div class="avatar">АС</div><div class="user-text"><span class="user-role">Координатор ДП</span><span class="user-name">Анна Смирнова</span></div><span class="icon-btn" title="Выйти" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H6"/><path d="M10.5 11 13.5 8l-3-3"/><path d="M13.5 8H6.5"/></svg></span></div>
+  </header>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>ЖК «Северная долина», 3-я очередь</h1>
+        <p class="sub">4 корпуса · 5 подрядчиков · 59 уведомлений · на 26.09.2026</p>
+      </div>
+      <a class="btn btn-primary" href="#send">+ Отправить уведомление</a>
+    </div>
+
+    <form class="filters" aria-label="Фильтры доски">
+      <label class="field"><span>Проект</span>
+        <select class="select" id="f-project"><option>ЖК «Северная долина», 3-я очередь</option><option>ЖК «Речной квартал»</option></select></label>
+      <label class="field"><span>Корпус</span>
+        <select class="select" id="f-corpus"><option>Все корпуса</option><option>Корпус 1</option><option>Корпус 2</option></select></label>
+      <label class="field"><span>Подрядчик</span>
+        <select class="select" id="f-contractor"><option>Все подрядчики</option><option>ООО «СтройМонолит»</option></select></label>
+      <label class="field"><span>Статус</span>
+        <select class="select" id="f-status"><option>Все статусы</option><option>Требует проверки</option><option>Просрочено</option></select></label>
+      <label class="field"><span>Канал</span>
+        <select class="select" id="f-channel"><option>Email и Telegram</option><option>Email</option><option>Telegram</option></select></label>
+    </form>
+
+    <div class="summary" aria-label="Сводка по статусам">
+      <a href="#board"><span class="pill s-rej">Не принята</span><span class="n">1</span></a>
+      <a href="#board"><span class="pill s-review">Требует проверки</span><span class="n">1</span></a>
+      <a href="#board"><span class="pill s-late">Просрочено</span><span class="n">1</span></a>
+      <a href="#board"><span class="pill s-soon">Срок истекает</span><span class="n">3</span></a>
+      <a href="#board"><span class="pill s-ask">Есть вопросы</span><span class="n">3</span></a>
+      <a href="#board"><span class="pill s-wait">Ожидание, в срок</span><span class="n">8</span></a>
+      <a href="#board"><span class="pill s-ok">Ознакомлен</span><span class="n">42</span></a>
+    </div>
+
+    <div class="board-wrap">
+      <table class="board">
+        <thead>
+          <tr>
+            <th scope="col">Корпус</th>
+            <th scope="col"><span class="set">АР</span><span class="set-meta">изм. 3 · 02.09</span><a class="sarex" href="#board">Открыть в Sarex ↗</a></th>
+            <th scope="col"><span class="set">КЖ.1</span><span class="set-meta">изм. 2 · 11.09</span><a class="sarex" href="#board">Открыть в Sarex ↗</a></th>
+            <th scope="col"><span class="set">ОВ</span><span class="set-meta">изм. 1 · 15.09</span><a class="sarex" href="#board">Открыть в Sarex ↗</a></th>
+            <th scope="col"><span class="set">ВК</span><span class="set-meta">изм. 1 · 18.09</span><a class="sarex" href="#board">Открыть в Sarex ↗</a></th>
+            <th scope="col"><span class="set">ЭОМ</span><span class="set-meta">изм. 0 · 23.09</span><a class="sarex" href="#board">Открыть в Sarex ↗</a></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><span class="corp">Корпус 1</span><span class="corp-meta">секции 1–3</span></th>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">4 из 5</b></span><span class="pill s-late">Эскалировано</span></span><span class="seg"><i class="late"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
+              <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">03.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ok">Ознакомлен</span><span class="days">04.09 · за 2 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">03.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-ok">Ознакомлен</span><span class="days">07.09 · за 3 р.д.</span></a><a class="n-item late" href="#card"><span class="who">ФасадПро</span><span class="pill s-late">Эскалировано</span><span class="days">17 р.д. без ответа</span></a></div></details></td>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">5 из 5</b></span><span class="pill s-ok">Все ознакомлены</span></span><span class="seg"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
+              <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">14.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ok">Ознакомлен</span><span class="days">14.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">15.09 · за 2 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-ok">Ознакомлен</span><span class="days">14.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ФасадПро</span><span class="pill s-ok">Ознакомлен</span><span class="days">17.09 · за 4 р.д.</span></a></div></details></td>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">3 из 5</b></span><span class="pill s-rej">Не принята</span></span><span class="seg"><i class="rej"></i><i class="ask"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
+              <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">17.09 · за 2 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ok">Ознакомлен</span><span class="days">17.09 · за 2 р.д.</span></a><a class="n-item ask" href="#card"><span class="who">АкваИнж</span><span class="pill s-ask">Вопросы</span><span class="days">ответ 18.09</span></a><a class="n-item ok" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-ok">Ознакомлен</span><span class="days">16.09 · за 1 р.д.</span></a><a class="n-item rej" href="#card"><span class="who">ФасадПро</span><span class="pill s-rej">Не принята</span><span class="days">ответ 23.09</span></a></div></details></td>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">2 из 4</b></span><span class="pill s-soon">Истекает ×2</span></span><span class="seg"><i class="soon"></i><i class="soon"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">4 подрядчиков · 1 исключён</span></summary>
+              <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">21.09 · за 1 р.д.</span></a><a class="n-item soon" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-soon">Истекает</span><span class="days">5 из 10 р.д.<span class="bar"><i style="width:50%"></i></span></span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">22.09 · за 2 р.д.</span></a><a class="n-item soon" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-soon">Истекает</span><span class="days">5 из 10 р.д.<span class="bar"><i style="width:50%"></i></span></span></a><span class="n-item off"><span class="who">ФасадПро</span><span class="days">исключён из рассылки</span></span></div></details></td>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">1 из 5</b></span><span class="pill s-wait">Ожидание ×4</span></span><span class="seg"><i class="wait"></i><i class="wait"></i><i class="wait"></i><i class="wait"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
+              <div class="list"><a class="n-item wait" href="#card"><span class="who">СтройМонолит</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><a class="n-item wait" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">24.09 · за 1 р.д.</span></a><a class="n-item wait" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><a class="n-item wait" href="#card"><span class="who">ФасадПро</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a></div></details></td>
+          </tr>
+          <tr>
+            <th scope="row"><span class="corp">Корпус 2</span><span class="corp-meta">секции 4–5</span></th>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">5 из 5</b></span><span class="pill s-ok">Все ознакомлены</span></span><span class="seg"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
+              <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">04.09 · за 2 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ok">Ознакомлен</span><span class="days">03.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">03.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-ok">Ознакомлен</span><span class="days">04.09 · за 2 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ФасадПро</span><span class="pill s-ok">Ознакомлен</span><span class="days">07.09 · за 3 р.д.</span></a></div></details></td>
+            <td><details class="cell-sum" open><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">4 из 5</b></span><span class="pill s-review">Проверить</span></span><span class="seg"><i class="review"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
+              <div class="list"><a class="n-item review" href="#card"><span class="who">СтройМонолит</span><span class="pill s-review">Проверить</span><span class="days">10 из 10 р.д.<span class="bar"><i style="width:100%"></i></span></span></a><a class="n-item ok" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ok">Ознакомлен</span><span class="days">14.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">15.09 · за 2 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-ok">Ознакомлен</span><span class="days">14.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ФасадПро</span><span class="pill s-ok">Ознакомлен</span><span class="days">15.09 · за 2 р.д.</span></a></div></details></td>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">4 из 5</b></span><span class="pill s-ask">Вопросы</span></span><span class="seg"><i class="ask"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
+              <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">16.09 · за 1 р.д.</span></a><a class="n-item ask" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ask">Вопросы</span><span class="days">ответ 21.09</span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">16.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-ok">Ознакомлен</span><span class="days">17.09 · за 2 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ФасадПро</span><span class="pill s-ok">Ознакомлен</span><span class="days">16.09 · за 1 р.д.</span></a></div></details></td>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">4 из 5</b></span><span class="pill s-soon">Истекает</span></span><span class="seg"><i class="soon"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
+              <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">21.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ok">Ознакомлен</span><span class="days">22.09 · за 2 р.д.</span></a><a class="n-item soon" href="#card"><span class="who">АкваИнж</span><span class="pill s-soon">Истекает</span><span class="days">5 из 10 р.д.<span class="bar"><i style="width:50%"></i></span></span></a><a class="n-item ok" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-ok">Ознакомлен</span><span class="days">21.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ФасадПро</span><span class="pill s-ok">Ознакомлен</span><span class="days">23.09 · за 3 р.д.</span></a></div></details></td>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+          </tr>
+          <tr>
+            <th scope="row"><span class="corp">Корпус 3</span><span class="corp-meta">секции 6–8</span></th>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">4 из 5</b></span><span class="pill s-ask">Вопросы</span></span><span class="seg"><i class="ask"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
+              <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">03.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ok">Ознакомлен</span><span class="days">03.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">04.09 · за 2 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-ok">Ознакомлен</span><span class="days">03.09 · за 1 р.д.</span></a><a class="n-item ask" href="#card"><span class="who">ФасадПро</span><span class="pill s-ask">Вопросы</span><span class="days">ответ 04.09</span></a></div></details></td>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">5 из 5</b></span><span class="pill s-ok">Все ознакомлены</span></span><span class="seg"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
+              <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">16.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ok">Ознакомлен</span><span class="days">18.09 · за 3 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">17.09 · за 2 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-ok">Ознакомлен</span><span class="days">16.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ФасадПро</span><span class="pill s-ok">Ознакомлен</span><span class="days">16.09 · за 1 р.д.</span></a></div></details></td>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">1 из 5</b></span><span class="pill s-wait">Ожидание ×4</span></span><span class="seg"><i class="wait"></i><i class="wait"></i><i class="wait"></i><i class="wait"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
+              <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">24.09 · за 1 р.д.</span></a><a class="n-item wait" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><a class="n-item wait" href="#card"><span class="who">АкваИнж</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><a class="n-item wait" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><a class="n-item wait" href="#card"><span class="who">ФасадПро</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a></div></details></td>
+          </tr>
+          <tr>
+            <th scope="row"><span class="corp">Корпус 4</span><span class="corp-meta">паркинг</span></th>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="legend">
+      <span class="label">Обозначения</span>
+      <span class="pill s-ok">Ознакомлен</span>
+      <span class="pill s-ask">Есть вопросы</span>
+      <span class="pill s-rej">Не принята: письмо инициатору и РП</span>
+      <span class="pill s-wait">Ожидание, в срок</span>
+      <span class="pill s-soon">Истекает: осталось 5 р.д. или меньше</span>
+      <span class="pill s-late">Просрочено / эскалировано РП</span>
+      <span class="pill s-review">Требует ручной проверки (ИИ не уверен)</span>
+    </div>
+  </main>
+</section>
+
+<!-- ======================= 7.2 Форма отправки ======================= -->
+<section id="send" data-screen hidden>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+    <nav class="topnav">
+      <a href="#board">Доска</a>
+      <a href="#send" aria-current="page">Отправить уведомление</a>
+      <a href="#refs" class="dd">Справочники</a>
+    </nav>
+    <div class="user"><div class="avatar">АС</div><div class="user-text"><span class="user-role">Координатор ДП</span><span class="user-name">Анна Смирнова</span></div><span class="icon-btn" title="Выйти" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H6"/><path d="M10.5 11 13.5 8l-3-3"/><path d="M13.5 8H6.5"/></svg></span></div>
+  </header>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Отправить уведомление подрядчикам проекта</h1>
+        <p class="sub">Каждый подрядчик получит отдельное письмо со ссылкой на РД и кнопкой «Подтверждаю ознакомление» и подтверждает ознакомление сам за себя.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <form class="panel" id="send-form" aria-label="Параметры уведомления">
+        <div class="panel-body steps">
+          <div class="step done">
+            <span class="step-no">1</span>
+            <label class="field"><span>Проект</span>
+              <select class="select" id="s-project"><option>ЖК «Северная долина», 3-я очередь</option><option>ЖК «Речной квартал»</option></select></label>
+          </div>
+          <div class="step done">
+            <span class="step-no">2</span>
+            <label class="field"><span>Корпус</span>
+              <select class="select" id="s-corpus"><option>Корпус 2 (секции 4–5)</option><option>Корпус 1 (секции 1–3)</option><option>Корпус 3 (секции 6–8)</option><option>Корпус 4 (паркинг)</option></select></label>
+          </div>
+          <div class="step done">
+            <span class="step-no">3</span>
+            <div class="field">
+              <label for="s-link"><span style="font-weight:500">Ссылка на РД в Sarex</span></label>
+              <input class="input mono" id="s-link" type="url" value="https://sarex.example.ru/project/sd-3/docs/EOM-rev0">
+              <span class="hint">Комплект определится по ссылке: <b>ЭОМ, изм. 0</b></span>
+              <span class="warn-note">По корпусу 2 этот комплект ещё никому не отправлялся.</span>
+            </div>
+          </div>
+          <div class="step done">
+            <span class="step-no">4</span>
+            <div class="field">
+              <label for="s-message"><span style="font-weight:500">Сопроводительное сообщение</span> <span class="muted">(необязательно)</span></label>
+              <textarea class="input" id="s-message" rows="4">В изм. 0 выпущены планы сетей освещения и силового оборудования секций 4–5. Обратите внимание на листы 12–14: изменена трасса кабеля в осях 1–3.</textarea>
+              <span class="hint">Попадёт в письмо и в напоминания, одинаково для всех получателей.</span>
+            </div>
+          </div>
+          <div class="step done">
+            <span class="step-no">5</span>
+            <div class="field">
+              <span>Получатели: все подрядчики проекта</span>
+              <span class="hint">Уведомление получат все подрядчики, привязанные к проекту, независимо от договора и вида работ. Снимите галочку, чтобы исключить подрядчика из этой рассылки.</span>
+              <div class="checklist">
+                <label class="check"><input type="checkbox" id="c-1" checked><span>ООО «СтройМонолит»<small>pto@stroymonolit.ru</small></span><span class="chan">email + tg</span></label>
+                <label class="check"><input type="checkbox" id="c-2" checked><span>ООО «ТеплоМонтаж»<small>info@teplomontazh.ru</small></span><span class="chan">email</span></label>
+                <label class="check"><input type="checkbox" id="c-3" checked><span>ООО «АкваИнж»<small>pto@akvainzh.ru</small></span><span class="chan">email</span></label>
+                <label class="check"><input type="checkbox" id="c-4" checked><span>ООО «ЭлектроСети-Сервис»<small>eom@es-service.ru</small></span><span class="chan">email</span></label>
+                <label class="check"><input type="checkbox" id="c-5" checked><span>ООО «ФасадПро»<small>tender@fasadpro.ru</small></span><span class="chan">email + tg</span></label>
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="step-no">6</span>
+            <div class="field">
+              <span>Срок ответа</span>
+              <p class="mono">10 рабочих дней · до 09.10.2026</p>
+              <span class="hint">Напоминания уйдут на 1-й и 3-й рабочий день, эскалация РП — после 10-го.</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-foot">
+          <span class="muted" id="s-count">5 из 5 подрядчиков проекта</span>
+          <button class="btn btn-primary" type="submit" id="s-submit">Отправить уведомления: 5</button>
+        </div>
+      </form>
+
+      <section class="panel mail" aria-label="Предпросмотр письма">
+        <div class="panel-head"><h2>Предпросмотр письма</h2><span class="label">для ООО «ЭлектроСети-Сервис»</span></div>
+        <dl class="mail-meta">
+          <dt>Кому</dt><dd>eom@es-service.ru</dd>
+          <dt>Тема</dt><dd>РД ЭОМ изм. 0 · ЖК «Северная долина», корпус 2 · подтвердите ознакомление</dd>
+          <dt>Ответ на</dt><dd class="mono">rd+7f3a19@notify.company-domain.ru</dd>
+        </dl>
+        <div class="mail-body">
+          <p>Добрый день!</p>
+          <p>Выпущен комплект рабочей документации <b>ЭОМ, изм. 0</b> по проекту ЖК «Северная долина», 3-я очередь, корпус 2.</p>
+          <p>Документация: <a href="#send">sarex.example.ru/project/sd-3/docs/EOM-rev0</a></p>
+          <div class="mail-note" id="prev-message-box"><span class="label">Сообщение координатора</span><p id="prev-message">В изм. 0 выпущены планы сетей освещения и силового оборудования секций 4–5. Обратите внимание на листы 12–14: изменена трасса кабеля в осях 1–3.</p></div>
+          <p>Пожалуйста, подтвердите ознакомление до <b>09.10.2026</b>.</p>
+          <span class="btn btn-primary mail-btn">Подтверждаю ознакомление</span>
+          <p class="muted">Если есть вопросы или замечания по документации, просто ответьте на это письмо — ответ получит координатор.</p>
+          <p class="muted">Смирнова Анна, координатор ДП</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</section>
+
+<!-- ======================= 7.3 Карточка уведомления ======================= -->
+<section id="card" data-screen hidden>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+    <nav class="topnav">
+      <a href="#board" aria-current="page">Доска</a>
+      <a href="#send">Отправить уведомление</a>
+      <a href="#refs" class="dd">Справочники</a>
+    </nav>
+    <div class="user"><div class="avatar">АС</div><div class="user-text"><span class="user-role">Координатор ДП</span><span class="user-name">Анна Смирнова</span></div><span class="icon-btn" title="Выйти" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H6"/><path d="M10.5 11 13.5 8l-3-3"/><path d="M13.5 8H6.5"/></svg></span></div>
+  </header>
+  <main>
+    <div class="card-head">
+      <nav class="crumbs" aria-label="Путь"><a href="#board">Доска</a><span>/</span><span>ЖК «Северная долина», 3-я очередь</span><span>/</span><span>Корпус 2</span></nav>
+      <div class="card-title">
+        <h1>КЖ.1 изм. 2 → ООО «СтройМонолит»</h1>
+        <span class="pill s-review">Требует ручной проверки</span>
+      </div>
+    </div>
+
+    <div class="facts">
+      <div class="fact"><span class="label">Отправлено</span><span class="v mono">11.09.2026 10:14</span></div>
+      <div class="fact"><span class="label">Срок ответа</span><span class="v mono">25.09.2026 · 10 из 10 р.д.</span></div>
+      <div class="fact"><span class="label">Напоминания</span><span class="v">2 из 2 · последнее 16.09</span></div>
+      <div class="fact"><span class="label">Рассылка</span><span class="v">5 подрядчиков · ознакомлены 4</span></div>
+      <div class="fact"><span class="label">Канал</span><span class="v">Email</span></div>
+      <div class="fact"><span class="label">Подрядчик</span><span class="v">pto@stroymonolit.ru</span></div>
+      <div class="fact"><span class="label">Инициатор</span><span class="v">Смирнова А. В.</span></div>
+      <div class="fact"><span class="label">Документация</span><span class="v"><a href="#card">Открыть в Sarex ↗</a></span></div>
+    </div>
+
+    <section class="review-box" aria-label="Решение по ответу">
+      <div class="head">
+        <h2>ИИ не смог уверенно классифицировать ответ</h2>
+        <span class="pill s-review">unclear</span>
+        <div class="conf"><span class="muted">Уверенность</span><span class="bar" title="Порог 0,70"><i style="width:54%"></i><span class="thr"></span></span><span class="mono">0,54 · порог 0,70</span></div>
+      </div>
+      <p class="reason"><b>Обоснование модели:</b> подрядчик подтверждает получение и передачу на участок, но упоминает, что по узлу 4 «уточнит позже». Это может быть и подтверждением, и будущим вопросом.</p>
+      <div class="actions">
+        <span class="label" style="align-self:center">Как засчитать ответ:</span>
+        <button class="btn btn-sm" type="button" data-toast="Ответ засчитан как подтверждение. Статус: «Ознакомлен».">Ознакомлен</button>
+        <button class="btn btn-sm" type="button" data-toast="Ответ засчитан как вопрос. Статус: «Есть вопросы».">Вопрос</button>
+        <button class="btn btn-sm" type="button" data-toast="Ответ засчитан как замечание. Статус: «Есть вопросы».">Замечание</button>
+        <button class="btn btn-sm btn-danger" type="button" data-toast="Статус: «Не принята». Письмо ушло инициатору (Смирнова А. В.) и РП (i.petrov@company-domain.ru).">Не принята</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="История">
+      <div class="panel-head"><h2>История</h2><span class="muted">6 событий · email и Telegram вместе, по времени</span></div>
+      <div class="panel-body">
+        <ol class="timeline">
+          <li class="ev" style="--dot: var(--accent)">
+            <span class="ev-time">11.09 10:14</span><span class="ev-rail"></span>
+            <div class="ev-body">
+              <div class="ev-title">Отправлено уведомление <span class="chan">email</span></div>
+              <p class="muted">Смирнова А. В. → pto@stroymonolit.ru</p>
+              <details class="raw"><summary>Показать письмо</summary><pre>Тема: РД КЖ.1 изм. 2 · ЖК «Северная долина», корпус 2 · подтвердите ознакомление
+Кому: pto@stroymonolit.ru
+
+Добрый день!
+
+Выпущен комплект рабочей документации КЖ.1, изм. 2 по проекту
+ЖК «Северная долина», 3-я очередь, корпус 2.
+
+Документация: https://sarex.example.ru/project/sd-3/docs/KZH1-rev2
+
+Сообщение координатора:
+В изм. 2 изменено армирование плиты перекрытия на отм. +6.600
+(узлы 3–5). Прошу проверить до начала вязки арматуры на 3-м этаже.
+
+Пожалуйста, подтвердите ознакомление до 25.09.2026.
+[Подтверждаю ознакомление]</pre></details>
+            </div>
+          </li>
+          <li class="ev">
+            <span class="ev-time">14.09 09:00</span><span class="ev-rail"></span>
+            <div class="ev-body">
+              <div class="ev-title">Напоминание, 1-й р.д. <span class="chan">email</span></div>
+              <details class="raw"><summary>Показать письмо</summary><pre>Тема: Повторно: РД КЖ.1 изм. 2 · корпус 2 · подтвердите ознакомление
+
+Добрый день! Напоминаем о необходимости подтвердить ознакомление
+с комплектом КЖ.1, изм. 2. Срок — 25.09.2026.</pre></details>
+            </div>
+          </li>
+          <li class="ev">
+            <span class="ev-time">16.09 09:00</span><span class="ev-rail"></span>
+            <div class="ev-body">
+              <div class="ev-title">Напоминание, 3-й р.д. <span class="chan">email</span></div>
+              <details class="raw"><summary>Показать письмо</summary><pre>Тема: Повторно: РД КЖ.1 изм. 2 · корпус 2 · подтвердите ознакомление
+
+Добрый день! Это второе напоминание. Срок подтверждения — 25.09.2026.</pre></details>
+            </div>
+          </li>
+          <li class="ev" style="--dot: var(--review)">
+            <span class="ev-time">23.09 17:42</span><span class="ev-rail"></span>
+            <div class="ev-body">
+              <div class="ev-title">Ответ подрядчика <span class="chan">email</span><span class="pill s-review">unclear · 0,54</span></div>
+              <p class="muted">Шевчук Д. О., ПТО ООО «СтройМонолит»</p>
+              <details class="raw" open><summary>Скрыть исходный текст</summary><pre>Добрый день.
+Документацию получили, передали на участок.
+По узлу 4 (сопряжение плиты с колонной в осях 3–4/Б) уточним позже,
+сейчас смотрим с прорабом.
+
+--
+Шевчук Дмитрий, инженер ПТО
+ООО «СтройМонолит»</pre></details>
+            </div>
+          </li>
+          <li class="ev" style="--dot: var(--review)">
+            <span class="ev-time">23.09 17:42</span><span class="ev-rail"></span>
+            <div class="ev-body">
+              <div class="ev-title">Помечено для ручной проверки</div>
+              <p class="muted">Уверенность ниже порога 0,70, статус не изменён.</p>
+            </div>
+          </li>
+          <li class="ev" style="--dot: var(--soon)">
+            <span class="ev-time">25.09 09:00</span><span class="ev-rail"></span>
+            <div class="ev-body">
+              <div class="ev-title">Срок ответа истёк</div>
+              <p class="muted">Эскалация РП (Петров И. С.) уйдёт 28.09, если ответ не будет разобран.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+  </main>
+</section>
+
+<!-- ======================= Справочники ======================= -->
+<section id="refs" data-screen hidden>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+    <nav class="topnav">
+      <a href="#board">Доска</a>
+      <a href="#send">Отправить уведомление</a>
+      <a href="#refs" class="dd" aria-current="page">Справочники</a>
+    </nav>
+    <div class="user"><div class="avatar">ПК</div><div class="user-text"><span class="user-role">Администратор</span><span class="user-name">Павел Кузнецов</span></div><span class="icon-btn" title="Выйти" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H6"/><path d="M10.5 11 13.5 8l-3-3"/><path d="M13.5 8H6.5"/></svg></span></div>
+  </header>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Справочники</h1>
+        <p class="sub">Изменять справочники может администратор. Координаторы видят их только для чтения.</p>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Разделы справочников">
+      <button type="button" role="tab" id="t-projects" aria-controls="p-projects" aria-selected="true">Проекты и корпуса<span class="n">3</span></button>
+      <button type="button" role="tab" id="t-contractors" aria-controls="p-contractors" aria-selected="false">Подрядчики<span class="n">6</span></button>
+      <button type="button" role="tab" id="t-users" aria-controls="p-users" aria-selected="false">Пользователи<span class="n">5</span></button>
+      <button type="button" role="tab" id="t-calendar" aria-controls="p-calendar" aria-selected="false">Производственный календарь</button>
+    </div>
+
+    <!-- Проекты и корпуса -->
+    <div role="tabpanel" id="p-projects" aria-labelledby="t-projects">
+      <div class="refs-grid">
+        <div class="obj-list">
+          <button class="btn btn-primary" type="button" data-toast="Макет: здесь откроется форма нового проекта.">+ Добавить проект</button>
+          <button class="obj" type="button" aria-current="true"><span class="t">ЖК «Северная долина», 3-я очередь</span><span class="m">4 корпуса · 5 подрядчиков · 13 уведомлений</span></button>
+          <button class="obj" type="button"><span class="t">ЖК «Речной квартал»</span><span class="m">2 корпуса · 3 подрядчика · 6 уведомлений</span></button>
+          <button class="obj archived" type="button"><span class="t">БЦ «Литейный»</span><span class="m">Неактивен · 1 корпус · 21 уведомление в истории</span></button>
+        </div>
+
+        <form class="panel" id="obj-form" aria-label="Проект">
+          <div class="panel-head"><h2>ЖК «Северная долина», 3-я очередь</h2><label class="switch"><input type="checkbox" id="p-active" checked> Активен</label></div>
+          <div class="panel-body">
+            <div class="form-grid">
+              <label class="field wide"><span>Наименование</span><input class="input" id="p-name" value="ЖК «Северная долина», 3-я очередь"></label>
+              <label class="field wide"><span>Адрес</span><input class="input" id="p-address" value="г. Санкт-Петербург, Парголово, ул. Николая Рубцова, участок 12"></label>
+              <label class="field wide"><span>Email руководителя проекта</span><input class="input" id="p-pm" type="email" value="i.petrov@company-domain.ru"><span class="hint">На этот адрес уходят эскалации после 10 р.д. без ответа.</span></label>
+            </div>
+
+            <div class="field">
+              <div class="sub-head"><h3>Корпуса</h3><span class="hint">Корпус с уведомлениями нельзя удалить, только отключить.</span></div>
+              <div class="tbl-wrap">
+                <table class="tbl">
+                  <thead><tr><th>Наименование</th><th>Уведомлений</th><th>Активен</th><th></th></tr></thead>
+                  <tbody>
+                    <tr><td>Корпус 1 · секции 1–3</td><td class="num">5</td><td><input type="checkbox" id="k-1" checked aria-label="Корпус 1 активен"></td><td class="row-actions"><button class="linkbtn" type="button">Переименовать</button></td></tr>
+                    <tr><td>Корпус 2 · секции 4–5</td><td class="num">4</td><td><input type="checkbox" id="k-2" checked aria-label="Корпус 2 активен"></td><td class="row-actions"><button class="linkbtn" type="button">Переименовать</button></td></tr>
+                    <tr><td>Корпус 3 · секции 6–8</td><td class="num">4</td><td><input type="checkbox" id="k-3" checked aria-label="Корпус 3 активен"></td><td class="row-actions"><button class="linkbtn" type="button">Переименовать</button></td></tr>
+                    <tr><td>Корпус 4 · паркинг</td><td class="num">0</td><td><input type="checkbox" id="k-4" checked aria-label="Корпус 4 активен"></td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="add-row"><input class="input" id="k-new" placeholder="Например: Корпус 5 · секции 9–10"><button class="btn" type="button" data-toast="Макет: корпус добавлен.">Добавить корпус</button></div>
+            </div>
+
+            <div class="field">
+              <div class="sub-head"><h3>Подрядчики на проекте</h3><span class="hint">Все они по умолчанию получают каждую рассылку по проекту. Договор и вид работ не учитываются.</span></div>
+              <div class="chips">
+                <span class="chip">ООО «СтройМонолит»<button type="button" aria-label="Убрать СтройМонолит">×</button></span>
+                <span class="chip">ООО «ТеплоМонтаж»<button type="button" aria-label="Убрать ТеплоМонтаж">×</button></span>
+                <span class="chip">ООО «АкваИнж»<button type="button" aria-label="Убрать АкваИнж">×</button></span>
+                <span class="chip">ООО «ЭлектроСети-Сервис»<button type="button" aria-label="Убрать ЭлектроСети-Сервис">×</button></span>
+                <span class="chip">ООО «ФасадПро»<button type="button" aria-label="Убрать ФасадПро">×</button></span>
+              </div>
+              <div class="add-row"><select class="select" id="p-add-contractor"><option>Выберите подрядчика из справочника…</option><option>ООО «ЛифтСтрой»</option></select><button class="btn" type="button" data-toast="Макет: подрядчик привязан к проекту.">Привязать</button></div>
+            </div>
+          </div>
+          <div class="form-foot"><span class="muted">Изменено 19.09.2026, Кузнецов П. Р.</span><button class="btn btn-primary" type="submit">Сохранить</button></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Подрядчики -->
+    <div role="tabpanel" id="p-contractors" aria-labelledby="t-contractors" hidden>
+      <div class="panel">
+        <div class="panel-head toolbar">
+          <input class="input" id="c-search" type="search" placeholder="Поиск по названию или email">
+          <button class="btn btn-primary" type="button" data-toast="Макет: здесь откроется форма нового подрядчика.">+ Добавить подрядчика</button>
+        </div>
+        <div class="tbl-wrap" style="border:0;border-radius:0">
+          <table class="tbl">
+            <thead><tr><th>Организация</th><th>Email для уведомлений</th><th>Telegram</th><th>Проекты</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>ООО «СтройМонолит»</td><td>pto@stroymonolit.ru</td><td class="tg-yes">Привязан</td><td>Северная долина, Речной квартал</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ТеплоМонтаж»</td><td>info@teplomontazh.ru</td><td class="tg-no">Не привязан · <button class="linkbtn" type="button" data-toast="Макет: ссылка на бота отправлена на info@teplomontazh.ru.">отправить ссылку</button></td><td>Северная долина</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «АкваИнж»</td><td>pto@akvainzh.ru<span class="bounce">Письма не доставляются с 21.09, проверьте адрес</span></td><td class="tg-no">Не привязан</td><td>Северная долина</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ЭлектроСети-Сервис»</td><td>eom@es-service.ru</td><td class="tg-no">Не привязан</td><td>Северная долина, Речной квартал</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ФасадПро»</td><td>tender@fasadpro.ru</td><td class="tg-yes">Привязан</td><td>Северная долина</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ЛифтСтрой»</td><td>office@liftstroy.ru</td><td class="tg-no">Не привязан</td><td class="muted">Не привязан к проектам</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Пользователи -->
+    <div role="tabpanel" id="p-users" aria-labelledby="t-users" hidden>
+      <div class="panel">
+        <div class="panel-head toolbar">
+          <span class="muted">Подрядчики и РП не заводятся как пользователи: они работают только через почту.</span>
+          <button class="btn btn-primary" type="button" data-toast="Макет: приглашение отправлено.">+ Пригласить пользователя</button>
+        </div>
+        <div class="tbl-wrap" style="border:0;border-radius:0">
+          <table class="tbl">
+            <thead><tr><th>ФИО</th><th>Email</th><th>Роль</th><th>Вход</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>Смирнова Анна Викторовна</td><td>a.smirnova@company-domain.ru</td><td>Координатор</td><td>Пароль</td><td class="row-actions"><button class="linkbtn" type="button" data-toast="Макет: ссылка для сброса пароля отправлена.">Сбросить пароль</button></td></tr>
+              <tr><td>Орлов Максим Андреевич</td><td>m.orlov@company-domain.ru</td><td>Координатор</td><td>Пароль</td><td class="row-actions"><button class="linkbtn" type="button" data-toast="Макет: ссылка для сброса пароля отправлена.">Сбросить пароль</button></td></tr>
+              <tr><td>Белова Екатерина Олеговна</td><td>e.belova@company-domain.ru</td><td>Координатор</td><td>Пароль</td><td class="row-actions"><button class="linkbtn" type="button" data-toast="Макет: ссылка для сброса пароля отправлена.">Сбросить пароль</button></td></tr>
+              <tr><td>Кузнецов Павел Романович</td><td>p.kuznetsov@company-domain.ru</td><td>Администратор</td><td>Пароль</td><td class="row-actions"><button class="linkbtn" type="button" data-toast="Макет: ссылка для сброса пароля отправлена.">Сбросить пароль</button></td></tr>
+              <tr class="off"><td>Григорьев Олег Викторович</td><td>o.grigoriev@company-domain.ru</td><td>Координатор</td><td>Отключён 01.08.2026</td><td class="row-actions"><button class="linkbtn" type="button" data-toast="Макет: доступ восстановлен.">Включить</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Производственный календарь -->
+    <div role="tabpanel" id="p-calendar" aria-labelledby="t-calendar" hidden>
+      <div class="panel">
+        <div class="panel-head toolbar">
+          <label class="field" style="grid-auto-flow:column;align-items:center"><span>Год</span><select class="select" id="cal-year"><option>2026</option><option>2027</option></select></label>
+          <button class="btn btn-primary" type="button" data-toast="Макет: здесь откроется форма добавления даты.">+ Добавить дату</button>
+        </div>
+        <div class="panel-body">
+          <p class="cal-note">Здесь хранятся только исключения из обычной недели. Остальные пн–пт считаются рабочими, сб и вс — выходными. От этого календаря зависят напоминания на 1-й и 3-й р.д. и эскалация после 10-го. Даты ниже — пример заполнения; перед запуском сверьте их с постановлением Правительства на 2026 год.</p>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Дата</th><th>День</th><th>Тип</th><th>Основание</th><th></th></tr></thead>
+              <tbody>
+                <tr><td class="num">01.01–08.01</td><td>чт–чт</td><td><span class="pill s-late">Выходной</span></td><td>Новогодние каникулы</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                <tr><td class="num">23.02</td><td>пн</td><td><span class="pill s-late">Выходной</span></td><td>День защитника Отечества</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                <tr><td class="num">09.03</td><td>пн</td><td><span class="pill s-late">Выходной</span></td><td>Перенос с 08.03 (вс)</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                <tr><td class="num">01.05</td><td>пт</td><td><span class="pill s-late">Выходной</span></td><td>Праздник Весны и Труда</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                <tr><td class="num">11.05</td><td>пн</td><td><span class="pill s-late">Выходной</span></td><td>Перенос с 09.05 (сб)</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                <tr><td class="num">12.06</td><td>пт</td><td><span class="pill s-late">Выходной</span></td><td>День России</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                <tr><td class="num">04.11</td><td>ср</td><td><span class="pill s-late">Выходной</span></td><td>День народного единства</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                <tr><td class="num">31.12</td><td>чт</td><td><span class="pill s-late">Выходной</span></td><td>Перенос с 03.01 (сб)</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="hint">Тип «Рабочий» используется для выходного дня, который по постановлению стал рабочим.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- ======================= Вход ======================= -->
+<section id="login" data-screen hidden>
+  <main>
+    <div class="login-wrap">
+      <form class="login" id="login-form" aria-label="Вход">
+        <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+        <div><h1>Вход</h1><p class="muted">Для координаторов ДП и администраторов</p></div>
+        <label class="field"><span>Email</span><input class="input" id="l-email" type="email" value="a.smirnova@company-domain.ru" autocomplete="username"></label>
+        <label class="field"><span>Пароль</span><input class="input" id="l-pass" type="password" value="••••••••••" autocomplete="current-password"></label>
+        <p class="err">Неверный email или пароль. Проверьте раскладку и попробуйте ещё раз.</p>
+        <button class="btn btn-primary" type="submit">Войти</button>
+        <p class="hint">Нет доступа? Напишите администратору системы.</p>
+      </form>
+    </div>
+  </main>
+</section>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function () {
+  var screens = Array.prototype.slice.call(document.querySelectorAll('[data-screen]'));
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.switcher a'));
+  function show() {
+    var id = (location.hash || '#board').slice(1);
+    if (!document.getElementById(id)) id = 'board';
+    screens.forEach(function (s) { s.hidden = s.id !== id; });
+    tabs.forEach(function (a) {
+      if (a.getAttribute('href') === '#' + id) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', show);
+  show();
+
+  var toast = document.getElementById('toast'), timer;
+  function say(text) {
+    toast.textContent = text; toast.hidden = false;
+    clearTimeout(timer); timer = setTimeout(function () { toast.hidden = true; }, 3200);
+  }
+  document.getElementById('send-form').addEventListener('submit', function (e) {
+    e.preventDefault(); say('Макет: отправлено ' + document.querySelectorAll('#send-form .check input:checked').length + ' уведомлений. В системе здесь откроется доска.');
+  });
+  document.getElementById('login-form').addEventListener('submit', function (e) {
+    e.preventDefault(); location.hash = '#board';
+  });
+
+  var tabBtns = Array.prototype.slice.call(document.querySelectorAll('#refs [role="tab"]'));
+  tabBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      tabBtns.forEach(function (o) {
+        var on = o === b;
+        o.setAttribute('aria-selected', on ? 'true' : 'false');
+        document.getElementById(o.getAttribute('aria-controls')).hidden = !on;
+      });
+    });
+  });
+  var objs = Array.prototype.slice.call(document.querySelectorAll('#refs .obj'));
+  objs.forEach(function (o) {
+    o.addEventListener('click', function () {
+      objs.forEach(function (x) { x.setAttribute('aria-current', x === o ? 'true' : 'false'); });
+    });
+  });
+  document.getElementById('obj-form').addEventListener('submit', function (e) {
+    e.preventDefault(); say('Макет: изменения проекта сохранены.');
+  });
+  var checks = Array.prototype.slice.call(document.querySelectorAll('#send-form .check input'));
+  function recount() {
+    var n = checks.filter(function (c) { return c.checked; }).length;
+    document.getElementById('s-count').textContent = n + ' из ' + checks.length + ' подрядчиков проекта';
+    var btn = document.getElementById('s-submit');
+    btn.textContent = n ? 'Отправить уведомления: ' + n : 'Выберите хотя бы одного подрядчика';
+    btn.disabled = !n;
+  }
+  checks.forEach(function (c) { c.addEventListener('change', recount); });
+  var msg = document.getElementById('s-message');
+  function syncMessage() {
+    var text = msg.value.trim();
+    document.getElementById('prev-message').textContent = text;
+    document.getElementById('prev-message-box').hidden = !text;
+  }
+  msg.addEventListener('input', syncMessage);
+  document.querySelectorAll('[data-toast]').forEach(function (b) {
+    b.addEventListener('click', function () { say(b.getAttribute('data-toast')); });
+  });
+})();
+</script>
+</body>
+</html>
