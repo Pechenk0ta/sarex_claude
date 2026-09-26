@@ -15,7 +15,7 @@
   <header class="topbar">
     <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
     <nav class="topnav" aria-label="Разделы">
-      <a class="soon" title="Появится на этапе 5">Доска</a>
+      <a href="/"{% if section == 'board' %} aria-current="page"{% endif %}>Доска</a>
       <a href="/send"{% if section == 'send' %} aria-current="page"{% endif %}>Отправить уведомление</a>
       <a href="/refs" class="dd"{% if section == 'refs' %} aria-current="page"{% endif %}>Справочники</a>
     </nav>

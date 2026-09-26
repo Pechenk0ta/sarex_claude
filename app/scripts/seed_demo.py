@@ -7,7 +7,7 @@ project already exists. Not for production databases.
 import asyncio
 import secrets
 from dataclasses import dataclass
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
@@ -311,7 +311,7 @@ def _notification(
             NotificationEvent(
                 type=EventType.REJECTION_NOTIFIED,
                 payload={"to": [coordinator.email, project.project_manager_email]},
-                created_at=reply_at,
+                created_at=reply_at + timedelta(minutes=1),
             )
         )
     elif outcome.kind == "review":

@@ -12,8 +12,8 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import get_settings
 from app.db import SessionDep
-from app.web import ack, auth, refs, send
-from app.web.deps import CurrentUser, LoginRequiredError
+from app.web import ack, auth, board, refs, send
+from app.web.deps import LoginRequiredError
 from app.web.templating import WEB_DIR, render
 
 logger = logging.getLogger(__name__)
@@ -42,9 +42,12 @@ def create_app() -> FastAPI:
     app.include_router(refs.router)
     app.include_router(send.router)
     app.include_router(ack.router)
+    app.include_router(board.router)
 
     @app.exception_handler(LoginRequiredError)
     async def login_required(request: Request, exc: LoginRequiredError) -> Response:
+        if request.url.path.startswith("/api/"):
+            return JSONResponse({"detail": "Нужно войти в систему."}, status_code=401)
         target = request.url.path
         if request.url.query:
             target += f"?{request.url.query}"
@@ -57,11 +60,6 @@ def create_app() -> FastAPI:
         if request.url.path.startswith("/api/"):
             return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
         return render(request, "error.html", status_code=exc.status_code, error=exc)
-
-    @app.get("/")
-    async def home(user: CurrentUser) -> RedirectResponse:
-        # The board (stage 5) will live here; until then, open the directories.
-        return RedirectResponse("/refs", status_code=303)
 
     @app.get("/health")
     async def health(response: Response, session: SessionDep) -> dict[str, str]:

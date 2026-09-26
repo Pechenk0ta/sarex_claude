@@ -61,3 +61,16 @@ document.addEventListener("DOMContentLoaded", () => {
   markAlreadySent();
   recount();
 });
+
+// Board filters apply as soon as a value is chosen.
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("[data-autosubmit-get]").forEach((el) => {
+    el.addEventListener("change", () => {
+      if (el.name === "project_id") {
+        window.location.assign(`/?project_id=${encodeURIComponent(el.value)}`);
+      } else {
+        el.form.submit();
+      }
+    });
+  });
+});
