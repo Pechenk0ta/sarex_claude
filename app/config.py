@@ -19,6 +19,11 @@ class Settings(BaseSettings):
         description="SQLAlchemy URL with the asyncpg driver",
     )
     secret_key: SecretStr = SecretStr("dev-insecure-change-me")
+    session_max_age_hours: int = 12
+
+    @property
+    def is_prod(self) -> bool:
+        return self.app_env == "prod"
 
 
 @lru_cache

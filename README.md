@@ -18,6 +18,7 @@ docker compose up --build
 
 - приложение: http://localhost:8000, проверка: http://localhost:8000/health
 - демо-данные как в макетах: `docker compose exec app python -m app.scripts.seed_demo`
+- первый администратор: `docker compose exec app python -m app.scripts.create_admin admin@company.ru "Фамилия Имя"` (пароль спросит)
 - документация API: http://localhost:8000/api/docs
 - письма (Mailpit): http://localhost:8025
 

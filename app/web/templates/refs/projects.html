@@ -1,0 +1,130 @@
+{% extends "refs/_layout.html" %}
+{% block tab %}
+<div class="refs-grid">
+  <div class="obj-list">
+    {% if is_admin %}<a class="btn btn-primary" href="/refs/projects/new">+ Добавить проект</a>{% endif %}
+    {% for row in rows %}
+      <a class="obj{% if not row.project.is_active %} archived{% endif %}" href="/refs/projects/{{ row.project.id }}"
+         {% if details and details.project.id == row.project.id %}aria-current="true"{% endif %}>
+        <span class="t">{{ row.project.name }}</span>
+        <span class="m">{% if not row.project.is_active %}Неактивен · {% endif %}корпусов: {{ row.corpus_count }} · подрядчиков: {{ row.contractor_count }} · уведомлений: {{ row.notification_count }}</span>
+      </a>
+    {% else %}
+      <p class="muted">Проектов пока нет.</p>
+    {% endfor %}
+  </div>
+
+  {% if new %}
+  <form class="panel" method="post" action="/refs/projects" aria-label="Новый проект">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <div class="panel-head"><h2>Новый проект</h2></div>
+    <div class="panel-body">
+      <div class="form-grid">
+        <label class="field wide"><span>Наименование</span><input class="input" id="p-name" name="name" required maxlength="255" placeholder="ЖК «Северная долина», 3-я очередь"></label>
+        <label class="field wide"><span>Адрес</span><input class="input" id="p-address" name="address" maxlength="500"></label>
+        <label class="field wide"><span>Email руководителя проекта</span><input class="input" id="p-pm" name="project_manager_email" type="email" required><span class="hint">На этот адрес уходят эскалации и письма о непринятии РД.</span></label>
+      </div>
+    </div>
+    <div class="form-foot"><a href="/refs/projects">Отмена</a><button class="btn btn-primary" type="submit">Добавить проект</button></div>
+  </form>
+  {% elif details %}
+  {% set p = details.project %}
+  <div class="stack">
+    <form class="panel" method="post" action="/refs/projects/{{ p.id }}" aria-label="Проект">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <fieldset style="border:0;margin:0;padding:0;min-width:0" {% if not is_admin %}disabled{% endif %}>
+        <div class="panel-head"><h2>{{ p.name }}</h2><label class="switch"><input type="checkbox" id="p-active" name="is_active" value="true" {% if p.is_active %}checked{% endif %}> Активен</label></div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <label class="field wide"><span>Наименование</span><input class="input" id="p-name" name="name" value="{{ p.name }}" required maxlength="255"></label>
+            <label class="field wide"><span>Адрес</span><input class="input" id="p-address" name="address" value="{{ p.address or '' }}" maxlength="500"></label>
+            <label class="field wide"><span>Email руководителя проекта</span><input class="input" id="p-pm" name="project_manager_email" type="email" value="{{ p.project_manager_email }}" required><span class="hint">На этот адрес уходят эскалации и письма о непринятии РД.</span></label>
+          </div>
+        </div>
+        {% if is_admin %}<div class="form-foot"><span class="muted">Изменено {{ p.updated_at | ru_date }}</span><button class="btn btn-primary" type="submit">Сохранить</button></div>{% endif %}
+      </fieldset>
+    </form>
+
+    <section class="panel" aria-label="Корпуса">
+      <div class="panel-head"><h2>Корпуса</h2><span class="hint">Корпус с уведомлениями нельзя удалить, только отключить.</span></div>
+      <div class="panel-body">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>Наименование</th><th>Уведомлений</th><th>Активен</th>{% if is_admin %}<th></th>{% endif %}</tr></thead>
+            <tbody>
+            {% for row in details.corpuses %}
+              {% set c = row.corpus %}
+              <tr{% if not c.is_active %} class="off"{% endif %}>
+                {% if is_admin %}
+                <td colspan="1">
+                  <form id="corpus-{{ c.id }}" method="post" action="/refs/projects/{{ p.id }}/corpuses/{{ c.id }}" class="inline-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+                    <input class="input" name="name" value="{{ c.name }}" aria-label="Наименование корпуса" required maxlength="255">
+                  </form>
+                </td>
+                <td class="num">{{ row.notification_count }}</td>
+                <td><input type="checkbox" form="corpus-{{ c.id }}" name="is_active" value="true" {% if c.is_active %}checked{% endif %} aria-label="Корпус активен"></td>
+                <td class="row-actions">
+                  <button class="linkbtn" type="submit" form="corpus-{{ c.id }}">Сохранить</button>
+                  {% if row.notification_count == 0 %}
+                  <form method="post" action="/refs/projects/{{ p.id }}/corpuses/{{ c.id }}/delete" class="inline-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+                    · <button class="linkbtn" type="submit">Удалить</button>
+                  </form>
+                  {% endif %}
+                </td>
+                {% else %}
+                <td>{{ c.name }}</td><td class="num">{{ row.notification_count }}</td><td>{{ 'да' if c.is_active else 'нет' }}</td>
+                {% endif %}
+              </tr>
+            {% else %}
+              <tr><td colspan="4" class="muted">Корпусов пока нет.</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% if is_admin %}
+        <form class="add-row" method="post" action="/refs/projects/{{ p.id }}/corpuses">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+          <input class="input" id="k-new" name="name" placeholder="Например: Корпус 5 · секции 9–10" required maxlength="255" aria-label="Новый корпус">
+          <button class="btn" type="submit">Добавить корпус</button>
+        </form>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Подрядчики на проекте">
+      <div class="panel-head"><h2>Подрядчики на проекте</h2><span class="hint">Все они по умолчанию получают каждую рассылку по проекту. Договор и вид работ не учитываются.</span></div>
+      <div class="panel-body">
+        <div class="chips">
+          {% for c in details.contractors %}
+            <span class="chip">{{ c.name }}
+              {% if is_admin %}
+              <form method="post" action="/refs/projects/{{ p.id }}/contractors/{{ c.id }}/unlink" class="inline-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+                <button type="submit" aria-label="Убрать {{ c.name }}" title="Убрать из проекта">×</button>
+              </form>
+              {% endif %}
+            </span>
+          {% else %}
+            <span class="muted">Подрядчики не привязаны: рассылку по проекту отправить будет некому.</span>
+          {% endfor %}
+        </div>
+        {% if is_admin and details.available_contractors %}
+        <form class="add-row" method="post" action="/refs/projects/{{ p.id }}/contractors">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+          <select class="select" id="p-add-contractor" name="contractor_id" required aria-label="Подрядчик">
+            <option value="">Выберите подрядчика из справочника…</option>
+            {% for c in details.available_contractors %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+          </select>
+          <button class="btn" type="submit">Привязать</button>
+        </form>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+  {% else %}
+  <p class="muted">{% if is_admin %}Добавьте первый проект.{% else %}Проектов пока нет.{% endif %}</p>
+  {% endif %}
+</div>
+{% endblock %}

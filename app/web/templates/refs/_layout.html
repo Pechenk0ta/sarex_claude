@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Справочники · Ознакомление с РД{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <h1>Справочники</h1>
+      <p class="sub">{% if is_admin %}Изменять справочники может администратор. Координаторы видят их только для чтения.{% else %}Справочники доступны вам для чтения. Изменения вносит администратор.{% endif %}</p>
+    </div>
+  </div>
+  <nav class="tabs" aria-label="Разделы справочников">
+    <a href="/refs/projects"{% if tab == 'projects' %} aria-current="page"{% endif %}>Проекты и корпуса</a>
+    <a href="/refs/contractors"{% if tab == 'contractors' %} aria-current="page"{% endif %}>Подрядчики</a>
+    <a href="/refs/users"{% if tab == 'users' %} aria-current="page"{% endif %}>Пользователи</a>
+    <a href="/refs/calendar"{% if tab == 'calendar' %} aria-current="page"{% endif %}>Производственный календарь</a>
+  </nav>
+  {% block tab %}{% endblock %}
+{% endblock %}

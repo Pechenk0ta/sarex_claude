@@ -27,7 +27,9 @@ async def session(migrated_database: str) -> AsyncIterator[AsyncSession]:
     engine = create_async_engine(migrated_database)
     async with engine.connect() as connection:
         transaction = await connection.begin()
-        db = AsyncSession(bind=connection, join_transaction_mode="create_savepoint")
+        db = AsyncSession(
+            bind=connection, join_transaction_mode="create_savepoint", expire_on_commit=False
+        )
         try:
             yield db
         finally:

@@ -1,0 +1,48 @@
+{% extends "refs/_layout.html" %}
+{% block tab %}
+<div class="panel">
+  <div class="panel-head toolbar">
+    <nav class="tabs" aria-label="Год" style="border:0">
+      {% for y in years %}<a href="/refs/calendar?year={{ y }}"{% if y == year %} aria-current="page"{% endif %}>{{ y }}</a>{% endfor %}
+    </nav>
+    {% if is_admin %}
+    <form class="add-row" method="post" action="/refs/calendar" aria-label="Добавить дату">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <input class="input" type="date" name="day" required aria-label="Дата">
+      <select class="select" name="is_workday" aria-label="Тип дня">
+        <option value="false">Выходной (праздник или перенос)</option>
+        <option value="true">Рабочий (выходной, ставший рабочим)</option>
+      </select>
+      <button class="btn btn-primary" type="submit">+ Добавить дату</button>
+    </form>
+    {% endif %}
+  </div>
+  <div class="panel-body">
+    <p class="cal-note">Здесь хранятся только исключения из обычной недели. Остальные пн–пт считаются рабочими, сб и вс — выходными. От календаря зависят напоминания на 1-й и 3-й рабочий день и эскалация после 10-го. Даты заполняются по постановлению Правительства о переносе выходных.</p>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Дата</th><th>День</th><th>Тип</th>{% if is_admin %}<th></th>{% endif %}</tr></thead>
+        <tbody>
+        {% for h in holidays %}
+          <tr>
+            <td class="num">{{ h.date | ru_date }}</td>
+            <td>{{ h.date | weekday }}</td>
+            <td>{% if h.is_workday %}<span class="pill s-ok">Рабочий</span>{% else %}<span class="pill s-late">Выходной</span>{% endif %}</td>
+            {% if is_admin %}
+            <td class="row-actions">
+              <form method="post" action="/refs/calendar/{{ h.date.isoformat() }}/delete" class="inline-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+                <button class="linkbtn" type="submit">Удалить</button>
+              </form>
+            </td>
+            {% endif %}
+          </tr>
+        {% else %}
+          <tr><td colspan="4" class="muted">На {{ year }} год исключений нет: выходные — только суббота и воскресенье.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
