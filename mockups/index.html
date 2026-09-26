@@ -29,6 +29,7 @@
   --soon: #a06207;      --soon-bg: #fbf0d9;
   --late: #b3322b;      --late-bg: #fbe4e2;
   --review: #a3346f;    --review-bg: #fae6f0;
+  --rej: #9e1c2c;       --rej-ink: #ffffff;
 
   --radius: 6px;
   --sans: "Manrope", "Segoe UI", Roboto, Arial, sans-serif;
@@ -48,7 +49,7 @@
     --wait: #a9bcc6; --wait-bg: #243036;
     --soon: #e8b458; --soon-bg: #3a2c12;
     --late: #f08a82; --late-bg: #3d1d1b;
-    --review: #ec8fc0; --review-bg: #3b1d2d;
+    --review: #ec8fc0; --review-bg: #3b1d2d; --rej: #e0475a; --rej-ink: #1a0508;
   }
 }
 :root[data-theme="dark"] {
@@ -63,7 +64,7 @@
   --wait: #a9bcc6; --wait-bg: #243036;
   --soon: #e8b458; --soon-bg: #3a2c12;
   --late: #f08a82; --late-bg: #3d1d1b;
-  --review: #ec8fc0; --review-bg: #3b1d2d;
+  --review: #ec8fc0; --review-bg: #3b1d2d; --rej: #e0475a; --rej-ink: #1a0508;
 }
 
 * { box-sizing: border-box; }
@@ -142,6 +143,8 @@ main { max-width: 1680px; margin: 0 auto; padding-inline: 20px; padding-block: 2
 .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn-primary:hover { filter: brightness(1.08); border-color: var(--accent); }
 .btn-sm { padding: 4px 10px; font-size: 13px; }
+.btn-danger { color: var(--rej); border-color: var(--rej); }
+.btn-danger:hover { background: var(--rej); color: var(--rej-ink); border-color: var(--rej); }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 
 .field { display: grid; gap: 6px; }
@@ -164,6 +167,8 @@ main { max-width: 1680px; margin: 0 auto; padding-inline: 20px; padding-block: 2
 .s-soon   { color: var(--soon);   background: var(--soon-bg); }
 .s-late   { color: var(--late);   background: var(--late-bg); }
 .s-review { color: var(--review); background: var(--review-bg); }
+.s-rej    { color: var(--rej-ink); background: var(--rej); font-weight: 600; }
+.s-rej::before { content: "✕"; width: auto; height: auto; background: none; font-size: 10px; line-height: 1; }
 .s-review::before { border-radius: 1px; transform: rotate(45deg); }
 
 /* ---------- board ---------- */
@@ -209,7 +214,7 @@ table.board { border-collapse: collapse; width: 100%; min-width: 980px; }
 .bar { flex: 1; height: 4px; border-radius: 2px; background: var(--line); position: relative; overflow: hidden; }
 .bar i { position: absolute; inset: 0 auto 0 0; background: var(--st); border-radius: 2px; }
 .n-item.ok { --st: var(--ok); } .n-item.ask { --st: var(--ask); } .n-item.wait { --st: var(--wait); }
-.n-item.soon { --st: var(--soon); } .n-item.late { --st: var(--late); } .n-item.review { --st: var(--review); }
+.n-item.soon { --st: var(--soon); } .n-item.late { --st: var(--late); } .n-item.review { --st: var(--review); } .n-item.rej { --st: var(--rej); }
 .n-item.review { background: repeating-linear-gradient(135deg, transparent 0 6px, var(--review-bg) 6px 12px); }
 .empty-cell { display: grid; place-items: center; min-height: 52px; color: var(--faint); font-size: 12px; }
 .cell-sum > summary {
@@ -223,7 +228,7 @@ table.board { border-collapse: collapse; width: 100%; min-width: 980px; }
 .seg { display: flex; gap: 2px; height: 6px; }
 .seg i { flex: 1; border-radius: 2px; }
 .seg .ok { background: var(--ok); } .seg .ask { background: var(--ask); } .seg .wait { background: var(--line-strong); }
-.seg .soon { background: var(--soon); } .seg .late { background: var(--late); } .seg .review { background: var(--review); }
+.seg .soon { background: var(--soon); } .seg .late { background: var(--late); } .seg .review { background: var(--review); } .seg .rej { background: var(--rej); }
 .sum-more { font-size: 12px; color: var(--accent); }
 .sum-more::after { content: " ▾"; }
 .cell-sum[open] .sum-more::after { content: " ▴"; }
@@ -429,9 +434,10 @@ table.tbl { border-collapse: collapse; width: 100%; }
     </form>
 
     <div class="summary" aria-label="Сводка по статусам">
+      <a href="#board"><span class="pill s-rej">Не принята</span><span class="n">1</span></a>
       <a href="#board"><span class="pill s-review">Требует проверки</span><span class="n">1</span></a>
       <a href="#board"><span class="pill s-late">Просрочено</span><span class="n">1</span></a>
-      <a href="#board"><span class="pill s-soon">Срок истекает</span><span class="n">4</span></a>
+      <a href="#board"><span class="pill s-soon">Срок истекает</span><span class="n">3</span></a>
       <a href="#board"><span class="pill s-ask">Есть вопросы</span><span class="n">3</span></a>
       <a href="#board"><span class="pill s-wait">Ожидание, в срок</span><span class="n">8</span></a>
       <a href="#board"><span class="pill s-ok">Ознакомлен</span><span class="n">42</span></a>
@@ -456,8 +462,8 @@ table.tbl { border-collapse: collapse; width: 100%; }
               <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">03.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ok">Ознакомлен</span><span class="days">04.09 · за 2 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">03.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-ok">Ознакомлен</span><span class="days">07.09 · за 3 р.д.</span></a><a class="n-item late" href="#card"><span class="who">ФасадПро</span><span class="pill s-late">Эскалировано</span><span class="days">17 р.д. без ответа</span></a></div></details></td>
             <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">5 из 5</b></span><span class="pill s-ok">Все ознакомлены</span></span><span class="seg"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
               <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">14.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ok">Ознакомлен</span><span class="days">14.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">15.09 · за 2 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-ok">Ознакомлен</span><span class="days">14.09 · за 1 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ФасадПро</span><span class="pill s-ok">Ознакомлен</span><span class="days">17.09 · за 4 р.д.</span></a></div></details></td>
-            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">3 из 5</b></span><span class="pill s-soon">Истекает</span></span><span class="seg"><i class="soon"></i><i class="ask"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
-              <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">17.09 · за 2 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ok">Ознакомлен</span><span class="days">17.09 · за 2 р.д.</span></a><a class="n-item ask" href="#card"><span class="who">АкваИнж</span><span class="pill s-ask">Вопросы</span><span class="days">ответ 18.09</span></a><a class="n-item ok" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-ok">Ознакомлен</span><span class="days">16.09 · за 1 р.д.</span></a><a class="n-item soon" href="#card"><span class="who">ФасадПро</span><span class="pill s-soon">Истекает</span><span class="days">8 из 10 р.д.<span class="bar"><i style="width:80%"></i></span></span></a></div></details></td>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">3 из 5</b></span><span class="pill s-rej">Не принята</span></span><span class="seg"><i class="rej"></i><i class="ask"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
+              <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">17.09 · за 2 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ok">Ознакомлен</span><span class="days">17.09 · за 2 р.д.</span></a><a class="n-item ask" href="#card"><span class="who">АкваИнж</span><span class="pill s-ask">Вопросы</span><span class="days">ответ 18.09</span></a><a class="n-item ok" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-ok">Ознакомлен</span><span class="days">16.09 · за 1 р.д.</span></a><a class="n-item rej" href="#card"><span class="who">ФасадПро</span><span class="pill s-rej">Не принята</span><span class="days">ответ 23.09</span></a></div></details></td>
             <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">2 из 4</b></span><span class="pill s-soon">Истекает ×2</span></span><span class="seg"><i class="soon"></i><i class="soon"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">4 подрядчиков · 1 исключён</span></summary>
               <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">21.09 · за 1 р.д.</span></a><a class="n-item soon" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-soon">Истекает</span><span class="days">5 из 10 р.д.<span class="bar"><i style="width:50%"></i></span></span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">22.09 · за 2 р.д.</span></a><a class="n-item soon" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-soon">Истекает</span><span class="days">5 из 10 р.д.<span class="bar"><i style="width:50%"></i></span></span></a><span class="n-item off"><span class="who">ФасадПро</span><span class="days">исключён из рассылки</span></span></div></details></td>
             <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">1 из 5</b></span><span class="pill s-wait">Ожидание ×4</span></span><span class="seg"><i class="wait"></i><i class="wait"></i><i class="wait"></i><i class="wait"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
@@ -502,6 +508,7 @@ table.tbl { border-collapse: collapse; width: 100%; }
       <span class="label">Обозначения</span>
       <span class="pill s-ok">Ознакомлен</span>
       <span class="pill s-ask">Есть вопросы</span>
+      <span class="pill s-rej">Не принята: письмо инициатору и РП</span>
       <span class="pill s-wait">Ожидание, в срок</span>
       <span class="pill s-soon">Истекает: осталось 5 р.д. или меньше</span>
       <span class="pill s-late">Просрочено / эскалировано РП</span>
@@ -653,6 +660,7 @@ table.tbl { border-collapse: collapse; width: 100%; }
         <button class="btn btn-sm" type="button" data-toast="Ответ засчитан как подтверждение. Статус: «Ознакомлен».">Ознакомлен</button>
         <button class="btn btn-sm" type="button" data-toast="Ответ засчитан как вопрос. Статус: «Есть вопросы».">Вопрос</button>
         <button class="btn btn-sm" type="button" data-toast="Ответ засчитан как замечание. Статус: «Есть вопросы».">Замечание</button>
+        <button class="btn btn-sm btn-danger" type="button" data-toast="Статус: «Не принята». Письмо ушло инициатору (Смирнова А. В.) и РП (i.petrov@company-domain.ru).">Не принята</button>
       </div>
     </section>
 
