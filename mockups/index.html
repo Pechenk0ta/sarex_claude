@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ознакомление с РД</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #f3f5f4;
+  --surface: #ffffff;
+  --surface-2: #f8faf9;
+  --ink: #1b2422;
+  --muted: #5b6763;
+  --faint: #8a9591;
+  --line: #dce2df;
+  --line-strong: #c3ccc8;
+  --accent: #245b7a;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3eef4;
+  --focus: #3b82b0;
+
+  --ok: #2e7a4d;        --ok-bg: #e2f2e8;
+  --ask: #6346b8;       --ask-bg: #ece7fa;
+  --wait: #4e6470;      --wait-bg: #e8eef1;
+  --soon: #a06207;      --soon-bg: #fbf0d9;
+  --late: #b3322b;      --late-bg: #fbe4e2;
+  --review: #a3346f;    --review-bg: #fae6f0;
+
+  --radius: 6px;
+  --sans: "IBM Plex Sans", "Segoe UI", Roboto, Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #131918; --surface: #1b2321; --surface-2: #202a28;
+    --ink: #e4ebe8; --muted: #a2afaa; --faint: #76837e;
+    --line: #2d3835; --line-strong: #3c4945;
+    --accent: #6aaed4; --accent-ink: #0d1a22; --accent-soft: #1d3240; --focus: #8cc4e4;
+    --ok: #6cc893; --ok-bg: #173226;
+    --ask: #b3a0f2; --ask-bg: #2a2344;
+    --wait: #a9bcc6; --wait-bg: #243036;
+    --soon: #e8b458; --soon-bg: #3a2c12;
+    --late: #f08a82; --late-bg: #3d1d1b;
+    --review: #ec8fc0; --review-bg: #3b1d2d;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #131918; --surface: #1b2321; --surface-2: #202a28;
+  --ink: #e4ebe8; --muted: #a2afaa; --faint: #76837e;
+  --line: #2d3835; --line-strong: #3c4945;
+  --accent: #6aaed4; --accent-ink: #0d1a22; --accent-soft: #1d3240; --focus: #8cc4e4;
+  --ok: #6cc893; --ok-bg: #173226;
+  --ask: #b3a0f2; --ask-bg: #2a2344;
+  --wait: #a9bcc6; --wait-bg: #243036;
+  --soon: #e8b458; --soon-bg: #3a2c12;
+  --late: #f08a82; --late-bg: #3d1d1b;
+  --review: #ec8fc0; --review-bg: #3b1d2d;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.5 var(--sans);
+}
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; }
+h1 { font-size: 22px; line-height: 1.25; }
+h2 { font-size: 16px; }
+h3 { font-size: 14px; }
+p { margin: 0; }
+a { color: var(--accent); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+
+/* ---------- mockup switcher (не часть интерфейса) ---------- */
+.switcher {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+  padding: 8px 16px; background: var(--ink); color: var(--bg); font-size: 12px;
+}
+.switcher b { font-weight: 500; opacity: .7; }
+.switcher nav { display: flex; flex-wrap: wrap; gap: 4px; }
+.switcher a {
+  color: var(--bg); text-decoration: none; padding: 3px 10px; border-radius: 99px;
+  border: 1px solid transparent;
+}
+.switcher a[aria-current="page"] { border-color: currentColor; }
+
+/* ---------- app shell ---------- */
+.topbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px;
+  padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.brand-mark {
+  width: 26px; height: 26px; border-radius: 5px; background: var(--accent); color: var(--accent-ink);
+  display: grid; place-items: center; font: 600 12px var(--mono);
+}
+.topnav { display: flex; flex-wrap: wrap; gap: 4px; }
+.topnav a {
+  padding: 6px 12px; border-radius: var(--radius); color: var(--muted); text-decoration: none; font-weight: 500;
+}
+.topnav a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
+.user { margin-left: auto; display: flex; align-items: center; gap: 10px; color: var(--muted); }
+.avatar {
+  width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--line);
+  display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--ink);
+}
+main { max-width: 1320px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 48px; display: grid; gap: 20px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 14px; border-radius: var(--radius); border: 1px solid var(--line-strong);
+  background: var(--surface); cursor: pointer; font-weight: 500; text-decoration: none; color: var(--ink);
+  white-space: nowrap;
+}
+.btn:hover { border-color: var(--muted); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { filter: brightness(1.08); border-color: var(--accent); }
+.btn-sm { padding: 4px 10px; font-size: 13px; }
+
+.field { display: grid; gap: 6px; }
+.field > span { font-weight: 500; }
+.input, .select {
+  width: 100%; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: var(--radius);
+  background: var(--surface);
+}
+.hint { font-size: 12px; color: var(--muted); }
+
+/* ---------- status pills ---------- */
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 99px;
+  font-size: 12px; font-weight: 500; white-space: nowrap; line-height: 1.5;
+}
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.s-ok     { color: var(--ok);     background: var(--ok-bg); }
+.s-ask    { color: var(--ask);    background: var(--ask-bg); }
+.s-wait   { color: var(--wait);   background: var(--wait-bg); }
+.s-soon   { color: var(--soon);   background: var(--soon-bg); }
+.s-late   { color: var(--late);   background: var(--late-bg); }
+.s-review { color: var(--review); background: var(--review-bg); }
+.s-review::before { border-radius: 1px; transform: rotate(45deg); }
+
+/* ---------- board ---------- */
+.page-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+.page-head .sub { color: var(--muted); margin-top: 2px; }
+.filters {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: end;
+  padding: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.filters .field { min-width: 150px; flex: 1 1 150px; }
+.filters .field > span { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+.summary { display: flex; flex-wrap: wrap; gap: 8px; }
+.summary a {
+  display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px 6px 8px;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+  text-decoration: none; color: var(--ink);
+}
+.summary .n { font: 500 13px var(--mono); }
+
+.board-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+table.board { border-collapse: collapse; width: 100%; min-width: 980px; }
+.board th, .board td { border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); vertical-align: top; text-align: left; }
+.board th:last-child, .board td:last-child { border-right: 0; }
+.board tbody tr:last-child td, .board tbody tr:last-child th { border-bottom: 0; }
+.board thead th { padding: 10px 12px; background: var(--surface-2); font-weight: 500; }
+.board thead .set { display: block; font-weight: 600; }
+.board thead .set-meta { display: block; font: 12px var(--mono); color: var(--muted); }
+.board thead a.sarex { font-size: 12px; }
+.board tbody th { padding: 12px; width: 150px; background: var(--surface-2); }
+.board tbody th .corp { display: block; font-weight: 600; }
+.board tbody th .corp-meta { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
+.board td { padding: 6px; }
+.cell { display: grid; gap: 4px; }
+.n-item {
+  display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center;
+  padding: 6px 8px; border-radius: 4px; text-decoration: none; color: var(--ink);
+  border-left: 3px solid var(--st, var(--line-strong));
+}
+.n-item:hover { background: var(--surface-2); }
+.n-item .who { font-size: 13px; flex: 1 1 100%; }
+.n-item .days { font: 12px var(--mono); color: var(--muted); flex: 1 1 96px; display: flex; gap: 8px; align-items: center; white-space: nowrap; }
+.bar { flex: 1; height: 4px; border-radius: 2px; background: var(--line); position: relative; overflow: hidden; }
+.bar i { position: absolute; inset: 0 auto 0 0; background: var(--st); border-radius: 2px; }
+.n-item.ok { --st: var(--ok); } .n-item.ask { --st: var(--ask); } .n-item.wait { --st: var(--wait); }
+.n-item.soon { --st: var(--soon); } .n-item.late { --st: var(--late); } .n-item.review { --st: var(--review); }
+.n-item.review { background: repeating-linear-gradient(135deg, transparent 0 6px, var(--review-bg) 6px 12px); }
+.empty-cell { display: grid; place-items: center; min-height: 52px; color: var(--faint); font-size: 12px; }
+.empty-cell a { color: var(--muted); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--muted); align-items: center; }
+
+/* ---------- send form ---------- */
+.two-col { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.panel-head { padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.panel-body { padding: 16px; display: grid; gap: 18px; }
+.steps { display: grid; gap: 18px; }
+.step { display: grid; grid-template-columns: 26px 1fr; gap: 12px; }
+.step-no {
+  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid var(--line-strong); font: 500 12px var(--mono); color: var(--muted);
+}
+.step.done .step-no { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.checklist { display: grid; gap: 6px; }
+.check {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
+  padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+}
+.check:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.check small { color: var(--muted); display: block; }
+.warn-note { font-size: 12px; color: var(--soon); }
+.form-foot { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 14px 16px; border-top: 1px solid var(--line); }
+
+.mail { font-size: 13px; }
+.mail-meta { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.mail-meta dt { color: var(--muted); }
+.mail-meta dd { margin: 0; overflow-wrap: anywhere; }
+.mail-body { padding: 16px; display: grid; gap: 12px; max-width: 62ch; }
+.mail-body .mail-btn { justify-self: start; }
+
+/* ---------- card ---------- */
+.crumbs { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px; }
+.crumbs a { color: var(--muted); }
+.card-head { display: grid; gap: 10px; }
+.card-title { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.fact { background: var(--surface); padding: 10px 12px; display: grid; gap: 2px; }
+.fact .v { font-weight: 500; overflow-wrap: anywhere; }
+
+.review-box {
+  border: 1px solid var(--review); border-radius: var(--radius); background: var(--surface);
+  display: grid; gap: 12px; padding: 16px;
+}
+.review-box .head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.conf { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.conf .bar { width: 140px; flex: none; height: 6px; }
+.conf .bar i { background: var(--review); }
+.conf .bar .thr { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); left: 70%; }
+.reason { padding: 10px 12px; background: var(--surface-2); border-radius: 4px; color: var(--muted); font-size: 13px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; }
+.ev { display: grid; grid-template-columns: 116px 18px 1fr; gap: 0 12px; }
+.ev-time { font: 12px var(--mono); color: var(--muted); padding-top: 12px; text-align: right; }
+.ev-rail { position: relative; }
+.ev-rail::before { content: ""; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--line); }
+.ev:first-child .ev-rail::before { top: 16px; }
+.ev:last-child .ev-rail::before { bottom: calc(100% - 16px); }
+.ev-rail::after {
+  content: ""; position: absolute; left: 3px; top: 12px; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--dot, var(--line-strong));
+}
+.ev-body { padding-block: 10px; display: grid; gap: 6px; min-width: 0; }
+.ev-title { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-weight: 500; }
+.chan { font: 11px var(--mono); color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 0 5px; }
+details.raw { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+details.raw summary { cursor: pointer; padding: 6px 10px; font-size: 13px; color: var(--accent); }
+details.raw pre {
+  margin: 0; padding: 12px; border-top: 1px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere;
+  font: 12.5px/1.55 var(--mono); color: var(--ink); background: var(--surface-2);
+}
+
+/* ---------- login ---------- */
+.login-wrap { min-height: 70vh; display: grid; place-items: center; }
+.login { width: 100%; max-width: 380px; display: grid; gap: 16px; padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.login .brand { margin-bottom: 4px; }
+.err { font-size: 13px; color: var(--late); background: var(--late-bg); padding: 8px 10px; border-radius: 4px; }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: var(--radius); font-size: 13px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / .18);
+}
+
+.note-mock { font-size: 12px; color: var(--faint); }
+
+@media (max-width: 860px) {
+  .two-col { grid-template-columns: 1fr; }
+  .user span { display: none; }
+}
+@media (max-width: 560px) {
+  .ev { grid-template-columns: 18px 1fr; }
+  .ev-time { grid-column: 2; grid-row: 1; text-align: left; padding-top: 10px; }
+  .ev-rail { grid-column: 1; grid-row: 1 / span 2; }
+  .ev-body { grid-column: 2; padding-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="switcher" role="navigation" aria-label="Экраны макета">
+  <b>Макет · экраны:</b>
+  <nav>
+    <a href="#board">CRM-доска (7.1)</a>
+    <a href="#send">Отправка (7.2)</a>
+    <a href="#card">Карточка уведомления (7.3)</a>
+    <a href="#login">Вход</a>
+  </nav>
+</div>
+
+<!-- ======================= 7.1 CRM-доска ======================= -->
+<section id="board" data-screen>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+    <nav class="topnav">
+      <a href="#board" aria-current="page">Доска</a>
+      <a href="#send">Отправить уведомление</a>
+      <a href="#board">Справочники</a>
+    </nav>
+    <div class="user"><span>Смирнова А. В., координатор ДП</span><div class="avatar">АС</div></div>
+  </header>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>ЖК «Северная долина», 3-я очередь</h1>
+        <p class="sub">4 корпуса · 5 комплектов РД · 13 уведомлений · на 26.09.2026</p>
+      </div>
+      <a class="btn btn-primary" href="#send">+ Отправить уведомление</a>
+    </div>
+
+    <form class="filters" aria-label="Фильтры доски">
+      <label class="field"><span>Объект</span>
+        <select class="select" id="f-object"><option>ЖК «Северная долина», 3-я очередь</option><option>ЖК «Речной квартал»</option></select></label>
+      <label class="field"><span>Корпус</span>
+        <select class="select" id="f-corpus"><option>Все корпуса</option><option>Корпус 1</option><option>Корпус 2</option></select></label>
+      <label class="field"><span>Подрядчик</span>
+        <select class="select" id="f-contractor"><option>Все подрядчики</option><option>ООО «СтройМонолит»</option></select></label>
+      <label class="field"><span>Статус</span>
+        <select class="select" id="f-status"><option>Все статусы</option><option>Требует проверки</option><option>Просрочено</option></select></label>
+      <label class="field"><span>Канал</span>
+        <select class="select" id="f-channel"><option>Email и Telegram</option><option>Email</option><option>Telegram</option></select></label>
+    </form>
+
+    <div class="summary" aria-label="Сводка по статусам">
+      <a href="#board"><span class="pill s-review">Требует проверки</span><span class="n">1</span></a>
+      <a href="#board"><span class="pill s-late">Просрочено</span><span class="n">1</span></a>
+      <a href="#board"><span class="pill s-soon">Срок истекает</span><span class="n">2</span></a>
+      <a href="#board"><span class="pill s-ask">Есть вопросы</span><span class="n">2</span></a>
+      <a href="#board"><span class="pill s-wait">Ожидание, в срок</span><span class="n">2</span></a>
+      <a href="#board"><span class="pill s-ok">Ознакомлен</span><span class="n">5</span></a>
+    </div>
+
+    <div class="board-wrap">
+      <table class="board">
+        <thead>
+          <tr>
+            <th scope="col">Корпус</th>
+            <th scope="col"><span class="set">АР</span><span class="set-meta">изм. 3 · 02.09</span><a class="sarex" href="#board">Открыть в Sarex ↗</a></th>
+            <th scope="col"><span class="set">КЖ.1</span><span class="set-meta">изм. 2 · 11.09</span><a class="sarex" href="#board">Открыть в Sarex ↗</a></th>
+            <th scope="col"><span class="set">ОВ</span><span class="set-meta">изм. 1 · 15.09</span><a class="sarex" href="#board">Открыть в Sarex ↗</a></th>
+            <th scope="col"><span class="set">ВК</span><span class="set-meta">изм. 1 · 18.09</span><a class="sarex" href="#board">Открыть в Sarex ↗</a></th>
+            <th scope="col"><span class="set">ЭОМ</span><span class="set-meta">изм. 0 · 23.09</span><a class="sarex" href="#board">Открыть в Sarex ↗</a></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><span class="corp">Корпус 1</span><span class="corp-meta">секции 1–3</span></th>
+            <td><div class="cell">
+              <a class="n-item late" href="#card"><span class="who">СтройМонолит</span><span class="pill s-late">Эскалировано</span><span class="days">17 р.д. без ответа</span></a>
+            </div></td>
+            <td><div class="cell">
+              <a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">14.09 · за 1 р.д.</span></a>
+            </div></td>
+            <td><div class="cell">
+              <a class="n-item ok" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ok">Ознакомлен</span><span class="days">17.09 · за 2 р.д.</span></a>
+            </div></td>
+            <td><div class="cell">
+              <a class="n-item soon" href="#card"><span class="who">АкваИнж</span><span class="pill s-soon">Истекает</span><span class="days">5 из 10 р.д.<span class="bar"><i style="width:50%"></i></span></span></a>
+            </div></td>
+            <td><div class="cell">
+              <a class="n-item wait" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a>
+            </div></td>
+          </tr>
+          <tr>
+            <th scope="row"><span class="corp">Корпус 2</span><span class="corp-meta">секции 4–5</span></th>
+            <td><div class="cell">
+              <a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">04.09 · за 2 р.д.</span></a>
+            </div></td>
+            <td><div class="cell">
+              <a class="n-item review" href="#card"><span class="who">СтройМонолит</span><span class="pill s-review">Проверить</span><span class="days">10 из 10 р.д.<span class="bar"><i style="width:100%"></i></span></span></a>
+            </div></td>
+            <td><div class="cell">
+              <a class="n-item ask" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ask">Вопросы</span><span class="days">ответ 22.09</span></a>
+            </div></td>
+            <td><div class="cell">
+              <a class="n-item soon" href="#card"><span class="who">АкваИнж</span><span class="pill s-soon">Истекает</span><span class="days">5 из 10 р.д.<span class="bar"><i style="width:50%"></i></span></span></a>
+            </div></td>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+          </tr>
+          <tr>
+            <th scope="row"><span class="corp">Корпус 3</span><span class="corp-meta">секции 6–8</span></th>
+            <td><div class="cell">
+              <a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">03.09 · за 1 р.д.</span></a>
+              <a class="n-item ask" href="#card"><span class="who">ФасадПро</span><span class="pill s-ask">Вопросы</span><span class="days">ответ 04.09</span></a>
+            </div></td>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+            <td><div class="cell">
+              <a class="n-item ok" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ok">Ознакомлен</span><span class="days">18.09 · за 3 р.д.</span></a>
+            </div></td>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+            <td><div class="cell">
+              <a class="n-item wait" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a>
+            </div></td>
+          </tr>
+          <tr>
+            <th scope="row"><span class="corp">Корпус 4</span><span class="corp-meta">паркинг</span></th>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+            <td><div class="empty-cell"><span>не отправлено · <a href="#send">отправить</a></span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="legend">
+      <span class="label">Обозначения</span>
+      <span class="pill s-ok">Ознакомлен</span>
+      <span class="pill s-ask">Есть вопросы</span>
+      <span class="pill s-wait">Ожидание, в срок</span>
+      <span class="pill s-soon">Истекает: осталось 5 р.д. или меньше</span>
+      <span class="pill s-late">Просрочено / эскалировано РП</span>
+      <span class="pill s-review">Требует ручной проверки (ИИ не уверен)</span>
+    </div>
+  </main>
+</section>
+
+<!-- ======================= 7.2 Форма отправки ======================= -->
+<section id="send" data-screen hidden>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+    <nav class="topnav">
+      <a href="#board">Доска</a>
+      <a href="#send" aria-current="page">Отправить уведомление</a>
+      <a href="#board">Справочники</a>
+    </nav>
+    <div class="user"><span>Смирнова А. В., координатор ДП</span><div class="avatar">АС</div></div>
+  </header>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Отправить уведомление подрядчику</h1>
+        <p class="sub">Подрядчик получит письмо со ссылкой на РД и кнопкой «Подтверждаю ознакомление».</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <form class="panel" id="send-form" aria-label="Параметры уведомления">
+        <div class="panel-body steps">
+          <div class="step done">
+            <span class="step-no">1</span>
+            <label class="field"><span>Объект</span>
+              <select class="select" id="s-object"><option>ЖК «Северная долина», 3-я очередь</option><option>ЖК «Речной квартал»</option></select></label>
+          </div>
+          <div class="step done">
+            <span class="step-no">2</span>
+            <label class="field"><span>Корпус</span>
+              <select class="select" id="s-corpus"><option>Корпус 2 (секции 4–5)</option><option>Корпус 1 (секции 1–3)</option><option>Корпус 3 (секции 6–8)</option><option>Корпус 4 (паркинг)</option></select></label>
+          </div>
+          <div class="step done">
+            <span class="step-no">3</span>
+            <div class="field">
+              <span>Подрядчики объекта</span>
+              <div class="checklist">
+                <label class="check"><input type="checkbox" id="c-1" checked><span>ООО «ЭлектроСети-Сервис»<small>eom@es-service.ru</small></span><span class="chan">email</span></label>
+                <label class="check"><input type="checkbox" id="c-2" checked><span>ООО «СтройМонолит»<small>pto@stroymonolit.ru</small></span><span class="chan">email + tg</span></label>
+                <label class="check"><input type="checkbox" id="c-3"><span>ООО «ТеплоМонтаж»<small>info@teplomontazh.ru</small></span><span class="chan">email</span></label>
+                <label class="check"><input type="checkbox" id="c-4"><span>ООО «АкваИнж»<small>pto@akvainzh.ru</small></span><span class="chan">email</span></label>
+              </div>
+            </div>
+          </div>
+          <div class="step done">
+            <span class="step-no">4</span>
+            <div class="field">
+              <label for="s-link"><span style="font-weight:500">Ссылка на РД в Sarex</span></label>
+              <input class="input mono" id="s-link" type="url" value="https://sarex.example.ru/project/sd-3/docs/EOM-rev0">
+              <span class="hint">Комплект определится по ссылке: <b>ЭОМ, изм. 0</b></span>
+              <span class="warn-note">По корпусу 2 этот комплект ещё никому не отправлялся.</span>
+            </div>
+          </div>
+          <div class="step">
+            <span class="step-no">5</span>
+            <div class="field">
+              <span>Срок ответа</span>
+              <p class="mono">10 рабочих дней · до 09.10.2026</p>
+              <span class="hint">Напоминания уйдут на 1-й и 3-й рабочий день, эскалация РП — после 10-го.</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-foot">
+          <span class="muted">2 подрядчика · канал email</span>
+          <button class="btn btn-primary" type="submit" id="s-submit">Отправить 2 уведомления</button>
+        </div>
+      </form>
+
+      <section class="panel mail" aria-label="Предпросмотр письма">
+        <div class="panel-head"><h2>Предпросмотр письма</h2><span class="label">для ООО «ЭлектроСети-Сервис»</span></div>
+        <dl class="mail-meta">
+          <dt>Кому</dt><dd>eom@es-service.ru</dd>
+          <dt>Тема</dt><dd>РД ЭОМ изм. 0 · ЖК «Северная долина», корпус 2 · подтвердите ознакомление</dd>
+          <dt>Ответ на</dt><dd class="mono">rd+7f3a19@notify.company-domain.ru</dd>
+        </dl>
+        <div class="mail-body">
+          <p>Добрый день!</p>
+          <p>Выпущен комплект рабочей документации <b>ЭОМ, изм. 0</b> по объекту ЖК «Северная долина», 3-я очередь, корпус 2.</p>
+          <p>Документация: <a href="#send">sarex.example.ru/project/sd-3/docs/EOM-rev0</a></p>
+          <p>Пожалуйста, подтвердите ознакомление до <b>09.10.2026</b>.</p>
+          <span class="btn btn-primary mail-btn">Подтверждаю ознакомление</span>
+          <p class="muted">Если есть вопросы или замечания по документации, просто ответьте на это письмо — ответ получит координатор.</p>
+          <p class="muted">Смирнова Анна, координатор ДП</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</section>
+
+<!-- ======================= 7.3 Карточка уведомления ======================= -->
+<section id="card" data-screen hidden>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+    <nav class="topnav">
+      <a href="#board" aria-current="page">Доска</a>
+      <a href="#send">Отправить уведомление</a>
+      <a href="#board">Справочники</a>
+    </nav>
+    <div class="user"><span>Смирнова А. В., координатор ДП</span><div class="avatar">АС</div></div>
+  </header>
+  <main>
+    <div class="card-head">
+      <nav class="crumbs" aria-label="Путь"><a href="#board">Доска</a><span>/</span><span>ЖК «Северная долина», 3-я очередь</span><span>/</span><span>Корпус 2</span></nav>
+      <div class="card-title">
+        <h1>КЖ.1 изм. 2 → ООО «СтройМонолит»</h1>
+        <span class="pill s-review">Требует ручной проверки</span>
+      </div>
+    </div>
+
+    <div class="facts">
+      <div class="fact"><span class="label">Отправлено</span><span class="v mono">11.09.2026 10:14</span></div>
+      <div class="fact"><span class="label">Срок ответа</span><span class="v mono">25.09.2026 · 10 из 10 р.д.</span></div>
+      <div class="fact"><span class="label">Напоминания</span><span class="v">2 из 2 · последнее 16.09</span></div>
+      <div class="fact"><span class="label">Канал</span><span class="v">Email</span></div>
+      <div class="fact"><span class="label">Подрядчик</span><span class="v">pto@stroymonolit.ru</span></div>
+      <div class="fact"><span class="label">Инициатор</span><span class="v">Смирнова А. В.</span></div>
+      <div class="fact"><span class="label">Документация</span><span class="v"><a href="#card">Открыть в Sarex ↗</a></span></div>
+    </div>
+
+    <section class="review-box" aria-label="Решение по ответу">
+      <div class="head">
+        <h2>ИИ не смог уверенно классифицировать ответ</h2>
+        <span class="pill s-review">unclear</span>
+        <div class="conf"><span class="muted">Уверенность</span><span class="bar" title="Порог 0,70"><i style="width:54%"></i><span class="thr"></span></span><span class="mono">0,54 · порог 0,70</span></div>
+      </div>
+      <p class="reason"><b>Обоснование модели:</b> подрядчик подтверждает получение и передачу на участок, но упоминает, что по узлу 4 «уточнит позже». Это может быть и подтверждением, и будущим вопросом.</p>
+      <div class="actions">
+        <span class="label" style="align-self:center">Как засчитать ответ:</span>
+        <button class="btn btn-sm" type="button" data-toast="Ответ засчитан как подтверждение. Статус: «Ознакомлен».">Ознакомлен</button>
+        <button class="btn btn-sm" type="button" data-toast="Ответ засчитан как вопрос. Статус: «Есть вопросы».">Вопрос</button>
+        <button class="btn btn-sm" type="button" data-toast="Ответ засчитан как замечание. Статус: «Есть вопросы».">Замечание</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="История">
+      <div class="panel-head"><h2>История</h2><span class="muted">6 событий · email и Telegram вместе, по времени</span></div>
+      <div class="panel-body">
+        <ol class="timeline">
+          <li class="ev" style="--dot: var(--accent)">
+            <span class="ev-time">11.09 10:14</span><span class="ev-rail"></span>
+            <div class="ev-body">
+              <div class="ev-title">Отправлено уведомление <span class="chan">email</span></div>
+              <p class="muted">Смирнова А. В. → pto@stroymonolit.ru</p>
+              <details class="raw"><summary>Показать письмо</summary><pre>Тема: РД КЖ.1 изм. 2 · ЖК «Северная долина», корпус 2 · подтвердите ознакомление
+Кому: pto@stroymonolit.ru
+
+Добрый день!
+
+Выпущен комплект рабочей документации КЖ.1, изм. 2 по объекту
+ЖК «Северная долина», 3-я очередь, корпус 2.
+
+Документация: https://sarex.example.ru/project/sd-3/docs/KZH1-rev2
+
+Пожалуйста, подтвердите ознакомление до 25.09.2026.
+[Подтверждаю ознакомление]</pre></details>
+            </div>
+          </li>
+          <li class="ev">
+            <span class="ev-time">14.09 09:00</span><span class="ev-rail"></span>
+            <div class="ev-body">
+              <div class="ev-title">Напоминание, 1-й р.д. <span class="chan">email</span></div>
+              <details class="raw"><summary>Показать письмо</summary><pre>Тема: Повторно: РД КЖ.1 изм. 2 · корпус 2 · подтвердите ознакомление
+
+Добрый день! Напоминаем о необходимости подтвердить ознакомление
+с комплектом КЖ.1, изм. 2. Срок — 25.09.2026.</pre></details>
+            </div>
+          </li>
+          <li class="ev">
+            <span class="ev-time">16.09 09:00</span><span class="ev-rail"></span>
+            <div class="ev-body">
+              <div class="ev-title">Напоминание, 3-й р.д. <span class="chan">email</span></div>
+              <details class="raw"><summary>Показать письмо</summary><pre>Тема: Повторно: РД КЖ.1 изм. 2 · корпус 2 · подтвердите ознакомление
+
+Добрый день! Это второе напоминание. Срок подтверждения — 25.09.2026.</pre></details>
+            </div>
+          </li>
+          <li class="ev" style="--dot: var(--review)">
+            <span class="ev-time">23.09 17:42</span><span class="ev-rail"></span>
+            <div class="ev-body">
+              <div class="ev-title">Ответ подрядчика <span class="chan">email</span><span class="pill s-review">unclear · 0,54</span></div>
+              <p class="muted">Шевчук Д. О., ПТО ООО «СтройМонолит»</p>
+              <details class="raw" open><summary>Скрыть исходный текст</summary><pre>Добрый день.
+Документацию получили, передали на участок.
+По узлу 4 (сопряжение плиты с колонной в осях 3–4/Б) уточним позже,
+сейчас смотрим с прорабом.
+
+--
+Шевчук Дмитрий, инженер ПТО
+ООО «СтройМонолит»</pre></details>
+            </div>
+          </li>
+          <li class="ev" style="--dot: var(--review)">
+            <span class="ev-time">23.09 17:42</span><span class="ev-rail"></span>
+            <div class="ev-body">
+              <div class="ev-title">Помечено для ручной проверки</div>
+              <p class="muted">Уверенность ниже порога 0,70, статус не изменён.</p>
+            </div>
+          </li>
+          <li class="ev" style="--dot: var(--soon)">
+            <span class="ev-time">25.09 09:00</span><span class="ev-rail"></span>
+            <div class="ev-body">
+              <div class="ev-title">Срок ответа истёк</div>
+              <p class="muted">Эскалация РП (Петров И. С.) уйдёт 28.09, если ответ не будет разобран.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+  </main>
+</section>
+
+<!-- ======================= Вход ======================= -->
+<section id="login" data-screen hidden>
+  <main>
+    <div class="login-wrap">
+      <form class="login" id="login-form" aria-label="Вход">
+        <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+        <div><h1>Вход</h1><p class="muted">Для координаторов ДП и администраторов</p></div>
+        <label class="field"><span>Email</span><input class="input" id="l-email" type="email" value="a.smirnova@company-domain.ru" autocomplete="username"></label>
+        <label class="field"><span>Пароль</span><input class="input" id="l-pass" type="password" value="••••••••••" autocomplete="current-password"></label>
+        <p class="err">Неверный email или пароль. Проверьте раскладку и попробуйте ещё раз.</p>
+        <button class="btn btn-primary" type="submit">Войти</button>
+        <p class="hint">Нет доступа? Напишите администратору системы.</p>
+      </form>
+    </div>
+  </main>
+</section>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function () {
+  var screens = Array.prototype.slice.call(document.querySelectorAll('[data-screen]'));
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.switcher a'));
+  function show() {
+    var id = (location.hash || '#board').slice(1);
+    if (!document.getElementById(id)) id = 'board';
+    screens.forEach(function (s) { s.hidden = s.id !== id; });
+    tabs.forEach(function (a) {
+      if (a.getAttribute('href') === '#' + id) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', show);
+  show();
+
+  var toast = document.getElementById('toast'), timer;
+  function say(text) {
+    toast.textContent = text; toast.hidden = false;
+    clearTimeout(timer); timer = setTimeout(function () { toast.hidden = true; }, 3200);
+  }
+  document.getElementById('send-form').addEventListener('submit', function (e) {
+    e.preventDefault(); say('Макет: отправлено 2 уведомления. В системе здесь откроется доска.');
+  });
+  document.getElementById('login-form').addEventListener('submit', function (e) {
+    e.preventDefault(); location.hash = '#board';
+  });
+  document.querySelectorAll('[data-toast]').forEach(function (b) {
+    b.addEventListener('click', function () { say(b.getAttribute('data-toast')); });
+  });
+})();
+</script>
+</body>
+</html>
