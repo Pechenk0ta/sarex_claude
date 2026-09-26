@@ -284,8 +284,56 @@ details.raw pre {
 
 .note-mock { font-size: 12px; color: var(--faint); }
 
+/* ---------- справочники ---------- */
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line); }
+.tabs button {
+  border: 0; background: none; padding: 8px 12px; margin-bottom: -1px; cursor: pointer;
+  color: var(--muted); font-weight: 500; border-bottom: 2px solid transparent;
+}
+.tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tabs .n { font: 12px var(--mono); color: var(--faint); margin-left: 4px; }
+.refs-grid { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.obj-list { display: grid; gap: 6px; }
+.obj {
+  display: grid; gap: 2px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); text-align: left; cursor: pointer; width: 100%;
+}
+.obj[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.obj .t { font-weight: 600; }
+.obj .m { font-size: 12px; color: var(--muted); }
+.obj.archived .t { color: var(--muted); }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+.form-grid .wide { grid-column: 1 / -1; }
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.switch input { width: 34px; height: 20px; accent-color: var(--accent); }
+.sub-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+table.tbl { border-collapse: collapse; width: 100%; }
+.tbl th, .tbl td { padding: 8px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+.tbl thead th { background: var(--surface-2); font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+.tbl tbody tr:last-child td { border-bottom: 0; }
+.tbl td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.tbl .row-actions { text-align: right; white-space: nowrap; }
+.tbl tr.off td { color: var(--faint); }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--accent); cursor: pointer; text-decoration: underline; font-size: 13px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 10px; border: 1px solid var(--line-strong);
+  border-radius: 99px; font-size: 13px; background: var(--surface);
+}
+.chip button { border: 0; background: none; cursor: pointer; color: var(--muted); width: 20px; height: 20px; border-radius: 50%; line-height: 1; }
+.chip button:hover { background: var(--surface-2); color: var(--ink); }
+.add-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.add-row .input, .add-row .select { flex: 1 1 200px; width: auto; }
+.tg-yes { color: var(--ok); } .tg-no { color: var(--faint); }
+.bounce { display: block; font-size: 12px; color: var(--late); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.toolbar .input { max-width: 320px; }
+.cal-note { padding: 10px 12px; background: var(--surface-2); border-radius: 4px; font-size: 13px; color: var(--muted); max-width: 80ch; }
+
 @media (max-width: 860px) {
-  .two-col { grid-template-columns: 1fr; }
+  .two-col, .refs-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
   .user span { display: none; }
 }
 @media (max-width: 560px) {
@@ -305,6 +353,7 @@ details.raw pre {
     <a href="#board">CRM-доска (7.1)</a>
     <a href="#send">Отправка (7.2)</a>
     <a href="#card">Карточка уведомления (7.3)</a>
+    <a href="#refs">Справочники</a>
     <a href="#login">Вход</a>
   </nav>
 </div>
@@ -316,7 +365,7 @@ details.raw pre {
     <nav class="topnav">
       <a href="#board" aria-current="page">Доска</a>
       <a href="#send">Отправить уведомление</a>
-      <a href="#board">Справочники</a>
+      <a href="#refs">Справочники</a>
     </nav>
     <div class="user"><span>Смирнова А. В., координатор ДП</span><div class="avatar">АС</div></div>
   </header>
@@ -444,7 +493,7 @@ details.raw pre {
     <nav class="topnav">
       <a href="#board">Доска</a>
       <a href="#send" aria-current="page">Отправить уведомление</a>
-      <a href="#board">Справочники</a>
+      <a href="#refs">Справочники</a>
     </nav>
     <div class="user"><span>Смирнова А. В., координатор ДП</span><div class="avatar">АС</div></div>
   </header>
@@ -533,7 +582,7 @@ details.raw pre {
     <nav class="topnav">
       <a href="#board" aria-current="page">Доска</a>
       <a href="#send">Отправить уведомление</a>
-      <a href="#board">Справочники</a>
+      <a href="#refs">Справочники</a>
     </nav>
     <div class="user"><span>Смирнова А. В., координатор ДП</span><div class="avatar">АС</div></div>
   </header>
@@ -648,6 +697,160 @@ details.raw pre {
   </main>
 </section>
 
+<!-- ======================= Справочники ======================= -->
+<section id="refs" data-screen hidden>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+    <nav class="topnav">
+      <a href="#board">Доска</a>
+      <a href="#send">Отправить уведомление</a>
+      <a href="#refs" aria-current="page">Справочники</a>
+    </nav>
+    <div class="user"><span>Кузнецов П. Р., администратор</span><div class="avatar">ПК</div></div>
+  </header>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Справочники</h1>
+        <p class="sub">Изменять справочники может администратор. Координаторы видят их только для чтения.</p>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Разделы справочников">
+      <button type="button" role="tab" id="t-objects" aria-controls="p-objects" aria-selected="true">Объекты и корпуса<span class="n">3</span></button>
+      <button type="button" role="tab" id="t-contractors" aria-controls="p-contractors" aria-selected="false">Подрядчики<span class="n">6</span></button>
+      <button type="button" role="tab" id="t-users" aria-controls="p-users" aria-selected="false">Пользователи<span class="n">5</span></button>
+      <button type="button" role="tab" id="t-calendar" aria-controls="p-calendar" aria-selected="false">Производственный календарь</button>
+    </div>
+
+    <!-- Объекты и корпуса -->
+    <div role="tabpanel" id="p-objects" aria-labelledby="t-objects">
+      <div class="refs-grid">
+        <div class="obj-list">
+          <button class="btn btn-primary" type="button" data-toast="Макет: здесь откроется форма нового объекта.">+ Добавить объект</button>
+          <button class="obj" type="button" aria-current="true"><span class="t">ЖК «Северная долина», 3-я очередь</span><span class="m">4 корпуса · 5 подрядчиков · 13 уведомлений</span></button>
+          <button class="obj" type="button"><span class="t">ЖК «Речной квартал»</span><span class="m">2 корпуса · 3 подрядчика · 6 уведомлений</span></button>
+          <button class="obj archived" type="button"><span class="t">БЦ «Литейный»</span><span class="m">Неактивен · 1 корпус · 21 уведомление в истории</span></button>
+        </div>
+
+        <form class="panel" id="obj-form" aria-label="Объект">
+          <div class="panel-head"><h2>ЖК «Северная долина», 3-я очередь</h2><label class="switch"><input type="checkbox" id="o-active" checked> Активен</label></div>
+          <div class="panel-body">
+            <div class="form-grid">
+              <label class="field wide"><span>Наименование</span><input class="input" id="o-name" value="ЖК «Северная долина», 3-я очередь"></label>
+              <label class="field wide"><span>Адрес</span><input class="input" id="o-address" value="г. Санкт-Петербург, Парголово, ул. Николая Рубцова, участок 12"></label>
+              <label class="field wide"><span>Email руководителя проекта</span><input class="input" id="o-pm" type="email" value="i.petrov@company-domain.ru"><span class="hint">На этот адрес уходят эскалации после 10 р.д. без ответа.</span></label>
+            </div>
+
+            <div class="field">
+              <div class="sub-head"><h3>Корпуса</h3><span class="hint">Корпус с уведомлениями нельзя удалить, только отключить.</span></div>
+              <div class="tbl-wrap">
+                <table class="tbl">
+                  <thead><tr><th>Наименование</th><th>Уведомлений</th><th>Активен</th><th></th></tr></thead>
+                  <tbody>
+                    <tr><td>Корпус 1 · секции 1–3</td><td class="num">5</td><td><input type="checkbox" id="k-1" checked aria-label="Корпус 1 активен"></td><td class="row-actions"><button class="linkbtn" type="button">Переименовать</button></td></tr>
+                    <tr><td>Корпус 2 · секции 4–5</td><td class="num">4</td><td><input type="checkbox" id="k-2" checked aria-label="Корпус 2 активен"></td><td class="row-actions"><button class="linkbtn" type="button">Переименовать</button></td></tr>
+                    <tr><td>Корпус 3 · секции 6–8</td><td class="num">4</td><td><input type="checkbox" id="k-3" checked aria-label="Корпус 3 активен"></td><td class="row-actions"><button class="linkbtn" type="button">Переименовать</button></td></tr>
+                    <tr><td>Корпус 4 · паркинг</td><td class="num">0</td><td><input type="checkbox" id="k-4" checked aria-label="Корпус 4 активен"></td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="add-row"><input class="input" id="k-new" placeholder="Например: Корпус 5 · секции 9–10"><button class="btn" type="button" data-toast="Макет: корпус добавлен.">Добавить корпус</button></div>
+            </div>
+
+            <div class="field">
+              <div class="sub-head"><h3>Подрядчики на объекте</h3><span class="hint">Только им можно отправить уведомление по этому объекту.</span></div>
+              <div class="chips">
+                <span class="chip">ООО «СтройМонолит»<button type="button" aria-label="Убрать СтройМонолит">×</button></span>
+                <span class="chip">ООО «ТеплоМонтаж»<button type="button" aria-label="Убрать ТеплоМонтаж">×</button></span>
+                <span class="chip">ООО «АкваИнж»<button type="button" aria-label="Убрать АкваИнж">×</button></span>
+                <span class="chip">ООО «ЭлектроСети-Сервис»<button type="button" aria-label="Убрать ЭлектроСети-Сервис">×</button></span>
+                <span class="chip">ООО «ФасадПро»<button type="button" aria-label="Убрать ФасадПро">×</button></span>
+              </div>
+              <div class="add-row"><select class="select" id="o-add-contractor"><option>Выберите подрядчика из справочника…</option><option>ООО «ЛифтСтрой»</option></select><button class="btn" type="button" data-toast="Макет: подрядчик привязан к объекту.">Привязать</button></div>
+            </div>
+          </div>
+          <div class="form-foot"><span class="muted">Изменено 19.09.2026, Кузнецов П. Р.</span><button class="btn btn-primary" type="submit">Сохранить</button></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Подрядчики -->
+    <div role="tabpanel" id="p-contractors" aria-labelledby="t-contractors" hidden>
+      <div class="panel">
+        <div class="panel-head toolbar">
+          <input class="input" id="c-search" type="search" placeholder="Поиск по названию или email">
+          <button class="btn btn-primary" type="button" data-toast="Макет: здесь откроется форма нового подрядчика.">+ Добавить подрядчика</button>
+        </div>
+        <div class="tbl-wrap" style="border:0;border-radius:0">
+          <table class="tbl">
+            <thead><tr><th>Организация</th><th>Email для уведомлений</th><th>Telegram</th><th>Объекты</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>ООО «СтройМонолит»</td><td>pto@stroymonolit.ru</td><td class="tg-yes">Привязан</td><td>Северная долина, Речной квартал</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ТеплоМонтаж»</td><td>info@teplomontazh.ru</td><td class="tg-no">Не привязан · <button class="linkbtn" type="button" data-toast="Макет: ссылка на бота отправлена на info@teplomontazh.ru.">отправить ссылку</button></td><td>Северная долина</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «АкваИнж»</td><td>pto@akvainzh.ru<span class="bounce">Письма не доставляются с 21.09, проверьте адрес</span></td><td class="tg-no">Не привязан</td><td>Северная долина</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ЭлектроСети-Сервис»</td><td>eom@es-service.ru</td><td class="tg-no">Не привязан</td><td>Северная долина, Речной квартал</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ФасадПро»</td><td>tender@fasadpro.ru</td><td class="tg-yes">Привязан</td><td>Северная долина</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ЛифтСтрой»</td><td>office@liftstroy.ru</td><td class="tg-no">Не привязан</td><td class="muted">Не привязан к объектам</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Пользователи -->
+    <div role="tabpanel" id="p-users" aria-labelledby="t-users" hidden>
+      <div class="panel">
+        <div class="panel-head toolbar">
+          <span class="muted">Подрядчики и РП не заводятся как пользователи: они работают только через почту.</span>
+          <button class="btn btn-primary" type="button" data-toast="Макет: приглашение отправлено.">+ Пригласить пользователя</button>
+        </div>
+        <div class="tbl-wrap" style="border:0;border-radius:0">
+          <table class="tbl">
+            <thead><tr><th>ФИО</th><th>Email</th><th>Роль</th><th>Вход</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>Смирнова Анна Викторовна</td><td>a.smirnova@company-domain.ru</td><td>Координатор</td><td>Пароль</td><td class="row-actions"><button class="linkbtn" type="button" data-toast="Макет: ссылка для сброса пароля отправлена.">Сбросить пароль</button></td></tr>
+              <tr><td>Орлов Максим Андреевич</td><td>m.orlov@company-domain.ru</td><td>Координатор</td><td>Пароль</td><td class="row-actions"><button class="linkbtn" type="button" data-toast="Макет: ссылка для сброса пароля отправлена.">Сбросить пароль</button></td></tr>
+              <tr><td>Белова Екатерина Олеговна</td><td>e.belova@company-domain.ru</td><td>Координатор</td><td>Пароль</td><td class="row-actions"><button class="linkbtn" type="button" data-toast="Макет: ссылка для сброса пароля отправлена.">Сбросить пароль</button></td></tr>
+              <tr><td>Кузнецов Павел Романович</td><td>p.kuznetsov@company-domain.ru</td><td>Администратор</td><td>Пароль</td><td class="row-actions"><button class="linkbtn" type="button" data-toast="Макет: ссылка для сброса пароля отправлена.">Сбросить пароль</button></td></tr>
+              <tr class="off"><td>Григорьев Олег Викторович</td><td>o.grigoriev@company-domain.ru</td><td>Координатор</td><td>Отключён 01.08.2026</td><td class="row-actions"><button class="linkbtn" type="button" data-toast="Макет: доступ восстановлен.">Включить</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Производственный календарь -->
+    <div role="tabpanel" id="p-calendar" aria-labelledby="t-calendar" hidden>
+      <div class="panel">
+        <div class="panel-head toolbar">
+          <label class="field" style="grid-auto-flow:column;align-items:center"><span>Год</span><select class="select" id="cal-year"><option>2026</option><option>2027</option></select></label>
+          <button class="btn btn-primary" type="button" data-toast="Макет: здесь откроется форма добавления даты.">+ Добавить дату</button>
+        </div>
+        <div class="panel-body">
+          <p class="cal-note">Здесь хранятся только исключения из обычной недели. Остальные пн–пт считаются рабочими, сб и вс — выходными. От этого календаря зависят напоминания на 1-й и 3-й р.д. и эскалация после 10-го. Даты ниже — пример заполнения; перед запуском сверьте их с постановлением Правительства на 2026 год.</p>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Дата</th><th>День</th><th>Тип</th><th>Основание</th><th></th></tr></thead>
+              <tbody>
+                <tr><td class="num">01.01–08.01</td><td>чт–чт</td><td><span class="pill s-late">Выходной</span></td><td>Новогодние каникулы</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                <tr><td class="num">23.02</td><td>пн</td><td><span class="pill s-late">Выходной</span></td><td>День защитника Отечества</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                <tr><td class="num">09.03</td><td>пн</td><td><span class="pill s-late">Выходной</span></td><td>Перенос с 08.03 (вс)</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                <tr><td class="num">01.05</td><td>пт</td><td><span class="pill s-late">Выходной</span></td><td>Праздник Весны и Труда</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                <tr><td class="num">11.05</td><td>пн</td><td><span class="pill s-late">Выходной</span></td><td>Перенос с 09.05 (сб)</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                <tr><td class="num">12.06</td><td>пт</td><td><span class="pill s-late">Выходной</span></td><td>День России</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                <tr><td class="num">04.11</td><td>ср</td><td><span class="pill s-late">Выходной</span></td><td>День народного единства</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+                <tr><td class="num">31.12</td><td>чт</td><td><span class="pill s-late">Выходной</span></td><td>Перенос с 03.01 (сб)</td><td class="row-actions"><button class="linkbtn" type="button">Удалить</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="hint">Тип «Рабочий» используется для выходного дня, который по постановлению стал рабочим.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</section>
+
 <!-- ======================= Вход ======================= -->
 <section id="login" data-screen hidden>
   <main>
@@ -694,6 +897,26 @@ details.raw pre {
   });
   document.getElementById('login-form').addEventListener('submit', function (e) {
     e.preventDefault(); location.hash = '#board';
+  });
+
+  var tabBtns = Array.prototype.slice.call(document.querySelectorAll('#refs [role="tab"]'));
+  tabBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      tabBtns.forEach(function (o) {
+        var on = o === b;
+        o.setAttribute('aria-selected', on ? 'true' : 'false');
+        document.getElementById(o.getAttribute('aria-controls')).hidden = !on;
+      });
+    });
+  });
+  var objs = Array.prototype.slice.call(document.querySelectorAll('#refs .obj'));
+  objs.forEach(function (o) {
+    o.addEventListener('click', function () {
+      objs.forEach(function (x) { x.setAttribute('aria-current', x === o ? 'true' : 'false'); });
+    });
+  });
+  document.getElementById('obj-form').addEventListener('submit', function (e) {
+    e.preventDefault(); say('Макет: изменения объекта сохранены.');
   });
   document.querySelectorAll('[data-toast]').forEach(function (b) {
     b.addEventListener('click', function () { say(b.getAttribute('data-toast')); });
