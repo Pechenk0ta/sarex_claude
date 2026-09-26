@@ -2,8 +2,8 @@
 #   docker compose -f docker-compose.yml up -d
 # Locally `docker compose up` also loads docker-compose.override.yml (dev settings).
 
+# app and worker run the same image; only app builds it (two parallel builds of one tag clash).
 x-app: &app
-  build: .
   image: rd-notify:latest
   env_file: .env
   environment:
@@ -38,6 +38,7 @@ services:
 
   app:
     <<: *app
+    build: .
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
@@ -47,6 +48,7 @@ services:
 
   worker:
     <<: *app
+    pull_policy: never  # built by the app service
     command: ["python", "-m", "app.worker"]
     mem_limit: 192m
 
