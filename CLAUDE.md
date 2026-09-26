@@ -21,16 +21,17 @@
 | Схемы и настройки | Pydantic v2, `pydantic-settings` (конфиг из переменных окружения) | |
 | Фоновые задачи | отдельный контейнер `worker` с APScheduler (`AsyncIOScheduler`) | без Redis/Celery: на VPS с 1–2 ГБ RAM (раздел 12.1) лишний брокер не нужен, а нагрузка — десятки уведомлений в день |
 | Интерфейс координатора | серверный рендеринг: Jinja2 + HTMX (+ минимальный CSS, без сборщика) | CRM-доска и формы (раздел 7) не требуют SPA; нет Node.js-тулчейна и отдельного фронтенд-контейнера. React из раздела 10 ТЗ сознательно не используется |
-| Отправка почты | SMTP транзакционного провайдера через `aiosmtplib` | провайдер меняется одной настройкой |
-| Приём ответов | адаптер `InboundMailSource`: webhook провайдера (`POST /api/webhooks/email-inbound`) или IMAP-поллинг в воркере | выбор зависит от открытого вопроса 1 ТЗ; бизнес-логика не должна знать, откуда пришло письмо |
-| ИИ-классификация | официальный SDK `anthropic` (`AsyncAnthropic`), `client.messages.parse(...)` с Pydantic-моделью ответа | структурированный JSON `category / confidence / reasoning` (раздел 4.2 ТЗ) |
+| Отправка почты | SMTP корпоративного почтового ящика системы через `aiosmtplib` | решение 1 раздела 9 ТЗ: вся переписка видна в обычном почтовом клиенте; сервис ящика (Яндекс 360, VK WorkSpace, Google, Microsoft) меняется настройками |
+| Приём ответов | IMAP-поллинг того же ящика в воркере (`aioimaplib`), уведомление находится по plus-адресу `rd+<токен>@домен` из заголовков `To`/`Delivered-To`; за интерфейсом `InboundMailSource` | обработанные письма помечаются флагом/папкой в ящике, а не удаляются; повторная обработка одного письма (по `Message-ID`) ничего не меняет |
+| ИИ-классификация | интерфейс `Classifier`; провайдер LLM не выбран (раздел 9 ТЗ, решение 3 и вопрос 6) | структурированный JSON `category / confidence / reasoning` (раздел 4.2 ТЗ); до выбора провайдера работает `KeywordClassifier` + кнопка подтверждения |
 | Аутентификация | логин/пароль, хеш `argon2` (`pwdlib`), серверная сессия в cookie | SSO — открытый вопрос раздела 8; закладываем замену через отдельный модуль `auth` |
 | Инструменты | `uv` (зависимости и lock-файл), `ruff` (lint + format), `mypy`, `pytest` + `pytest-asyncio` | |
 | Развёртывание | Docker + docker compose, Caddy (reverse proxy + автоматический Let's Encrypt) | раздел 12 ТЗ; Caddy выпускает и продлевает сертификат сам, без certbot |
 
 ### ИИ-классификатор: договорённости
 
-- Модель задаётся переменной `LLM_MODEL`, по умолчанию `claude-opus-5`. Менять модель — только через env, не в коде.
+- Сервер стоит в РФ (решение 3), а API Anthropic официально недоступен из России, поэтому `AnthropicClassifier` ниже — один из вариантов, а не выбор по умолчанию. Реализация выбирается переменной `CLASSIFIER` (`keywords` — по умолчанию, `anthropic`, позже российская LLM); ни бизнес-логика, ни БД от неё не зависят. Обходить региональные ограничения провайдеров нельзя.
+- Для `AnthropicClassifier`: модель задаётся переменной `LLM_MODEL`, по умолчанию `claude-opus-5`. Менять модель — только через env, не в коде.
 - Вызов: `client.messages.parse(model=..., max_tokens=..., system=..., messages=[...], output_format=ClassificationResult)`, где `ClassificationResult` — Pydantic-модель с полями `category`, `confidence`, `reasoning`. Результат — `response.parsed_output`. Перед чтением результата проверять `response.stop_reason` (в т.ч. `refusal`).
 - Если `confidence < AI_CONFIDENCE_THRESHOLD` (env, по умолчанию `0.7`) — категория принудительно `unclear` (раздел 4.2 ТЗ).
 - Ошибки API ловить цепочкой от частных к общим (`RateLimitError` → `APIStatusError` → `APIConnectionError`), при недоступности модели — fallback на keyword-match (`services/classifier/keywords.py`), результат помечать в `payload` как `"classifier": "keywords"`.
@@ -50,7 +51,7 @@
 │   │                           #   notification, notification_event, holiday
 │   ├── schemas/                # Pydantic-схемы запросов/ответов API
 │   ├── api/                    # JSON API (раздел 5 ТЗ): projects, notifications,
-│   │                           #   dashboard, webhooks, ack
+│   │                           #   dashboard, ack
 │   ├── web/                    # HTML-интерфейс координатора
 │   │   ├── routes.py
 │   │   ├── templates/          # Jinja2: board, notification_card, send_form, login
@@ -60,7 +61,7 @@
 │   │   ├── reminders.py        # логика напоминаний и эскалации (раздел 4.3)
 │   │   ├── workdays.py         # расчёт рабочих дней с учётом таблицы holidays
 │   │   ├── classifier/         # ИИ-классификатор + keyword fallback + промпт
-│   │   ├── mail/               # sender.py (SMTP), inbound.py (webhook/IMAP), templates/
+│   │   ├── mail/               # sender.py (SMTP), inbound.py (IMAP), templates/
 │   │   └── telegram/           # задел под раздел 11, в MVP пусто
 │   ├── auth/                   # логин, сессии, зависимость current_user
 │   └── worker.py               # точка входа контейнера worker: APScheduler-задачи
@@ -86,7 +87,7 @@
 
 ## Развёртывание (раздел 12 ТЗ)
 
-Целевой сервер: VPS 1 vCPU / 1–2 ГБ RAM / 20–25 ГБ SSD, Ubuntu LTS, домен с HTTPS.
+Целевой сервер: российский VPS (данные хранятся в РФ, раздел 9 ТЗ, решение 3) 1 vCPU / 1–2 ГБ RAM / 20–25 ГБ SSD, Ubuntu LTS, домен с HTTPS.
 
 Контейнеры `docker-compose.yml`:
 
@@ -100,7 +101,7 @@
 Правила:
 - Наружу открыты только 80/443 (и 22 для SSH на уровне хоста). Postgres и app — только во внутренней сети compose.
 - Каждому сервису задан `mem_limit` и `restart: unless-stopped`; суммарно должно помещаться в 1 ГБ RAM с запасом.
-- Секреты (`DATABASE_URL`, `ANTHROPIC_API_KEY`, SMTP-учётка, `SECRET_KEY`, `WEBHOOK_SECRET`) — только в `.env` на сервере, в git попадает лишь `.env.example`.
+- Секреты (`DATABASE_URL`, учётка почтового ящика для SMTP/IMAP, ключ LLM-провайдера, `SECRET_KEY`) — только в `.env` на сервере, в git попадает лишь `.env.example`.
 - Бэкап: ежедневный `deploy/backup.sh` (cron хоста) → `pg_dump -Fc` → копия во внешнее хранилище, хранить минимум 14 дней. Потеря БД = потеря всей истории ознакомлений, поэтому восстановление из бэкапа проверяется до запуска в работу.
 - Логи — в stdout контейнеров (docker сам ротирует при `json-file` с `max-size`).
 - CI/CD (раздел 12.4) — позже: GitHub Actions, при мерже в `main` — сборка образа и `docker compose pull && docker compose up -d` по SSH.
@@ -128,7 +129,8 @@ docker compose exec app alembic upgrade head
 - Задача напоминаний идемпотентна: выборка с `SELECT ... FOR UPDATE SKIP LOCKED`, обновление с условием на текущий `reminder_count`/`status`, письмо отправляется после фиксации изменения. Повторный запуск в тот же день не должен отправить второе письмо.
 - Ответ, классифицированный как `unclear`, не меняет статус автоматически.
 - Магическая ссылка подтверждения — одноразовый подписанный токен (`itsdangerous` или HMAC c `SECRET_KEY`), с ограниченным сроком жизни.
-- Webhook-эндпоинты проверяют подпись/секрет провайдера; без проверки запрос отклоняется.
+- Webhook-эндпоинты (Telegram, раздел 11 ТЗ) проверяют секрет; без проверки запрос отклоняется.
+- Письма в IMAP-ящике не удаляются: это архив переписки, который смотрят люди.
 
 ### Модель данных
 - Таблицы и поля — строго по разделу 3 ТЗ (включая `project_contractors`, `users`, `holidays`, `notifications.needs_manual_review`, `projects.project_manager_email`). Новое поле или таблица сначала добавляется в ТЗ, потом в код.
