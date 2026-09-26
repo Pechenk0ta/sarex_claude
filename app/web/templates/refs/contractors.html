@@ -1,0 +1,46 @@
+{% extends "refs/_layout.html" %}
+{% block tab %}
+<div class="panel">
+  {% if is_admin %}
+  <form class="panel-head add-row" method="post" action="/refs/contractors" aria-label="Новый подрядчик">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <input class="input" name="name" placeholder="Организация, например ООО «СтройМонолит»" required maxlength="255" aria-label="Организация">
+    <input class="input" name="email" type="email" placeholder="Email для уведомлений" required aria-label="Email для уведомлений">
+    <button class="btn btn-primary" type="submit">+ Добавить подрядчика</button>
+  </form>
+  {% endif %}
+  <div class="tbl-wrap" style="border:0;border-radius:0">
+    <table class="tbl">
+      <thead><tr><th>Организация</th><th>Email для уведомлений</th><th>Telegram</th><th>Проекты и корпуса</th>{% if is_admin %}<th></th>{% endif %}</tr></thead>
+      <tbody>
+      {% for row in rows %}
+        {% set c = row.contractor %}
+        {% if is_admin and edit == c.id %}
+        <tr>
+          <td colspan="5">
+            <form class="add-row" method="post" action="/refs/contractors/{{ c.id }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+              <input class="input" name="name" value="{{ c.name }}" required maxlength="255" aria-label="Организация">
+              <input class="input" name="email" type="email" value="{{ c.email }}" required aria-label="Email">
+              <button class="btn btn-primary" type="submit">Сохранить</button>
+              <a class="btn" href="/refs/contractors">Отмена</a>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td>{{ c.name }}</td>
+          <td>{{ c.email }}</td>
+          <td class="{{ 'tg-yes' if c.telegram_chat_id else 'tg-no' }}">{{ 'Привязан' if c.telegram_chat_id else 'Не привязан' }}</td>
+          <td>{% for a in row.assignments %}{{ a }}{% if not loop.last %}<br>{% endif %}{% else %}<span class="muted">Не назначен ни на один корпус</span>{% endfor %}</td>
+          {% if is_admin %}<td class="row-actions"><a class="linkbtn" href="/refs/contractors?edit={{ c.id }}">Изменить</a></td>{% endif %}
+        </tr>
+        {% endif %}
+      {% else %}
+        <tr><td colspan="5" class="muted">Подрядчиков пока нет.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

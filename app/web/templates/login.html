@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Вход · Ознакомление с РД{% endblock %}
+{% block body %}
+<main>
+  <div class="login-wrap">
+    <form class="login" method="post" action="/login" aria-label="Вход">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <input type="hidden" name="next" value="{{ next }}">
+      <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+      <div><h1>Вход</h1><p class="muted">Для координаторов ДП и администраторов</p></div>
+      <label class="field"><span>Email</span><input class="input" id="l-email" name="email" type="email" value="{{ email }}" autocomplete="username" required autofocus></label>
+      <label class="field"><span>Пароль</span><input class="input" id="l-pass" name="password" type="password" autocomplete="current-password" required></label>
+      {% if error %}<p class="err" role="alert">{{ error }}</p>{% endif %}
+      <button class="btn btn-primary" type="submit">Войти</button>
+      <p class="hint">Нет доступа? Напишите администратору системы.</p>
+    </form>
+  </div>
+</main>
+{% endblock %}

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Ознакомление с РД{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', path='app.css') }}">
+  <script src="{{ url_for('static', path='app.js') }}" defer></script>
+</head>
+<body>
+{% block body %}
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+    <nav class="topnav" aria-label="Разделы">
+      <a href="/"{% if section == 'board' %} aria-current="page"{% endif %}>Доска</a>
+      <a href="/send"{% if section == 'send' %} aria-current="page"{% endif %}>Отправить уведомление</a>
+      <a href="/refs" class="dd"{% if section == 'refs' %} aria-current="page"{% endif %}>Справочники</a>
+    </nav>
+    {% if user %}
+    <div class="user">
+      <div class="avatar">{{ user.full_name.split()[:2] | map('first') | join | upper }}</div>
+      <div class="user-text">
+        <span class="user-role">{{ 'Администратор' if user.role == 'admin' else 'Координатор ДП' }}</span>
+        <span class="user-name">{{ user.full_name }}</span>
+      </div>
+      <form method="post" action="/logout" class="inline-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+        <button class="icon-btn" type="submit" title="Выйти" aria-label="Выйти">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H6"/><path d="M10.5 11 13.5 8l-3-3"/><path d="M13.5 8H6.5"/></svg>
+        </button>
+      </form>
+    </div>
+    {% endif %}
+  </header>
+  <main>
+    {% for kind, message in pop_flashes(request) %}
+      {% if kind == 'secret' %}
+        <p class="flash">{{ message.rsplit(': ', 1)[0] }}: <span class="secret">{{ message.rsplit(': ', 1)[1] }}</span>. Передайте его пользователю — больше он показан не будет.</p>
+      {% else %}
+        <p class="flash {{ kind }}" role="status">{{ message }}</p>
+      {% endif %}
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+{% endblock %}
+</body>
+</html>

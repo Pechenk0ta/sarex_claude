@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Отправить уведомление · Ознакомление с РД{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Отправить уведомление подрядчикам корпуса</h1>
+    <p class="sub">Каждый подрядчик получит отдельное письмо со ссылкой на РД и кнопкой «Подтверждаю ознакомление» и подтверждает ознакомление сам за себя.</p>
+  </div>
+</div>
+
+{% if error %}<p class="flash error" role="alert">{{ error.message }}</p>{% endif %}
+
+{% if not projects %}
+  <p class="muted">Нет активных проектов. Проекты и корпуса заводит администратор в разделе «Справочники».</p>
+{% else %}
+<div class="two-col">
+  {% if not project %}
+  <form class="panel" method="get" action="/send" aria-label="Выбор проекта">
+    <div class="panel-body steps">
+      <div class="step">
+        <span class="step-no">1</span>
+        <label class="field"><span>Проект</span>
+          <select class="select" id="s-project" name="project_id" data-reload-project required>
+            <option value="">Выберите проект…</option>
+            {% for p in projects %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+          </select>
+        </label>
+      </div>
+    </div>
+    <div class="form-foot"><span class="muted">Сначала выберите проект</span><button class="btn btn-primary" type="submit">Далее</button></div>
+  </form>
+  {% else %}
+  <form class="panel" id="send-form" method="post" action="/send" aria-label="Параметры уведомления">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <div class="panel-body steps">
+      <div class="step done">
+        <span class="step-no">1</span>
+        <label class="field"><span>Проект</span>
+          <select class="select" id="s-project" name="project_id" data-reload-project required>
+            {% for p in projects %}<option value="{{ p.id }}"{% if p.id == project.id %} selected{% endif %}>{{ p.name }}</option>{% endfor %}
+          </select>
+          <noscript><a href="/send">Выбрать другой проект</a></noscript>
+        </label>
+      </div>
+      <div class="step{% if corpus_id %} done{% endif %}">
+        <span class="step-no">2</span>
+        <label class="field"><span>Корпус</span>
+          <select class="select" id="s-corpus" name="corpus_id" data-reload-corpus required>
+            {% if not corpus_id %}<option value="">Выберите корпус…</option>{% endif %}
+            {% for c in corpuses %}<option value="{{ c.id }}"{% if c.id == corpus_id %} selected{% endif %}>{{ c.name }}</option>{% endfor %}
+          </select>
+          {% if not corpuses %}<span class="warn-note">У проекта нет активных корпусов. Их добавляет администратор.</span>{% endif %}
+          <noscript><button class="btn" type="submit" formmethod="get" formaction="/send" formnovalidate>Показать подрядчиков корпуса</button></noscript>
+        </label>
+      </div>
+      <div class="step">
+        <span class="step-no">3</span>
+        <div class="field">
+          <label for="s-link"><span style="font-weight:500">Ссылка на РД в Sarex</span></label>
+          <input class="input" id="s-link" name="sarex_link" type="url" value="{{ sarex_link }}" required maxlength="2000" placeholder="https://…">
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-no">4</span>
+        <div class="field">
+          <label for="s-message"><span style="font-weight:500">Сопроводительное сообщение</span> <span class="muted">(необязательно)</span></label>
+          <textarea class="input" id="s-message" name="message" rows="4" maxlength="5000">{{ message }}</textarea>
+          <span class="hint">Попадёт в письмо и в напоминания, одинаково для всех получателей.</span>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-no">5</span>
+        <div class="field">
+          <span>Получатели: все подрядчики корпуса</span>
+          <span class="hint">Уведомление получат все подрядчики, назначенные на выбранный корпус, независимо от договора и вида работ. Снимите галочку, чтобы исключить подрядчика из этой рассылки.</span>
+          <div class="checklist">
+            {% for r in recipients %}
+            <label class="check">
+              <input type="checkbox" name="contractor_ids" value="{{ r.contractor.id }}"{% if r.contractor.id in selected %} checked{% endif %}>
+              <span>{{ r.contractor.name }}<small>{{ r.contractor.email }}</small></span>
+              <span class="chan already" {% if not r.already_sent %}hidden{% endif %}>уже получил</span>
+            </label>
+            {% else %}
+            {% if corpus_id %}
+            <p class="warn-note">На корпус не назначен ни один подрядчик. Их назначает администратор в разделе «Справочники».</p>
+            {% else %}
+            <p class="muted">Выберите корпус: получателями станут его подрядчики.</p>
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-no">6</span>
+        <div class="field">
+          <label for="s-deadline"><span style="font-weight:500">Срок ответа</span></label>
+          <input class="input" id="s-deadline" name="deadline" type="date" value="{{ deadline.isoformat() }}" min="{{ tomorrow.isoformat() }}" required style="width:auto">
+          <span class="hint">По умолчанию {{ workdays }} рабочих дней — до {{ default_deadline | ru_date }}. Можно выбрать другой рабочий день. Если срок пройдёт без ответа, подрядчику уйдут напоминания на 1-й и 3-й рабочий день просрочки, а РП — письмо в 1-й день просрочки.</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-foot">
+      <span class="muted" id="s-count">{{ selected | length }} из {{ recipients | length }} подрядчиков корпуса</span>
+      <button class="btn btn-primary" type="submit" id="s-submit">Отправить уведомления: {{ selected | length }}</button>
+    </div>
+  </form>
+  {% endif %}
+
+  {% if project %}
+  <section class="panel mail" aria-label="Предпросмотр письма">
+    <div class="panel-head"><h2>Предпросмотр письма</h2><span class="label">как увидит подрядчик</span></div>
+    <div class="mail-body">
+      <p>Добрый день!</p>
+      <p>Выпущена рабочая документация по проекту <b>{{ project.name }}</b>, {% set current = corpuses | selectattr("id", "equalto", corpus_id) | first %}<span id="prev-corpus">{{ current.name if current else "выбранный корпус" }}</span>.</p>
+      <p>Документация: ссылка из поля «Ссылка на РД в Sarex»</p>
+      <div class="mail-note" id="prev-message-box" {% if not message %}hidden{% endif %}><span class="label">Сообщение координатора</span><p id="prev-message">{{ message }}</p></div>
+      <p>Пожалуйста, подтвердите ознакомление до <b id="prev-deadline">{{ deadline | ru_date }}</b>.</p>
+      <span class="btn btn-primary mail-btn">Подтверждаю ознакомление</span>
+      <p class="muted">Если есть вопросы или замечания по документации, просто ответьте на это письмо — ответ получит координатор.</p>
+      <p class="muted">{{ user.full_name }}, координатор ДП</p>
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

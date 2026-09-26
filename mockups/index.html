@@ -209,6 +209,9 @@ table.board { border-collapse: collapse; width: 100%; min-width: 980px; }
   border-left: 3px solid var(--st, var(--line-strong));
 }
 .n-item:hover { background: var(--surface-2); }
+.n-link { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; flex: 1 1 100%; color: inherit; text-decoration: none; }
+.n-status { display: flex; gap: 6px; flex: 1 1 100%; }
+.n-status .select { padding: 2px 6px; font-size: 12px; }
 .n-item .who { font-size: 13px; flex: 1 1 100%; }
 .n-item .days { font: 12px var(--mono); color: var(--muted); flex: 1 1 96px; display: flex; gap: 8px; align-items: center; white-space: nowrap; }
 .bar { flex: 1; height: 4px; border-radius: 2px; background: var(--line); position: relative; overflow: hidden; }
@@ -467,7 +470,7 @@ table.tbl { border-collapse: collapse; width: 100%; }
             <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">2 из 4</b></span><span class="pill s-soon">Истекает ×2</span></span><span class="seg"><i class="soon"></i><i class="soon"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">4 подрядчиков · 1 исключён</span></summary>
               <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">21.09 · за 1 р.д.</span></a><a class="n-item soon" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-soon">Истекает</span><span class="days">5 из 10 р.д.<span class="bar"><i style="width:50%"></i></span></span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">22.09 · за 2 р.д.</span></a><a class="n-item soon" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-soon">Истекает</span><span class="days">5 из 10 р.д.<span class="bar"><i style="width:50%"></i></span></span></a><span class="n-item off"><span class="who">ФасадПро</span><span class="days">исключён из рассылки</span></span></div></details></td>
             <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">1 из 5</b></span><span class="pill s-wait">Ожидание ×4</span></span><span class="seg"><i class="wait"></i><i class="wait"></i><i class="wait"></i><i class="wait"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
-              <div class="list"><a class="n-item wait" href="#card"><span class="who">СтройМонолит</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><a class="n-item wait" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><a class="n-item ok" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">24.09 · за 1 р.д.</span></a><a class="n-item wait" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><a class="n-item wait" href="#card"><span class="who">ФасадПро</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a></div></details></td>
+              <div class="list"><div class="n-item wait"><a class="n-link" href="#card"><span class="who">СтройМонолит</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><form class="n-status"><select class="select" aria-label="Изменить статус" data-toast-select="Макет: статус изменён, событие записано в историю."><option>Изменить статус…</option><option>Ожидает ответа</option><option>Ознакомлен</option><option>Есть вопросы</option><option>Не принята</option></select></form></div><div class="n-item wait"><a class="n-link" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><form class="n-status"><select class="select" aria-label="Изменить статус" data-toast-select="Макет: статус изменён, событие записано в историю."><option>Изменить статус…</option><option>Ожидает ответа</option><option>Ознакомлен</option><option>Есть вопросы</option><option>Не принята</option></select></form></div><div class="n-item ok"><a class="n-link" href="#card"><span class="who">АкваИнж</span><span class="pill s-ok">Ознакомлен</span><span class="days">24.09 · за 1 р.д.</span></a><form class="n-status"><select class="select" aria-label="Изменить статус" data-toast-select="Макет: статус изменён, событие записано в историю."><option>Изменить статус…</option><option>Ожидает ответа</option><option>Ознакомлен</option><option>Есть вопросы</option><option>Не принята</option></select></form></div><div class="n-item wait"><a class="n-link" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><form class="n-status"><select class="select" aria-label="Изменить статус" data-toast-select="Макет: статус изменён, событие записано в историю."><option>Изменить статус…</option><option>Ожидает ответа</option><option>Ознакомлен</option><option>Есть вопросы</option><option>Не принята</option></select></form></div><div class="n-item wait"><a class="n-link" href="#card"><span class="who">ФасадПро</span><span class="pill s-wait">Ожидание</span><span class="days">2 из 10 р.д.<span class="bar"><i style="width:20%"></i></span></span></a><form class="n-status"><select class="select" aria-label="Изменить статус" data-toast-select="Макет: статус изменён, событие записано в историю."><option>Изменить статус…</option><option>Ожидает ответа</option><option>Ознакомлен</option><option>Есть вопросы</option><option>Не принята</option></select></form></div></div></details></td>
           </tr>
           <tr>
             <th scope="row"><span class="corp">Корпус 2</span><span class="corp-meta">секции 4–5</span></th>
@@ -531,7 +534,7 @@ table.tbl { border-collapse: collapse; width: 100%; }
   <main>
     <div class="page-head">
       <div>
-        <h1>Отправить уведомление подрядчикам проекта</h1>
+        <h1>Отправить уведомление подрядчикам корпуса</h1>
         <p class="sub">Каждый подрядчик получит отдельное письмо со ссылкой на РД и кнопкой «Подтверждаю ознакомление» и подтверждает ознакомление сам за себя.</p>
       </div>
     </div>
@@ -569,8 +572,8 @@ table.tbl { border-collapse: collapse; width: 100%; }
           <div class="step done">
             <span class="step-no">5</span>
             <div class="field">
-              <span>Получатели: все подрядчики проекта</span>
-              <span class="hint">Уведомление получат все подрядчики, привязанные к проекту, независимо от договора и вида работ. Снимите галочку, чтобы исключить подрядчика из этой рассылки.</span>
+              <span>Получатели: все подрядчики корпуса</span>
+              <span class="hint">Уведомление получат все подрядчики, назначенные на выбранный корпус, независимо от договора и вида работ. Снимите галочку, чтобы исключить подрядчика из этой рассылки.</span>
               <div class="checklist">
                 <label class="check"><input type="checkbox" id="c-1" checked><span>ООО «СтройМонолит»<small>pto@stroymonolit.ru</small></span><span class="chan">email + tg</span></label>
                 <label class="check"><input type="checkbox" id="c-2" checked><span>ООО «ТеплоМонтаж»<small>info@teplomontazh.ru</small></span><span class="chan">email</span></label>
@@ -583,14 +586,15 @@ table.tbl { border-collapse: collapse; width: 100%; }
           <div class="step">
             <span class="step-no">6</span>
             <div class="field">
-              <span>Срок ответа</span>
-              <p class="mono">10 рабочих дней · до 09.10.2026</p>
+              <label for="s-deadline"><span style="font-weight:500">Срок ответа</span></label>
+              <input class="input" id="s-deadline" type="date" value="2026-10-09" style="width:auto">
+              <span class="hint">По умолчанию 10 рабочих дней — до 09.10.2026. Можно выбрать другой рабочий день.</span>
               <span class="hint">Напоминания уйдут на 1-й и 3-й рабочий день, эскалация РП — после 10-го.</span>
             </div>
           </div>
         </div>
         <div class="form-foot">
-          <span class="muted" id="s-count">5 из 5 подрядчиков проекта</span>
+          <span class="muted" id="s-count">5 из 5 подрядчиков корпуса</span>
           <button class="btn btn-primary" type="submit" id="s-submit">Отправить уведомления: 5</button>
         </div>
       </form>
@@ -661,6 +665,11 @@ table.tbl { border-collapse: collapse; width: 100%; }
         <button class="btn btn-sm" type="button" data-toast="Ответ засчитан как вопрос. Статус: «Есть вопросы».">Вопрос</button>
         <button class="btn btn-sm" type="button" data-toast="Ответ засчитан как замечание. Статус: «Есть вопросы».">Замечание</button>
         <button class="btn btn-sm btn-danger" type="button" data-toast="Статус: «Не принята». Письмо ушло инициатору (Смирнова А. В.) и РП (i.petrov@company-domain.ru).">Не принята</button>
+      </div>
+      <div class="actions">
+        <span class="label" style="align-self:center">Срок ответа:</span>
+        <input class="input" type="date" value="2026-10-02" style="width:auto" aria-label="Новый срок ответа">
+        <button class="btn btn-sm" type="button" data-toast="Срок ответа продлён до 02.10.2026. Статус «Эскалировано РП» снят.">Изменить срок</button>
       </div>
     </section>
 
@@ -807,15 +816,19 @@ table.tbl { border-collapse: collapse; width: 100%; }
             </div>
 
             <div class="field">
-              <div class="sub-head"><h3>Подрядчики на проекте</h3><span class="hint">Все они по умолчанию получают каждую рассылку по проекту. Договор и вид работ не учитываются.</span></div>
-              <div class="chips">
-                <span class="chip">ООО «СтройМонолит»<button type="button" aria-label="Убрать СтройМонолит">×</button></span>
-                <span class="chip">ООО «ТеплоМонтаж»<button type="button" aria-label="Убрать ТеплоМонтаж">×</button></span>
-                <span class="chip">ООО «АкваИнж»<button type="button" aria-label="Убрать АкваИнж">×</button></span>
-                <span class="chip">ООО «ЭлектроСети-Сервис»<button type="button" aria-label="Убрать ЭлектроСети-Сервис">×</button></span>
-                <span class="chip">ООО «ФасадПро»<button type="button" aria-label="Убрать ФасадПро">×</button></span>
+              <div class="sub-head"><h3>Подрядчики по корпусам</h3><span class="hint">Рассылка по корпусу по умолчанию уходит всем его подрядчикам. Договор и вид работ не учитываются.</span></div>
+              <div class="tbl-wrap">
+                <table class="tbl">
+                  <thead><tr><th>Корпус</th><th>Подрядчики</th></tr></thead>
+                  <tbody>
+                    <tr><td>Корпус 1 · секции 1–3</td><td><div class="chips"><span class="chip">ООО «СтройМонолит»<button type="button" aria-label="Убрать СтройМонолит">×</button></span><span class="chip">ООО «ТеплоМонтаж»<button type="button" aria-label="Убрать ТеплоМонтаж">×</button></span><span class="chip">ООО «АкваИнж»<button type="button" aria-label="Убрать АкваИнж">×</button></span><span class="chip">ООО «ЭлектроСети-Сервис»<button type="button" aria-label="Убрать ЭлектроСети-Сервис">×</button></span><span class="chip">ООО «ФасадПро»<button type="button" aria-label="Убрать ФасадПро">×</button></span></div></td></tr>
+                    <tr><td>Корпус 2 · секции 4–5</td><td><div class="chips"><span class="chip">ООО «СтройМонолит»<button type="button" aria-label="Убрать СтройМонолит">×</button></span><span class="chip">ООО «ТеплоМонтаж»<button type="button" aria-label="Убрать ТеплоМонтаж">×</button></span><span class="chip">ООО «АкваИнж»<button type="button" aria-label="Убрать АкваИнж">×</button></span><span class="chip">ООО «ЭлектроСети-Сервис»<button type="button" aria-label="Убрать ЭлектроСети-Сервис">×</button></span><span class="chip">ООО «ФасадПро»<button type="button" aria-label="Убрать ФасадПро">×</button></span></div></td></tr>
+                    <tr><td>Корпус 3 · секции 6–8</td><td><div class="chips"><span class="chip">ООО «СтройМонолит»<button type="button" aria-label="Убрать СтройМонолит">×</button></span><span class="chip">ООО «ТеплоМонтаж»<button type="button" aria-label="Убрать ТеплоМонтаж">×</button></span><span class="chip">ООО «АкваИнж»<button type="button" aria-label="Убрать АкваИнж">×</button></span><span class="chip">ООО «ЭлектроСети-Сервис»<button type="button" aria-label="Убрать ЭлектроСети-Сервис">×</button></span><span class="chip">ООО «ФасадПро»<button type="button" aria-label="Убрать ФасадПро">×</button></span></div></td></tr>
+                    <tr><td>Корпус 4 · паркинг</td><td><div class="chips"><span class="chip">ООО «СтройМонолит»<button type="button" aria-label="Убрать СтройМонолит">×</button></span><span class="chip">ООО «ЭлектроСети-Сервис»<button type="button" aria-label="Убрать ЭлектроСети-Сервис">×</button></span></div></td></tr>
+                  </tbody>
+                </table>
               </div>
-              <div class="add-row"><select class="select" id="p-add-contractor"><option>Выберите подрядчика из справочника…</option><option>ООО «ЛифтСтрой»</option></select><button class="btn" type="button" data-toast="Макет: подрядчик привязан к проекту.">Привязать</button></div>
+              <div class="add-row"><select class="select" id="p-add-contractor"><option>Выберите подрядчика из справочника…</option><option>ООО «ЛифтСтрой»</option></select><select class="select" id="p-add-corpus"><option>Корпус 1 · секции 1–3</option><option>Корпус 2 · секции 4–5</option><option>Корпус 3 · секции 6–8</option><option>Корпус 4 · паркинг</option><option>Все активные корпуса</option></select><button class="btn" type="button" data-toast="Макет: подрядчик назначен на корпус.">Назначить</button></div>
             </div>
           </div>
           <div class="form-foot"><span class="muted">Изменено 19.09.2026, Кузнецов П. Р.</span><button class="btn btn-primary" type="submit">Сохранить</button></div>
@@ -832,14 +845,14 @@ table.tbl { border-collapse: collapse; width: 100%; }
         </div>
         <div class="tbl-wrap" style="border:0;border-radius:0">
           <table class="tbl">
-            <thead><tr><th>Организация</th><th>Email для уведомлений</th><th>Telegram</th><th>Проекты</th><th></th></tr></thead>
+            <thead><tr><th>Организация</th><th>Email для уведомлений</th><th>Telegram</th><th>Проекты и корпуса</th><th></th></tr></thead>
             <tbody>
-              <tr><td>ООО «СтройМонолит»</td><td>pto@stroymonolit.ru</td><td class="tg-yes">Привязан</td><td>Северная долина, Речной квартал</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
-              <tr><td>ООО «ТеплоМонтаж»</td><td>info@teplomontazh.ru</td><td class="tg-no">Не привязан · <button class="linkbtn" type="button" data-toast="Макет: ссылка на бота отправлена на info@teplomontazh.ru.">отправить ссылку</button></td><td>Северная долина</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
-              <tr><td>ООО «АкваИнж»</td><td>pto@akvainzh.ru<span class="bounce">Письма не доставляются с 21.09, проверьте адрес</span></td><td class="tg-no">Не привязан</td><td>Северная долина</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
-              <tr><td>ООО «ЭлектроСети-Сервис»</td><td>eom@es-service.ru</td><td class="tg-no">Не привязан</td><td>Северная долина, Речной квартал</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
-              <tr><td>ООО «ФасадПро»</td><td>tender@fasadpro.ru</td><td class="tg-yes">Привязан</td><td>Северная долина</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
-              <tr><td>ООО «ЛифтСтрой»</td><td>office@liftstroy.ru</td><td class="tg-no">Не привязан</td><td class="muted">Не привязан к проектам</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «СтройМонолит»</td><td>pto@stroymonolit.ru</td><td class="tg-yes">Привязан</td><td>Северная долина: корпуса 1–4<br>Речной квартал: корпус 1</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ТеплоМонтаж»</td><td>info@teplomontazh.ru</td><td class="tg-no">Не привязан · <button class="linkbtn" type="button" data-toast="Макет: ссылка на бота отправлена на info@teplomontazh.ru.">отправить ссылку</button></td><td>Северная долина: корпуса 1–3</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «АкваИнж»</td><td>pto@akvainzh.ru<span class="bounce">Письма не доставляются с 21.09, проверьте адрес</span></td><td class="tg-no">Не привязан</td><td>Северная долина: корпуса 1–3</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ЭлектроСети-Сервис»</td><td>eom@es-service.ru</td><td class="tg-no">Не привязан</td><td>Северная долина: корпуса 1–4<br>Речной квартал: корпус 1</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ФасадПро»</td><td>tender@fasadpro.ru</td><td class="tg-yes">Привязан</td><td>Северная долина: корпуса 1–3</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
+              <tr><td>ООО «ЛифтСтрой»</td><td>office@liftstroy.ru</td><td class="tg-no">Не привязан</td><td class="muted">Не назначен ни на один корпус</td><td class="row-actions"><button class="linkbtn" type="button">Изменить</button></td></tr>
             </tbody>
           </table>
         </div>
@@ -969,7 +982,7 @@ table.tbl { border-collapse: collapse; width: 100%; }
   var checks = Array.prototype.slice.call(document.querySelectorAll('#send-form .check input'));
   function recount() {
     var n = checks.filter(function (c) { return c.checked; }).length;
-    document.getElementById('s-count').textContent = n + ' из ' + checks.length + ' подрядчиков проекта';
+    document.getElementById('s-count').textContent = n + ' из ' + checks.length + ' подрядчиков корпуса';
     var btn = document.getElementById('s-submit');
     btn.textContent = n ? 'Отправить уведомления: ' + n : 'Выберите хотя бы одного подрядчика';
     btn.disabled = !n;
@@ -984,6 +997,9 @@ table.tbl { border-collapse: collapse; width: 100%; }
   msg.addEventListener('input', syncMessage);
   document.querySelectorAll('[data-toast]').forEach(function (b) {
     b.addEventListener('click', function () { say(b.getAttribute('data-toast')); });
+  });
+  document.querySelectorAll('[data-toast-select]').forEach(function (s) {
+    s.addEventListener('change', function () { say(s.getAttribute('data-toast-select')); s.selectedIndex = 0; });
   });
 })();
 </script>

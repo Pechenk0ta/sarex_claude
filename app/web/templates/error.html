@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Ошибка · Ознакомление с РД{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <h1>{% if error.status_code == 404 %}Страница не найдена{% elif error.status_code == 403 %}Нет доступа{% else %}Ошибка{% endif %}</h1>
+      <p class="sub">{{ error.detail }}</p>
+    </div>
+  </div>
+  <p><a href="/">На главную</a></p>
+{% endblock %}

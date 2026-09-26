@@ -1,0 +1,52 @@
+{% extends "refs/_layout.html" %}
+{% block tab %}
+<div class="panel">
+  <div class="panel-head">
+    <span class="muted">Подрядчики и РП не заводятся как пользователи: они работают только через почту.</span>
+  </div>
+  {% if is_admin %}
+  <form class="panel-body add-row" method="post" action="/refs/users" aria-label="Новый пользователь">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <input class="input" name="full_name" placeholder="ФИО" required maxlength="255" aria-label="ФИО">
+    <input class="input" name="email" type="email" placeholder="Email (логин)" required aria-label="Email">
+    <select class="select" name="role" aria-label="Роль">
+      <option value="coordinator">Координатор</option>
+      <option value="admin">Администратор</option>
+    </select>
+    <button class="btn btn-primary" type="submit">+ Добавить пользователя</button>
+  </form>
+  {% endif %}
+  <div class="tbl-wrap" style="border:0;border-radius:0">
+    <table class="tbl">
+      <thead><tr><th>ФИО</th><th>Email</th><th>Роль</th><th>Статус</th>{% if is_admin %}<th></th>{% endif %}</tr></thead>
+      <tbody>
+      {% for u in rows %}
+        <tr{% if not u.is_active %} class="off"{% endif %}>
+          <td>{{ u.full_name }}</td>
+          <td>{{ u.email }}</td>
+          <td>{{ 'Администратор' if u.role == 'admin' else 'Координатор' }}</td>
+          <td>{{ 'Активен' if u.is_active else 'Отключён' }}</td>
+          {% if is_admin %}
+          <td class="row-actions">
+            {% if u.is_active %}
+            <form method="post" action="/refs/users/{{ u.id }}/reset-password" class="inline-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+              <button class="linkbtn" type="submit">Сбросить пароль</button>
+            </form>
+            {% endif %}
+            {% if u.id != user.id %}
+            <form method="post" action="/refs/users/{{ u.id }}/active" class="inline-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+              {% if not u.is_active %}<input type="hidden" name="is_active" value="true">{% endif %}
+              · <button class="linkbtn" type="submit">{{ 'Отключить' if u.is_active else 'Включить' }}</button>
+            </form>
+            {% endif %}
+          </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Доска · Ознакомление с РД{% endblock %}
+{% macro days(item) -%}
+  {%- set n = item.notification -%}
+  {%- if item.display in ('ok', 'rej') and item.replied_on -%}
+    {{ item.replied_on | ddmm }} · за {{ item.elapsed }} р.д.
+  {%- elif item.display == 'late' -%}
+    {{ item.elapsed }} р.д. без ответа
+  {%- else -%}
+    {{ item.elapsed }} из {{ item.term }} р.д.<span class="bar"><i style="width:{{ [item.elapsed * 100 // [item.term, 1] | max, 100] | min }}%"></i></span>
+  {%- endif -%}
+{%- endmacro %}
+{% block content %}
+{% if not project %}
+  <div class="page-head"><div><h1>Доска</h1><p class="sub">Проектов пока нет. Их заводит администратор в разделе «Справочники».</p></div></div>
+{% else %}
+<div class="page-head">
+  <div>
+    <h1>{{ project.name }}</h1>
+    <p class="sub">{{ board.corpuses | length }} корп. · {{ board.contractors | length }} подрядчиков · {{ board.total }} уведомлений · на {{ today | ru_date }}</p>
+  </div>
+  <a class="btn btn-primary" href="/send?project_id={{ project.id }}">+ Отправить уведомление</a>
+</div>
+
+<form class="filters" method="get" action="/" aria-label="Фильтры доски">
+  <label class="field"><span>Проект</span>
+    <select class="select" name="project_id" data-autosubmit-get>
+      {% for p in projects %}<option value="{{ p.id }}"{% if p.id == project.id %} selected{% endif %}>{{ p.name }}{% if not p.is_active %} (неактивен){% endif %}</option>{% endfor %}
+    </select></label>
+  <label class="field"><span>Корпус</span>
+    <select class="select" name="corpus_id" data-autosubmit-get>
+      <option value="">Все корпуса</option>
+      {% for c in corpuses %}<option value="{{ c.id }}"{% if c.id == filters.corpus_id %} selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select></label>
+  <label class="field"><span>Подрядчик</span>
+    <select class="select" name="contractor_id" data-autosubmit-get>
+      <option value="">Все подрядчики</option>
+      {% for c in board.contractors %}<option value="{{ c.id }}"{% if c.id == filters.contractor_id %} selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select></label>
+  <label class="field"><span>Статус</span>
+    <select class="select" name="display" data-autosubmit-get>
+      <option value="">Все статусы</option>
+      {% for d in displays %}<option value="{{ d.value }}"{% if d == filters.display %} selected{% endif %}>{{ labels[d] }}</option>{% endfor %}
+    </select></label>
+  <label class="field"><span>Канал</span>
+    <select class="select" name="channel" data-autosubmit-get>
+      <option value="">Email и Telegram</option>
+      <option value="email"{% if filters.channel == 'email' %} selected{% endif %}>Email</option>
+      <option value="telegram"{% if filters.channel == 'telegram' %} selected{% endif %}>Telegram</option>
+    </select></label>
+  <noscript><button class="btn" type="submit">Показать</button></noscript>
+</form>
+
+<div class="summary" aria-label="Сводка по статусам">
+  {% for d in displays %}
+    <a href="/?project_id={{ project.id }}&amp;display={{ d.value }}"><span class="pill s-{{ d.value }}">{{ labels[d] }}</span><span class="n">{{ board.counts.get(d, 0) }}</span></a>
+  {% endfor %}
+</div>
+
+{% if not board.columns %}
+  <p class="muted">По проекту ещё ничего не отправлялось{% if filters.corpus_id or filters.contractor_id or filters.display or filters.channel %} или ничего не подходит под фильтры{% endif %}.</p>
+{% else %}
+<div class="board-wrap">
+  <table class="board">
+    <thead>
+      <tr>
+        <th scope="col">Корпус</th>
+        {% for col in board.columns %}
+        <th scope="col"><span class="set" title="{{ col.sarex_link }}">{{ col.title }}</span><span class="set-meta">с {{ col.first_sent | ddmm }}</span><a class="sarex" href="{{ col.sarex_link }}" target="_blank" rel="noopener noreferrer">Открыть в Sarex ↗</a></th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for corpus in board.corpuses %}
+      <tr>
+        <th scope="row"><span class="corp">{{ corpus.name }}</span>{% if not corpus.is_active %}<span class="corp-meta">отключён</span>{% endif %}</th>
+        {% for col in board.columns %}
+          {% set cell = board.cells.get((corpus.id, col.sarex_link)) %}
+          {% if cell %}
+          <td><details class="cell-sum"{% if open_cell == corpus.id|string ~ '|' ~ col.sarex_link %} open{% endif %}>
+            <summary>
+              <span class="sum-top">
+                <span class="sum-count">Ознакомлены <b>{{ cell.acknowledged }} из {{ cell.total }}</b></span>
+                {% if cell.worst == 'ok' %}<span class="pill s-ok">Все ознакомлены</span>
+                {% else %}<span class="pill s-{{ cell.worst.value }}">{{ short[cell.worst] }}{% if cell.worst_count > 1 %} ×{{ cell.worst_count }}{% endif %}</span>{% endif %}
+              </span>
+              <span class="seg">{% for s in cell.segments %}<i class="{{ s.value }}"></i>{% endfor %}</span>
+              <span class="sum-more">{{ cell.total }} подрядчиков{% if cell.excluded %} · не получили: {{ cell.excluded | length }}{% endif %}</span>
+            </summary>
+            <div class="list">
+              {% set cell_key = corpus.id|string ~ '|' ~ col.sarex_link %}
+              {% set back = board_url ~ ('&' if '?' in board_url else '?') ~ 'open=' ~ (cell_key | urlencode) %}
+              {% for item in cell.items %}
+              {% set n = item.notification %}
+              <div class="n-item {{ item.display.value }}">
+                <a class="n-link" href="/notifications/{{ n.id }}"><span class="who">{{ item.contractor.name }}</span><span class="pill s-{{ item.display.value }}">{{ short[item.display] }}</span><span class="days">{{ days(item) }}</span></a>
+                <form class="n-status" method="post" action="/notifications/{{ n.id }}/status">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+                  <input type="hidden" name="back" value="{{ back }}">
+                  <select class="select" name="status" aria-label="Изменить статус: {{ item.contractor.name }}" data-status-select required>
+                    <option value="">Изменить статус…</option>
+                    {% for s in manual_statuses %}{% if s != n.status or n.needs_manual_review %}<option value="{{ s.value }}">{{ status_labels[s] }}</option>{% endif %}{% endfor %}
+                  </select>
+                  <noscript><button class="btn btn-sm" type="submit">Сохранить</button></noscript>
+                </form>
+              </div>
+              {% endfor %}
+              {% for c in cell.excluded %}
+              <span class="n-item off"><span class="who">{{ c.name }}</span><span class="days">не получал эту рассылку</span></span>
+              {% endfor %}
+            </div>
+          </details></td>
+          {% else %}
+          <td><div class="empty-cell"><span>не отправлено · <a href="/send?project_id={{ project.id }}&amp;corpus_id={{ corpus.id }}">отправить</a></span></div></td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<div class="legend">
+  <span class="label">Обозначения</span>
+  <span class="pill s-ok">Ознакомлен</span>
+  <span class="pill s-ask">Есть вопросы</span>
+  <span class="pill s-rej">Не принята: письмо инициатору и РП</span>
+  <span class="pill s-wait">Ожидание, в срок</span>
+  <span class="pill s-soon">Истекает: осталось 5 р.д. или меньше</span>
+  <span class="pill s-late">Просрочено / эскалировано РП</span>
+  <span class="pill s-review">Требует ручной проверки (ИИ не уверен)</span>
+</div>
+{% endif %}
+{% endblock %}

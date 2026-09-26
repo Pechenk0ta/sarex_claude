@@ -1,0 +1,5 @@
+# HTTPS certificate is issued and renewed by Caddy automatically (Let's Encrypt).
+{$APP_DOMAIN} {
+	encode gzip
+	reverse_proxy app:8000
+}
