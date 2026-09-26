@@ -1,5 +1,4 @@
 import re
-from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 
 import httpx
@@ -7,11 +6,12 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db import get_session
-from app.main import create_app
 from app.models import Contractor, Corpus, Holiday, Notification, Project, User, UserRole
 from app.services import directory, users
 from app.services.errors import ValidationError
+from tests.integration.web_helpers import csrf as _csrf
+from tests.integration.web_helpers import login as _login
+from tests.integration.web_helpers import post as _post
 
 ADMIN_PASSWORD = "admin-password-1"
 COORD_PASSWORD = "coord-password-1"
@@ -33,38 +33,6 @@ async def coordinator(session: AsyncSession) -> User:
     )
     await session.commit()
     return user
-
-
-@pytest.fixture
-async def client(session: AsyncSession) -> AsyncIterator[httpx.AsyncClient]:
-    app = create_app()
-
-    async def test_session() -> AsyncIterator[AsyncSession]:
-        yield session
-
-    app.dependency_overrides[get_session] = test_session
-    transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://test") as http:
-        yield http
-
-
-async def _csrf(client: httpx.AsyncClient, path: str) -> str:
-    page = await client.get(path)
-    match = re.search(r'name="csrf_token" value="([^"]+)"', page.text)
-    assert match, f"no CSRF token on {path}"
-    return match.group(1)
-
-
-async def _login(client: httpx.AsyncClient, email: str, password: str) -> httpx.Response:
-    token = await _csrf(client, "/login")
-    return await client.post(
-        "/login", data={"email": email, "password": password, "csrf_token": token, "next": "/"}
-    )
-
-
-async def _post(client: httpx.AsyncClient, path: str, data: dict[str, str]) -> httpx.Response:
-    token = await _csrf(client, "/refs/users")
-    return await client.post(path, data={**data, "csrf_token": token})
 
 
 # --- login ----------------------------------------------------------------------------------

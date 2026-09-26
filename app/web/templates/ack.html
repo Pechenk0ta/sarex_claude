@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Подтверждение ознакомления{% endblock %}
+{% block body %}
+<main>
+  <div class="login-wrap">
+    <div class="login">
+      <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+      {% if done %}
+        <div><h1>{{ 'Спасибо, ознакомление подтверждено' if just_done else 'Ознакомление уже подтверждено' }}</h1></div>
+        <p class="muted">{{ contractor.name }} · {{ project.name }}, {{ corpus.name }}.</p>
+        <p class="muted">Если появятся вопросы по документации, ответьте на письмо — ответ получит координатор.</p>
+      {% else %}
+        <div><h1>Подтвердите ознакомление</h1><p class="muted">с рабочей документацией</p></div>
+        <dl class="mail-meta" style="border-radius:6px">
+          <dt>Подрядчик</dt><dd>{{ contractor.name }}</dd>
+          <dt>Проект</dt><dd>{{ project.name }}</dd>
+          <dt>Корпус</dt><dd>{{ corpus.name }}</dd>
+          <dt>Документация</dt><dd><a href="{{ notification.sarex_link }}" rel="noopener noreferrer">{{ notification.sarex_link }}</a></dd>
+        </dl>
+        <form method="post">
+          <button class="btn btn-primary" type="submit" style="width:100%">Подтверждаю ознакомление</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</main>
+{% endblock %}

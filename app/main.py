@@ -12,7 +12,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import get_settings
 from app.db import SessionDep
-from app.web import auth, refs
+from app.web import ack, auth, refs, send
 from app.web.deps import CurrentUser, LoginRequiredError
 from app.web.templating import WEB_DIR, render
 
@@ -40,6 +40,8 @@ def create_app() -> FastAPI:
     app.mount("/static", StaticFiles(directory=WEB_DIR / "static"), name="static")
     app.include_router(auth.router)
     app.include_router(refs.router)
+    app.include_router(send.router)
+    app.include_router(ack.router)
 
     @app.exception_handler(LoginRequiredError)
     async def login_required(request: Request, exc: LoginRequiredError) -> Response:
