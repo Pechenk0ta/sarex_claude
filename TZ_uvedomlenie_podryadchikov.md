@@ -72,6 +72,7 @@ PK — пара (`project_id`, `contractor_id`). Один подрядчик м�
 | corpus_id | uuid | FK → corpuses |
 | contractor_id | uuid | FK → contractors |
 | sarex_link | string | ссылка на РД в Sarex |
+| reply_token | string | уникальный случайный код уведомления; из него строится адрес для ответа `rd+<reply_token>@домен` (раздел 4.2), по нему входящее письмо находит своё уведомление |
 | initiator_id | uuid | FK → users, кто отправил (координатор) |
 | channel | enum | `email`, `telegram` — канал, которым ушло уведомление |
 | status | enum | `sent`, `acknowledged`, `has_questions`, `rejected`, `escalated` |
@@ -92,11 +93,11 @@ PK — пара (`project_id`, `contractor_id`). Один подрядчик м�
 |---|---|---|
 | id | uuid | PK |
 | notification_id | uuid | FK → notifications |
-| type | enum | `sent`, `reminder_1`, `reminder_3`, `reply_ack`, `reply_question`, `reply_rejection`, `rejection_notified`, `escalated`, `category_overridden` |
+| type | enum | `sent`, `reminder_1`, `reminder_3`, `reply_ack`, `reply_question`, `reply_rejection`, `reply_unclear`, `rejection_notified`, `escalated`, `category_overridden` |
 | channel | enum | `email`, `telegram` |
 | raw_content | text | полный исходный текст письма/сообщения — то, что координатор сможет открыть из системы |
 | ai_category | enum \| null | категория, присвоенная ИИ конкретно этому ответу (может отличаться от текущего `notifications.ai_category`, если ответов было несколько) |
-| payload | jsonb | прочие метаданные (email-заголовки, telegram message_id и т.п.) |
+| payload | jsonb | прочие метаданные: email-заголовки (`Message-ID` и др.), telegram message_id, для ответов — уверенность и обоснование ИИ и каким классификатором разобран ответ, для ручных действий — кто их сделал |
 | created_at | timestamp | |
 
 Отдельная таблица событий нужна, чтобы координатор видел полную историю по уведомлению, а не только текущий статус, и мог открыть исходный текст любого уведомления или ответа (см. раздел 7).
@@ -119,7 +120,7 @@ PK — пара (`project_id`, `contractor_id`). Один подрядчик м�
 | date | date | PK, календарная дата |
 | is_workday | boolean | `false` — праздник/выходной, `true` — рабочий день, перенесённый на выходной |
 
-Хранятся только исключения из обычной недели. Дата, которой нет в таблице, считается рабочей, если это пн–пт, и выходной, если сб/вс. Пустая таблица означает простое правило "пропускать сб/вс". Как наполнять таблицу — открытый вопрос 3.
+Хранятся только исключения из обычной недели. Дата, которой нет в таблице, считается рабочей, если это пн–пт, и выходной, если сб/вс. Пустая таблица означает простое правило "пропускать сб/вс". Таблицу заполняет администратор вручную (раздел 9, решение 6).
 
 ## 4. Бизнес-логика
 
