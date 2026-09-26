@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Роли и кабинеты</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+:root {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f5f6f9;
+  --ink: #1c2233;
+  --muted: #6b7185;
+  --faint: #a2a7b6;
+  --line: #e7e9f0;
+  --line-strong: #d7dae4;
+  --accent: #1f35c8;
+  --accent-ink: #ffffff;
+  --accent-soft: #eef0fd;
+  --focus: #4a5ee0;
+  --shadow: 0 1px 3px rgb(28 34 51 / .06);
+
+  --ok: #2e7a4d;        --ok-bg: #e2f2e8;
+  --ask: #6346b8;       --ask-bg: #ece7fa;
+  --wait: #4e6470;      --wait-bg: #e8eef1;
+  --soon: #a06207;      --soon-bg: #fbf0d9;
+  --late: #b3322b;      --late-bg: #fbe4e2;
+  --review: #a3346f;    --review-bg: #fae6f0;
+  --rej: #9e1c2c;       --rej-ink: #ffffff;
+
+  --radius: 6px;
+  --sans: "Manrope", "Segoe UI", Roboto, Arial, sans-serif;
+  --mono: "Manrope", "Segoe UI", Roboto, Arial, sans-serif;
+  --code: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #12141c; --surface: #181b25; --surface-2: #1e2230;
+    --ink: #e6e8f0; --muted: #9ba1b4; --faint: #6c7286;
+    --line: #2a2f3e; --line-strong: #363c4e;
+    --accent: #7d8cff; --accent-ink: #0e1130; --accent-soft: #222848; --focus: #9aa6ff;
+    --shadow: 0 1px 3px rgb(0 0 0 / .3);
+    --ok: #6cc893; --ok-bg: #173226;
+    --ask: #b3a0f2; --ask-bg: #2a2344;
+    --wait: #a9bcc6; --wait-bg: #243036;
+    --soon: #e8b458; --soon-bg: #3a2c12;
+    --late: #f08a82; --late-bg: #3d1d1b;
+    --review: #ec8fc0; --review-bg: #3b1d2d; --rej: #e0475a; --rej-ink: #1a0508;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #12141c; --surface: #181b25; --surface-2: #1e2230;
+  --ink: #e6e8f0; --muted: #9ba1b4; --faint: #6c7286;
+  --line: #2a2f3e; --line-strong: #363c4e;
+  --accent: #7d8cff; --accent-ink: #0e1130; --accent-soft: #222848; --focus: #9aa6ff;
+  --shadow: 0 1px 3px rgb(0 0 0 / .3);
+  --ok: #6cc893; --ok-bg: #173226;
+  --ask: #b3a0f2; --ask-bg: #2a2344;
+  --wait: #a9bcc6; --wait-bg: #243036;
+  --soon: #e8b458; --soon-bg: #3a2c12;
+  --late: #f08a82; --late-bg: #3d1d1b;
+  --review: #ec8fc0; --review-bg: #3b1d2d; --rej: #e0475a; --rej-ink: #1a0508;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.5 var(--sans);
+  font-feature-settings: "tnum";
+}
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; }
+h1 { font-size: 26px; line-height: 1.25; font-weight: 600; letter-spacing: -.01em; }
+h2 { font-size: 16px; }
+h3 { font-size: 14px; }
+p { margin: 0; }
+a { color: var(--accent); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.label { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+
+/* ---------- mockup switcher (не часть интерфейса) ---------- */
+.switcher {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+  padding: 6px 20px; background: var(--surface-2); color: var(--muted); font-size: 12px; border-bottom: 1px dashed var(--line-strong);
+}
+.switcher b { font-weight: 500; opacity: .7; }
+.switcher nav { display: flex; flex-wrap: wrap; gap: 4px; }
+.switcher a {
+  color: var(--muted); text-decoration: none; padding: 3px 10px; border-radius: 99px;
+  border: 1px solid transparent;
+}
+.switcher a[aria-current="page"] { border-color: var(--accent); color: var(--accent); }
+
+/* ---------- app shell ---------- */
+.topbar {
+  display: flex; flex-wrap: wrap; align-items: stretch; gap: 0 40px; min-height: 64px;
+  padding-inline: 20px; background: var(--surface); box-shadow: 0 1px 0 var(--line), var(--shadow);
+  position: relative; z-index: 1;
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 18px; letter-spacing: -.01em; }
+.brand-mark {
+  width: 30px; height: 30px; border-radius: 8px; background: var(--accent); color: var(--accent-ink);
+  display: grid; place-items: center; font: 700 12px var(--sans);
+}
+.topnav { display: flex; flex-wrap: wrap; gap: 28px; }
+.topnav a {
+  display: flex; align-items: center; color: var(--ink); text-decoration: none; font-weight: 500; font-size: 13px;
+  border-bottom: 2px solid transparent; padding-top: 2px;
+}
+.topnav a:hover { color: var(--accent); }
+.topnav a[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); }
+.topnav a.dd::after { content: ""; width: 6px; height: 6px; margin-left: 7px; margin-top: -3px; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); opacity: .6; }
+.user { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.user-text { display: grid; line-height: 1.25; }
+.user-role { font-size: 10px; color: var(--muted); }
+.user-name { font-size: 12px; font-weight: 600; }
+.avatar {
+  width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-ink);
+  display: grid; place-items: center; font-size: 11px; font-weight: 700;
+}
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 8px; border: 0; background: var(--surface-2); color: var(--muted);
+  display: grid; place-items: center; font-size: 15px;
+}
+main { max-width: 1680px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 48px; display: grid; gap: 20px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 16px; border-radius: var(--radius); border: 1px solid var(--line-strong);
+  background: var(--surface); cursor: pointer; font-weight: 600; font-size: 13px; text-decoration: none; color: var(--ink);
+  white-space: nowrap;
+}
+.btn:hover { border-color: var(--muted); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { filter: brightness(1.08); border-color: var(--accent); }
+.btn-sm { padding: 4px 10px; font-size: 13px; }
+.btn-danger { color: var(--rej); border-color: var(--rej); }
+.btn-danger:hover { background: var(--rej); color: var(--rej-ink); border-color: var(--rej); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.field { display: grid; gap: 6px; }
+.field > span { font-weight: 500; }
+.input, .select {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius); font-size: 13px;
+  background: var(--surface);
+}
+.hint { font-size: 12px; color: var(--muted); }
+
+/* ---------- status pills ---------- */
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 99px;
+  font-size: 12px; font-weight: 500; white-space: nowrap; line-height: 1.5;
+}
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.s-ok     { color: var(--ok);     background: var(--ok-bg); }
+.s-ask    { color: var(--ask);    background: var(--ask-bg); }
+.s-wait   { color: var(--wait);   background: var(--wait-bg); }
+.s-soon   { color: var(--soon);   background: var(--soon-bg); }
+.s-late   { color: var(--late);   background: var(--late-bg); }
+.s-review { color: var(--review); background: var(--review-bg); }
+.s-rej    { color: var(--rej-ink); background: var(--rej); font-weight: 600; }
+.s-rej::before { content: "✕"; width: auto; height: auto; background: none; font-size: 10px; line-height: 1; }
+.s-review::before { border-radius: 1px; transform: rotate(45deg); }
+
+/* ---------- board ---------- */
+.page-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+.page-head .sub { color: var(--muted); margin-top: 2px; }
+.filters {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: end;
+}
+.filters .field { min-width: 150px; flex: 1 1 150px; }
+.filters .field > span { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+
+.summary { display: flex; flex-wrap: wrap; gap: 8px; }
+.summary a {
+  display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px 6px 8px;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+  text-decoration: none; color: var(--ink);
+}
+.summary .n { font: 500 13px var(--mono); }
+
+.board-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+table.board { border-collapse: collapse; width: 100%; min-width: 980px; }
+.board th, .board td { border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); vertical-align: top; text-align: left; }
+.board th:last-child, .board td:last-child { border-right: 0; }
+.board tbody tr:last-child td, .board tbody tr:last-child th { border-bottom: 0; }
+.board thead th { padding: 10px 12px; background: var(--surface-2); font-weight: 600; font-size: 12px; }
+.board thead th:first-child, .tbl thead th { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.board thead .set { display: block; font-weight: 600; }
+.board thead .set-meta { display: block; font-size: 11px; font-weight: 500; color: var(--muted); }
+.board thead a.sarex { font-size: 12px; }
+.board tbody th { padding: 12px; width: 150px; background: var(--surface); }
+.board tbody th .corp { display: block; font-weight: 600; }
+.board tbody th .corp-meta { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
+.board td { padding: 6px; }
+.cell { display: grid; gap: 4px; }
+.n-item {
+  display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center;
+  padding: 6px 8px; border-radius: 4px; text-decoration: none; color: var(--ink);
+  border-left: 3px solid var(--st, var(--line-strong));
+}
+.n-item:hover { background: var(--surface-2); }
+.n-link { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; flex: 1 1 100%; color: inherit; text-decoration: none; }
+.n-status { display: flex; gap: 6px; flex: 1 1 100%; }
+.n-status .select { padding: 2px 6px; font-size: 12px; }
+.n-item .who { font-size: 13px; flex: 1 1 100%; }
+.n-item .days { font: 12px var(--mono); color: var(--muted); flex: 1 1 96px; display: flex; gap: 8px; align-items: center; white-space: nowrap; }
+.bar { flex: 1; height: 4px; border-radius: 2px; background: var(--line); position: relative; overflow: hidden; }
+.bar i { position: absolute; inset: 0 auto 0 0; background: var(--st); border-radius: 2px; }
+.n-item.ok { --st: var(--ok); } .n-item.ask { --st: var(--ask); } .n-item.wait { --st: var(--wait); }
+.n-item.soon { --st: var(--soon); } .n-item.late { --st: var(--late); } .n-item.review { --st: var(--review); } .n-item.rej { --st: var(--rej); }
+.n-item.review { background: repeating-linear-gradient(135deg, transparent 0 6px, var(--review-bg) 6px 12px); }
+.empty-cell { display: grid; place-items: center; min-height: 52px; color: var(--faint); font-size: 12px; }
+.cell-sum > summary {
+  list-style: none; cursor: pointer; display: grid; gap: 6px; padding: 8px; border-radius: 4px;
+}
+.cell-sum > summary::-webkit-details-marker { display: none; }
+.cell-sum > summary:hover { background: var(--surface-2); }
+.sum-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 8px; }
+.sum-count { font-size: 13px; }
+.sum-count b { font-weight: 500; }
+.seg { display: flex; gap: 2px; height: 6px; }
+.seg i { flex: 1; border-radius: 2px; }
+.seg .ok { background: var(--ok); } .seg .ask { background: var(--ask); } .seg .wait { background: var(--line-strong); }
+.seg .soon { background: var(--soon); } .seg .late { background: var(--late); } .seg .review { background: var(--review); } .seg .rej { background: var(--rej); }
+.sum-more { font-size: 12px; color: var(--accent); }
+.sum-more::after { content: " ▾"; }
+.cell-sum[open] .sum-more::after { content: " ▴"; }
+.cell-sum .list { display: grid; gap: 4px; padding: 2px 0 4px; border-top: 1px dashed var(--line); margin-top: 2px; }
+.n-item.off { color: var(--faint); border-left-color: var(--line); }
+.n-item.off .days { color: var(--faint); }
+.empty-cell a { color: var(--muted); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--muted); align-items: center; }
+
+/* ---------- send form ---------- */
+.two-col { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+.panel-head { padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.panel-body { padding: 16px; display: grid; gap: 18px; }
+.steps { display: grid; gap: 18px; }
+.step { display: grid; grid-template-columns: 26px 1fr; gap: 12px; }
+.step-no {
+  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid var(--line-strong); font: 500 12px var(--mono); color: var(--muted);
+}
+.step.done .step-no { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.checklist { display: grid; gap: 6px; }
+.check {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
+  padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+}
+.check:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.check small { color: var(--muted); display: block; }
+.warn-note { font-size: 12px; color: var(--soon); }
+.form-foot { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 14px 16px; border-top: 1px solid var(--line); }
+
+.mail { font-size: 13px; }
+.mail-meta { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.mail-meta dt { color: var(--muted); }
+.mail-meta dd { margin: 0; overflow-wrap: anywhere; }
+.mail-body { padding: 16px; display: grid; gap: 12px; max-width: 62ch; }
+.mail-body .mail-btn { justify-self: start; }
+.mail-note { display: grid; gap: 4px; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 4px 4px 0; white-space: pre-wrap; }
+textarea.input { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+/* ---------- card ---------- */
+.crumbs { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px; }
+.crumbs a { color: var(--muted); }
+.card-head { display: grid; gap: 10px; }
+.card-title { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.fact { background: var(--surface); padding: 10px 12px; display: grid; gap: 2px; }
+.fact .v { font-weight: 500; overflow-wrap: anywhere; }
+
+.review-box {
+  border: 1px solid var(--review); border-radius: var(--radius); background: var(--surface);
+  display: grid; gap: 12px; padding: 16px;
+}
+.review-box .head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.conf { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.conf .bar { width: 140px; flex: none; height: 6px; }
+.conf .bar i { background: var(--review); }
+.conf .bar .thr { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); left: 70%; }
+.reason { padding: 10px 12px; background: var(--surface-2); border-radius: 4px; color: var(--muted); font-size: 13px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; }
+.ev { display: grid; grid-template-columns: 116px 18px 1fr; gap: 0 12px; }
+.ev-time { font: 12px var(--mono); color: var(--muted); padding-top: 12px; text-align: right; }
+.ev-rail { position: relative; }
+.ev-rail::before { content: ""; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--line); }
+.ev:first-child .ev-rail::before { top: 16px; }
+.ev:last-child .ev-rail::before { bottom: calc(100% - 16px); }
+.ev-rail::after {
+  content: ""; position: absolute; left: 3px; top: 12px; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--dot, var(--line-strong));
+}
+.ev-body { padding-block: 10px; display: grid; gap: 6px; min-width: 0; }
+.ev-title { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-weight: 500; }
+.chan { font: 500 11px var(--sans); color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 0 5px; }
+details.raw { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+details.raw summary { cursor: pointer; padding: 6px 10px; font-size: 13px; color: var(--accent); }
+details.raw pre {
+  margin: 0; padding: 12px; border-top: 1px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere;
+  font: 12.5px/1.55 var(--code); color: var(--ink); background: var(--surface-2);
+}
+
+/* ---------- login ---------- */
+.login-wrap { min-height: 70vh; display: grid; place-items: center; }
+.login { width: 100%; max-width: 380px; display: grid; gap: 16px; padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.login .brand { margin-bottom: 4px; }
+.err { font-size: 13px; color: var(--late); background: var(--late-bg); padding: 8px 10px; border-radius: 4px; }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: var(--radius); font-size: 13px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / .18);
+}
+
+.note-mock { font-size: 12px; color: var(--faint); }
+
+/* ---------- справочники ---------- */
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line); }
+.tabs button {
+  border: 0; background: none; padding: 8px 12px; margin-bottom: -1px; cursor: pointer;
+  color: var(--muted); font-weight: 500; border-bottom: 2px solid transparent;
+}
+.tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tabs .n { font: 12px var(--mono); color: var(--faint); margin-left: 4px; }
+.refs-grid { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.obj-list { display: grid; gap: 6px; }
+.obj {
+  display: grid; gap: 2px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); text-align: left; cursor: pointer; width: 100%;
+}
+.obj[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.obj .t { font-weight: 600; }
+.obj .m { font-size: 12px; color: var(--muted); }
+.obj.archived .t { color: var(--muted); }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+.form-grid .wide { grid-column: 1 / -1; }
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.switch input { width: 34px; height: 20px; accent-color: var(--accent); }
+.sub-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+table.tbl { border-collapse: collapse; width: 100%; }
+.tbl th, .tbl td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+.tbl thead th { background: var(--surface-2); font-weight: 600; white-space: nowrap; padding-block: 12px; }
+.tbl tbody tr:last-child td { border-bottom: 0; }
+.tbl td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.tbl .row-actions { text-align: right; white-space: nowrap; }
+.tbl tr.off td { color: var(--faint); }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--accent); cursor: pointer; text-decoration: underline; font-size: 13px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 10px; border: 1px solid var(--line-strong);
+  border-radius: 99px; font-size: 13px; background: var(--surface);
+}
+.chip button { border: 0; background: none; cursor: pointer; color: var(--muted); width: 20px; height: 20px; border-radius: 50%; line-height: 1; }
+.chip button:hover { background: var(--surface-2); color: var(--ink); }
+.add-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.add-row .input, .add-row .select { flex: 1 1 200px; width: auto; }
+.tg-yes { color: var(--ok); } .tg-no { color: var(--faint); }
+.bounce { display: block; font-size: 12px; color: var(--late); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.toolbar .input { max-width: 320px; }
+.cal-note { padding: 10px 12px; background: var(--surface-2); border-radius: 4px; font-size: 13px; color: var(--muted); max-width: 80ch; }
+
+@media (max-width: 860px) {
+  .two-col, .refs-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .user-text { display: none; }
+}
+@media (max-width: 560px) {
+  .ev { grid-template-columns: 18px 1fr; }
+  .ev-time { grid-column: 2; grid-row: 1; text-align: left; padding-top: 10px; }
+  .ev-rail { grid-column: 1; grid-row: 1 / span 2; }
+  .ev-body { grid-column: 2; padding-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- роли и кабинеты (дополнение к index.html) ---------- */
+[hidden] { display: none !important; }
+main > * { min-width: 0; }
+.role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.role-card { display: grid; gap: 12px; align-content: start; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+.role-card .role-top { display: flex; align-items: center; gap: 12px; }
+.role-card .avatar { width: 40px; height: 40px; font-size: 12px; }
+.role-card .avatar.pg { background: var(--ask); }
+.role-card .avatar.ct { background: var(--ok); }
+.role-card h2 { font-size: 17px; }
+.role-card ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.role-card li { display: grid; grid-template-columns: 18px 1fr; gap: 6px; font-size: 13px; }
+.role-card li::before { content: "✓"; color: var(--ok); font-weight: 700; }
+.role-card li.no::before { content: "—"; color: var(--faint); }
+.role-card li.no { color: var(--muted); }
+.role-card .screens { display: flex; flex-wrap: wrap; gap: 6px; }
+.role-card .screens a { font-size: 12px; padding: 3px 10px; border: 1px solid var(--line-strong); border-radius: 99px; text-decoration: none; }
+
+.matrix th, .matrix td { text-align: center; }
+.matrix th:first-child, .matrix td:first-child { text-align: left; }
+.yes { color: var(--ok); font-weight: 700; }
+.ro { color: var(--wait); font-size: 12px; }
+.no { color: var(--faint); }
+
+.ro-banner { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 14px; border-radius: var(--radius); background: var(--accent-soft); color: var(--ink); font-size: 13px; }
+.ro-banner b { font-weight: 600; }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.kpi { display: grid; gap: 2px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; border-left: 3px solid var(--st, var(--line-strong)); }
+.kpi .n { font-size: 26px; font-weight: 600; line-height: 1.2; }
+.kpi.late { --st: var(--late); } .kpi.soon { --st: var(--soon); } .kpi.wait { --st: var(--wait); } .kpi.ok { --st: var(--ok); } .kpi.ask { --st: var(--ask); }
+
+.rd-list { display: grid; gap: 10px; }
+.rd { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px 20px; align-items: center; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--st, var(--line-strong)); border-radius: 8px; }
+.rd.late { --st: var(--late); } .rd.soon { --st: var(--soon); } .rd.wait { --st: var(--wait); } .rd.ask { --st: var(--ask); }
+.rd .rd-title { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-weight: 600; }
+.rd .rd-meta { color: var(--muted); font-size: 13px; }
+.rd .rd-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.rd .rd-form { grid-column: 1 / -1; display: grid; gap: 8px; padding-top: 12px; border-top: 1px dashed var(--line-strong); }
+@media (max-width: 720px) { .rd { grid-template-columns: 1fr; } .rd .rd-actions { justify-content: flex-start; } }
+
+.thread { display: grid; gap: 12px; }
+.msg { display: grid; gap: 4px; max-width: 760px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.msg.mine { justify-self: end; background: var(--accent-soft); border-color: transparent; }
+.msg.internal { background: var(--surface-2); border-style: dashed; border-color: var(--line-strong); }
+.msg .who { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 12px; color: var(--muted); }
+.msg .who b { color: var(--ink); font-weight: 600; }
+.tag { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; background: var(--surface-2); color: var(--muted); border: 1px solid var(--line-strong); }
+.tag.lock::before { content: "🔒"; font-size: 10px; }
+.tag.portal { background: var(--ok-bg); color: var(--ok); border-color: transparent; }
+
+.seg-toggle { justify-self: start; display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
+.seg-toggle button { border: 0; background: var(--surface); padding: 6px 12px; font-size: 13px; cursor: pointer; color: var(--muted); }
+.seg-toggle button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.compose { display: grid; gap: 10px; }
+.compose .foot { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+.sent-note { font-size: 13px; color: var(--ok); background: var(--ok-bg); padding: 8px 10px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div class="switcher" role="navigation" aria-label="Экраны макета">
+  <b>Роли · экраны:</b>
+  <nav>
+    <a href="#roles">Кто что видит</a>
+    <a href="#pg">Доска ПГ</a>
+    <a href="#card">Карточка: обратная связь</a>
+    <a href="#c-login">Вход подрядчика</a>
+    <a href="#c-home">Кабинет подрядчика</a>
+    <a href="#c-rd">РД в кабинете</a>
+  </nav>
+</div>
+
+<!-- ======================= Обзор ролей ======================= -->
+<section id="roles" data-screen>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Три роли — три набора экранов</h1>
+        <p class="sub">Предложение к обсуждению. Администратор остаётся отдельно: справочники, пользователи, календарь.</p>
+      </div>
+    </div>
+
+    <div class="role-grid">
+      <article class="role-card">
+        <div class="role-top"><div class="avatar">АС</div><div><h2>Координатор ДП</h2><p class="muted">ведёт рассылки</p></div></div>
+        <ul>
+          <li>Отправляет уведомления, выбирает срок</li>
+          <li>Меняет статус и продлевает срок</li>
+          <li>Отвечает подрядчику из карточки</li>
+          <li>Внутренние комментарии с ПГ</li>
+          <li>Информационная доска по всем проектам</li>
+        </ul>
+        <div class="screens"><a href="#card">Карточка: обратная связь</a></div>
+      </article>
+      <article class="role-card">
+        <div class="role-top"><div class="avatar pg">ПГ</div><div><h2>ПГ</h2><p class="muted">смотрит и задаёт вопросы</p></div></div>
+        <ul>
+          <li>Доска по своим проектам</li>
+          <li>Карточки и история — только чтение</li>
+          <li>Внутренние комментарии координатору</li>
+          <li class="no">Не отправляет рассылки</li>
+          <li class="no">Не меняет статусы и сроки</li>
+        </ul>
+        <div class="screens"><a href="#pg">Доска ПГ</a></div>
+      </article>
+      <article class="role-card">
+        <div class="role-top"><div class="avatar ct">ТМ</div><div><h2>Подрядчик</h2><p class="muted">свой кабинет</p></div></div>
+        <ul>
+          <li>Вход по ссылке на почту, без пароля</li>
+          <li>Свои РД: что подтвердить и до какого числа</li>
+          <li>«Ознакомлен», «Есть вопрос», «Не принимаем»</li>
+          <li>Переписка с координатором по каждой РД</li>
+          <li class="no">Не видит других подрядчиков и внутренние комментарии</li>
+        </ul>
+        <div class="screens"><a href="#c-login">Вход</a><a href="#c-home">Кабинет</a><a href="#c-rd">РД</a></div>
+      </article>
+    </div>
+
+    <section class="panel" aria-label="Права по ролям">
+      <div class="panel-head"><h2>Права по ролям</h2><span class="hint">Проверяются на сервере, а не скрытием кнопок</span></div>
+      <div class="tbl-wrap">
+        <table class="tbl matrix">
+          <thead><tr><th>Действие</th><th>Координатор ДП</th><th>ПГ</th><th>Подрядчик</th></tr></thead>
+          <tbody>
+            <tr><td>Какие данные видит</td><td>все проекты</td><td>свои проекты</td><td>свои уведомления</td></tr>
+            <tr><td>Доска «корпус × РД»</td><td class="yes">✓</td><td class="ro">только чтение</td><td class="no">—</td></tr>
+            <tr><td>«Мой дашборд» со своими РД</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+            <tr><td>Отправка рассылок, свой срок</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+            <tr><td>Смена статуса, продление срока</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+            <tr><td>Ответ по РД (ознакомлен / вопрос / не принимаем)</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+            <tr><td>Сообщение подрядчику</td><td class="yes">✓</td><td class="no">—</td><td class="ro">читает и отвечает</td></tr>
+            <tr><td>Внутренний комментарий</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">не видит</td></tr>
+            <tr><td>Справочники</td><td class="ro">чтение</td><td class="no">—</td><td class="no">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</section>
+
+<!-- ======================= Доска ПГ ======================= -->
+<section id="pg" data-screen hidden>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+    <nav class="topnav"><a href="#pg" aria-current="page">Доска</a></nav>
+    <div class="user"><div class="avatar" style="background: var(--ask)">ОЛ</div><div class="user-text"><span class="user-role">ПГ · производственная группа</span><span class="user-name">Олег Лебедев</span></div></div>
+  </header>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>ЖК «Северная долина», 3-я очередь</h1>
+        <p class="sub">4 корпуса · 5 подрядчиков · 59 уведомлений · на 26.09.2026</p>
+      </div>
+    </div>
+    <div class="ro-banner"><b>Только просмотр.</b> Рассылки, статусы и сроки ведёт координатор ДП. Вопрос или замечание оставьте комментарием в карточке — его увидит координатор, подрядчик не увидит.</div>
+
+    <div class="summary" aria-label="Сводка по статусам">
+      <a href="#pg"><span class="pill s-rej">Не принята</span><span class="n">1</span></a>
+      <a href="#pg"><span class="pill s-late">Просрочено</span><span class="n">1</span></a>
+      <a href="#pg"><span class="pill s-soon">Срок истекает</span><span class="n">3</span></a>
+      <a href="#pg"><span class="pill s-ask">Есть вопросы</span><span class="n">3</span></a>
+      <a href="#pg"><span class="pill s-wait">Ожидание, в срок</span><span class="n">8</span></a>
+      <a href="#pg"><span class="pill s-ok">Ознакомлен</span><span class="n">43</span></a>
+    </div>
+
+    <div class="board-wrap">
+      <table class="board">
+        <thead>
+          <tr>
+            <th scope="col">Корпус</th>
+            <th scope="col"><span class="set">АР</span><span class="set-meta">изм. 3 · 02.09</span></th>
+            <th scope="col"><span class="set">КЖ.1</span><span class="set-meta">изм. 2 · 11.09</span></th>
+            <th scope="col"><span class="set">ОВ</span><span class="set-meta">изм. 1 · 15.09</span></th>
+            <th scope="col"><span class="set">ЭОМ</span><span class="set-meta">изм. 0 · 23.09</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><span class="corp">Корпус 1</span><span class="corp-meta">секции 1–3</span></th>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">4 из 5</b></span><span class="pill s-late">Эскалировано</span></span><span class="seg"><i class="late"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary></details></td>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">5 из 5</b></span><span class="pill s-ok">Все ознакомлены</span></span><span class="seg"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary></details></td>
+            <td><details class="cell-sum" open><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">3 из 5</b></span><span class="pill s-rej">Не принята</span></span><span class="seg"><i class="rej"></i><i class="ask"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary>
+              <div class="list"><a class="n-item ok" href="#card"><span class="who">СтройМонолит</span><span class="pill s-ok">Ознакомлен</span><span class="days">17.09 · за 2 р.д.</span></a><a class="n-item ok" href="#card"><span class="who">ТеплоМонтаж</span><span class="pill s-ok">Ознакомлен</span><span class="days">17.09 · за 2 р.д.</span></a><a class="n-item ask" href="#card"><span class="who">АкваИнж</span><span class="pill s-ask">Вопросы</span><span class="days">ответ 18.09 · 💬 2</span></a><a class="n-item ok" href="#card"><span class="who">ЭлектроСети-Сервис</span><span class="pill s-ok">Ознакомлен</span><span class="days">16.09 · за 1 р.д.</span></a><a class="n-item rej" href="#card"><span class="who">ФасадПро</span><span class="pill s-rej">Не принята</span><span class="days">ответ 23.09</span></a></div></details></td>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">2 из 5</b></span><span class="pill s-wait">Ожидание ×3</span></span><span class="seg"><i class="wait"></i><i class="wait"></i><i class="wait"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary></details></td>
+          </tr>
+          <tr>
+            <th scope="row"><span class="corp">Корпус 2</span><span class="corp-meta">секции 4–5</span></th>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">5 из 5</b></span><span class="pill s-ok">Все ознакомлены</span></span><span class="seg"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary></details></td>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">4 из 5</b></span><span class="pill s-review">Проверить</span></span><span class="seg"><i class="review"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary></details></td>
+            <td><details class="cell-sum"><summary><span class="sum-top"><span class="sum-count">Ознакомлены <b class="mono">4 из 5</b></span><span class="pill s-ask">Вопросы</span></span><span class="seg"><i class="ask"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></span><span class="sum-more">5 подрядчиков</span></summary></details></td>
+            <td><div class="empty-cell"><span>не отправлено</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</section>
+
+<!-- ======================= Карточка: обратная связь (координатор) ======================= -->
+<section id="card" data-screen hidden>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+    <nav class="topnav">
+      <a href="#card" aria-current="page">Доска</a>
+      <a href="#card">Отправить уведомление</a>
+      <a href="#card" class="dd">Справочники</a>
+    </nav>
+    <div class="user"><div class="avatar">АС</div><div class="user-text"><span class="user-role">Координатор ДП</span><span class="user-name">Анна Смирнова</span></div></div>
+  </header>
+  <main>
+    <div class="card-head">
+      <nav class="crumbs" aria-label="Путь"><a href="#pg">Доска</a><span>/</span><span>ЖК «Северная долина», 3-я очередь</span><span>/</span><span>Корпус 1 · ОВ, изм. 1</span></nav>
+      <div class="card-title"><h1>ООО «АкваИнж»</h1><span class="pill s-ask">Есть вопросы</span></div>
+    </div>
+    <div class="facts">
+      <div class="fact"><span class="label">Отправлено</span><span class="v mono">15.09.2026 10:14</span></div>
+      <div class="fact"><span class="label">Срок ответа</span><span class="v mono">29.09.2026 · 3 из 10 р.д.</span></div>
+      <div class="fact"><span class="label">Подрядчик</span><span class="v">pto@akvainzh.ru · кабинет: 2 сотрудника</span></div>
+      <div class="fact"><span class="label">Инициатор</span><span class="v">Смирнова А. В.</span></div>
+    </div>
+
+    <section class="panel" aria-label="Обратная связь">
+      <div class="panel-head"><h2>Обратная связь</h2><span class="hint">Переписка с подрядчиком и внутренние комментарии — в одной ленте</span></div>
+      <div class="panel-body">
+        <div class="thread">
+          <div class="msg">
+            <div class="who"><b>Кравцов И. П.</b> ООО «АкваИнж» · 18.09 11:02 <span class="tag portal">из кабинета</span><span class="pill s-ask">вопрос</span></div>
+            <p>На листе 7 не указана отметка врезки в существующий ввод. Уточните, пожалуйста, по какой схеме выполнять.</p>
+          </div>
+          <div class="msg internal">
+            <div class="who"><b>Лебедев О.</b> ПГ · 18.09 14:30 <span class="tag lock">внутренний</span></div>
+            <p>На площадке ввод уже выполнен по старой схеме, врезка на −1,20. Подрядчику лучше ответить после проверки проектировщиком.</p>
+          </div>
+          <div class="msg mine">
+            <div class="who"><b>Смирнова А. В.</b> координатор · 19.09 09:15 <span class="tag">письмо + кабинет</span></div>
+            <p>Отметка врезки −1,20, схема — как в изм. 0 (лист 4). Проектировщик выпустит изменение до 25.09.</p>
+          </div>
+        </div>
+
+        <div class="compose">
+          <div class="seg-toggle" role="group" aria-label="Кому">
+            <button type="button" aria-pressed="true" data-kind="out">Сообщение подрядчику</button>
+            <button type="button" aria-pressed="false" data-kind="in">Внутренний комментарий</button>
+          </div>
+          <textarea class="input" rows="3" id="compose-text" placeholder="Ответ подрядчику: уйдёт письмом и появится в его кабинете"></textarea>
+          <div class="foot">
+            <span class="hint" id="compose-hint">Подрядчик увидит сообщение в кабинете и получит письмо на pto@akvainzh.ru.</span>
+            <button class="btn btn-primary" type="button" id="compose-send" data-toast="Макет: сообщение отправлено подрядчику и записано в историю.">Отправить подрядчику</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</section>
+
+<!-- ======================= Вход подрядчика ======================= -->
+<section id="c-login" data-screen hidden>
+  <main>
+    <div class="login-wrap">
+      <form class="login" id="c-login-form" aria-label="Вход для подрядчиков">
+        <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+        <div><h1>Кабинет подрядчика</h1><p class="muted">Без пароля: пришлём ссылку для входа на почту</p></div>
+        <label class="field"><span>Email вашей организации</span><input class="input" type="email" value="pto@teplomontazh.ru" autocomplete="email"></label>
+        <button class="btn btn-primary" type="submit">Получить ссылку для входа</button>
+        <p class="sent-note" id="c-login-sent" hidden>Ссылка отправлена на pto@teplomontazh.ru. Она действует 30 минут и сработает один раз.</p>
+        <p class="hint">Ссылку получит только email, который есть в справочнике подрядчиков. Кабинет не обязателен: подтверждать РД можно и кнопкой в письме.</p>
+      </form>
+    </div>
+  </main>
+</section>
+
+<!-- ======================= Кабинет подрядчика ======================= -->
+<section id="c-home" data-screen hidden>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+    <nav class="topnav"><a href="#c-home" aria-current="page">Мои РД</a></nav>
+    <div class="user"><div class="avatar" style="background: var(--ok)">ТМ</div><div class="user-text"><span class="user-role">Подрядчик · ООО «ТеплоМонтаж»</span><span class="user-name">pto@teplomontazh.ru</span></div></div>
+  </header>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Рабочая документация</h1>
+        <p class="sub">ООО «ТеплоМонтаж» · ЖК «Северная долина» (корпуса 1–3), ЖК «Речной квартал» (корпус 1)</p>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi late"><span class="label">Просрочено</span><span class="n">1</span></div>
+      <div class="kpi soon"><span class="label">Срок истекает</span><span class="n">1</span></div>
+      <div class="kpi wait"><span class="label">Ждёт вашего ответа</span><span class="n">1</span></div>
+      <div class="kpi ask"><span class="label">Есть вопросы</span><span class="n">1</span></div>
+      <div class="kpi ok"><span class="label">Подтверждено</span><span class="n">14</span></div>
+    </div>
+
+    <section class="panel" aria-label="Нужно подтвердить">
+      <div class="panel-head"><h2>Нужно подтвердить</h2><span class="hint">Сначала — с ближайшим сроком</span></div>
+      <div class="panel-body rd-list">
+        <article class="rd late">
+          <div>
+            <div class="rd-title">ОВ, изм. 1 · Корпус 3 <span class="pill s-late">Просрочено на 2 р.д.</span></div>
+            <p class="rd-meta">ЖК «Северная долина» · срок был 24.09.2026 · <a href="#c-rd">Открыть в Sarex ↗</a></p>
+          </div>
+          <div class="rd-actions">
+            <button class="btn btn-sm btn-primary" type="button" data-toast="Макет: ознакомление подтверждено. Координатор увидит это на доске.">Ознакомлен</button>
+            <button class="btn btn-sm" type="button" data-open="q1">Есть вопрос</button>
+            <button class="btn btn-sm btn-danger" type="button" data-open="r1">Не принимаем</button>
+          </div>
+          <div class="rd-form" id="r1" hidden>
+            <label class="field"><span>Почему документация не принимается</span><textarea class="input" rows="3" placeholder="Например: нет узлов прохода через перекрытие, в производство не принимаем"></textarea></label>
+            <div><button class="btn btn-sm btn-danger" type="button" data-toast="Макет: ответ «Не принимаем» отправлен. Координатор и РП получат письмо.">Отправить «Не принимаем»</button></div>
+          </div>
+          <div class="rd-form" id="q1" hidden>
+            <label class="field"><span>Ваш вопрос координатору</span><textarea class="input" rows="3" placeholder="Лист, узел, что непонятно"></textarea></label>
+            <div><button class="btn btn-sm btn-primary" type="button" data-toast="Макет: вопрос отправлен координатору.">Отправить вопрос</button></div>
+          </div>
+        </article>
+        <article class="rd soon">
+          <div>
+            <div class="rd-title">ВК, изм. 1 · Корпус 2 <span class="pill s-soon">Осталось 2 р.д.</span></div>
+            <p class="rd-meta">ЖК «Северная долина» · до 30.09.2026 · <a href="#c-rd">Открыть в Sarex ↗</a></p>
+          </div>
+          <div class="rd-actions">
+            <button class="btn btn-sm btn-primary" type="button" data-toast="Макет: ознакомление подтверждено.">Ознакомлен</button>
+            <button class="btn btn-sm" type="button">Есть вопрос</button>
+            <button class="btn btn-sm btn-danger" type="button">Не принимаем</button>
+          </div>
+        </article>
+        <article class="rd wait">
+          <div>
+            <div class="rd-title">ЭОМ, изм. 0 · Корпус 1 <span class="pill s-wait">до 07.10</span></div>
+            <p class="rd-meta">ЖК «Северная долина» · сообщение координатора: «Обратите внимание на листы 12–14» · <a href="#c-rd">Открыть в Sarex ↗</a></p>
+          </div>
+          <div class="rd-actions">
+            <button class="btn btn-sm btn-primary" type="button" data-toast="Макет: ознакомление подтверждено.">Ознакомлен</button>
+            <button class="btn btn-sm" type="button">Есть вопрос</button>
+            <button class="btn btn-sm btn-danger" type="button">Не принимаем</button>
+          </div>
+        </article>
+        <article class="rd ask">
+          <div>
+            <div class="rd-title">КЖ.1, изм. 2 · Корпус 2 <span class="pill s-ask">Вопрос задан · ответ получен</span></div>
+            <p class="rd-meta">ЖК «Северная долина» · координатор ответил 22.09 · <a href="#c-rd">Открыть переписку</a></p>
+          </div>
+          <div class="rd-actions">
+            <button class="btn btn-sm btn-primary" type="button" data-toast="Макет: ознакомление подтверждено.">Ознакомлен</button>
+            <a class="btn btn-sm" href="#c-rd">Переписка</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="История">
+      <div class="panel-head"><h2>Подтверждено</h2><span class="hint">14 РД</span></div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>РД</th><th>Проект · корпус</th><th>Получено</th><th>Подтверждено</th></tr></thead>
+          <tbody>
+            <tr><td>АР, изм. 3</td><td>Северная долина · Корпус 1</td><td class="mono">02.09</td><td class="mono">04.09 · за 2 р.д.</td></tr>
+            <tr><td>КЖ.1, изм. 2</td><td>Северная долина · Корпус 1</td><td class="mono">11.09</td><td class="mono">14.09 · за 1 р.д.</td></tr>
+            <tr><td>ОВ, изм. 1</td><td>Северная долина · Корпус 1</td><td class="mono">15.09</td><td class="mono">17.09 · за 2 р.д.</td></tr>
+            <tr><td>АР, изм. 1</td><td>Речной квартал · Корпус 1</td><td class="mono">08.09</td><td class="mono">09.09 · за 1 р.д.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</section>
+
+<!-- ======================= РД в кабинете подрядчика ======================= -->
+<section id="c-rd" data-screen hidden>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">РД</span>Ознакомление с РД</div>
+    <nav class="topnav"><a href="#c-home" aria-current="page">Мои РД</a></nav>
+    <div class="user"><div class="avatar" style="background: var(--ok)">ТМ</div><div class="user-text"><span class="user-role">Подрядчик · ООО «ТеплоМонтаж»</span><span class="user-name">pto@teplomontazh.ru</span></div></div>
+  </header>
+  <main>
+    <div class="card-head">
+      <nav class="crumbs" aria-label="Путь"><a href="#c-home">Мои РД</a><span>/</span><span>ЖК «Северная долина»</span><span>/</span><span>Корпус 2</span></nav>
+      <div class="card-title"><h1>КЖ.1, изм. 2</h1><span class="pill s-ask">Есть вопросы</span></div>
+    </div>
+    <div class="facts">
+      <div class="fact"><span class="label">Получено</span><span class="v mono">11.09.2026</span></div>
+      <div class="fact"><span class="label">Срок ответа</span><span class="v mono">25.09.2026</span></div>
+      <div class="fact"><span class="label">Координатор</span><span class="v">Смирнова Анна</span></div>
+      <div class="fact"><span class="label">Документация</span><span class="v"><a href="#c-rd">Открыть в Sarex ↗</a></span></div>
+    </div>
+    <section class="panel" aria-label="Переписка">
+      <div class="panel-head"><h2>Переписка с координатором</h2><span class="hint">Здесь же — ответы на письма</span></div>
+      <div class="panel-body">
+        <div class="thread">
+          <div class="msg">
+            <div class="who"><b>Смирнова А. В.</b> координатор · 11.09 10:14</div>
+            <p>Выпущена РД КЖ.1, изм. 2. Изменено армирование плиты на отм. +12,600.</p>
+          </div>
+          <div class="msg mine">
+            <div class="who"><b>Вы</b> · 18.09 11:02 <span class="pill s-ask">вопрос</span></div>
+            <p>В спецификации к листу 9 не сходится количество Ø12. Какая версия верная?</p>
+          </div>
+          <div class="msg">
+            <div class="who"><b>Смирнова А. В.</b> координатор · 22.09 09:40</div>
+            <p>Верна спецификация, на листе опечатка. Проектировщик исправит в изм. 3.</p>
+          </div>
+        </div>
+        <div class="compose">
+          <textarea class="input" rows="3" placeholder="Ответить координатору"></textarea>
+          <div class="foot">
+            <div class="actions">
+              <button class="btn btn-primary" type="button" data-toast="Макет: ознакомление подтверждено.">Ознакомлен</button>
+              <button class="btn" type="button" data-toast="Макет: сообщение отправлено координатору.">Отправить сообщение</button>
+              <button class="btn btn-danger" type="button" data-toast="Макет: ответ «Не принимаем» отправлен.">Не принимаем</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</section>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function () {
+  var screens = Array.prototype.slice.call(document.querySelectorAll('[data-screen]'));
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.switcher a'));
+  function show() {
+    var id = (location.hash || '#roles').slice(1);
+    if (!document.getElementById(id)) id = 'roles';
+    screens.forEach(function (s) { s.hidden = s.id !== id; });
+    tabs.forEach(function (a) {
+      if (a.getAttribute('href') === '#' + id) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', show);
+  show();
+
+  var toast = document.getElementById('toast'), timer;
+  function say(text) {
+    toast.textContent = text; toast.hidden = false;
+    clearTimeout(timer); timer = setTimeout(function () { toast.hidden = true; }, 3200);
+  }
+  document.querySelectorAll('[data-toast]').forEach(function (b) {
+    b.addEventListener('click', function () { say(b.getAttribute('data-toast')); });
+  });
+  document.querySelectorAll('[data-open]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var form = document.getElementById(b.getAttribute('data-open'));
+      b.closest('.rd').querySelectorAll('.rd-form').forEach(function (f) { if (f !== form) f.hidden = true; });
+      form.hidden = !form.hidden;
+    });
+  });
+  document.getElementById('c-login-form').addEventListener('submit', function (e) {
+    e.preventDefault(); document.getElementById('c-login-sent').hidden = false;
+  });
+  var text = document.getElementById('compose-text'), hint = document.getElementById('compose-hint'), send = document.getElementById('compose-send');
+  document.querySelectorAll('.seg-toggle button').forEach(function (b, _, all) {
+    b.addEventListener('click', function () {
+      Array.prototype.forEach.call(all, function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      var inside = b.getAttribute('data-kind') === 'in';
+      text.placeholder = inside ? 'Комментарий для координатора и ПГ — подрядчик его не увидит' : 'Ответ подрядчику: уйдёт письмом и появится в его кабинете';
+      hint.textContent = inside ? 'Внутренний комментарий видят только координаторы ДП и ПГ проекта.' : 'Подрядчик увидит сообщение в кабинете и получит письмо на pto@akvainzh.ru.';
+      send.textContent = inside ? 'Добавить комментарий' : 'Отправить подрядчику';
+      send.setAttribute('data-toast', inside ? 'Макет: внутренний комментарий добавлен в историю.' : 'Макет: сообщение отправлено подрядчику и записано в историю.');
+    });
+  });
+})();
+</script>
+</body>
+</html>
