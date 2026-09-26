@@ -71,6 +71,23 @@ def test_email_message_headers_and_parts() -> None:
     assert "rd@company.ru" in message["From"]
     assert message.get_body(("html",)) is not None
     assert message.get_body(("plain",)) is not None
+    assert message["In-Reply-To"] is None
+
+
+def test_reminder_continues_the_thread() -> None:
+    letter = _letter(None)
+    message = to_email_message(
+        SETTINGS,
+        to=letter.to,
+        subject=letter.subject,
+        text=letter.text,
+        html=letter.html,
+        reply_to=letter.reply_to,
+        message_id="<new@company.ru>",
+        in_reply_to="<first@company.ru>",
+    )
+    assert message["In-Reply-To"] == "<first@company.ru>"
+    assert message["References"] == "<first@company.ru>"
 
 
 def test_ack_token_roundtrip_and_tampering() -> None:

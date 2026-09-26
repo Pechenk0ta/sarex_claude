@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ru"><body style="margin:0;padding:24px;background:#f5f6f9;font:14px/1.5 Arial,sans-serif;color:#1c2233">
+<table role="presentation" width="100%" style="max-width:620px;margin:0 auto;background:#ffffff;border:1px solid #e7e9f0;border-radius:8px">
+<tr><td style="padding:24px">
+<p style="margin:0 0 12px;color:#b3322b;font-weight:bold">Срок ответа по рабочей документации прошёл, ознакомление не подтверждено.</p>
+<table role="presentation" style="margin:0 0 16px;border-collapse:collapse">
+<tr><td style="padding:2px 12px 2px 0;color:#6b7185">Проект</td><td>{{ project }}</td></tr>
+<tr><td style="padding:2px 12px 2px 0;color:#6b7185">Корпус</td><td>{{ corpus }}</td></tr>
+<tr><td style="padding:2px 12px 2px 0;color:#6b7185">Документация</td><td><a href="{{ sarex_link }}" style="color:#1f35c8">{{ sarex_link }}</a></td></tr>
+<tr><td style="padding:2px 12px 2px 0;color:#6b7185">Отправлено</td><td>{{ sent_on }}, срок ответа был до {{ deadline }}</td></tr>
+<tr><td style="padding:2px 12px 2px 0;color:#6b7185">Координатор</td><td>{{ initiator }}</td></tr>
+</table>
+<p style="margin:0 0 8px;font-weight:bold">Не подтвердили:</p>
+<table role="presentation" width="100%" style="margin:0 0 16px;border-collapse:collapse">
+{% for item in items %}<tr><td style="padding:8px 0;border-top:1px solid #e7e9f0">{{ item.contractor }}<br><span style="color:#6b7185">{{ item.email }} · {{ item.workdays_without_answer }} р.д. без ответа</span></td><td style="padding:8px 0;border-top:1px solid #e7e9f0;text-align:right"><a href="{{ item.card_url }}" style="color:#1f35c8">Карточка</a></td></tr>
+{% endfor %}</table>
+<p style="margin:0;color:#6b7185">Письмо отправлено системой «Ознакомление с РД».</p>
+</td></tr></table>
+</body></html>

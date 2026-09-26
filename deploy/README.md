@@ -293,9 +293,17 @@ docker compose -f docker-compose.yml up -d --build
 
 ```bash
 docker compose -f docker-compose.yml logs -f app       # журнал приложения
-docker compose -f docker-compose.yml logs -f worker    # журнал фоновых задач (отправка писем)
+docker compose -f docker-compose.yml logs -f worker    # журнал фоновых задач (письма, напоминания)
 docker compose -f docker-compose.yml restart app
 ```
+
+**Напоминания и эскалация** запускаются сами каждый рабочий день в 9:00 по Москве (`REMINDERS_HOUR`, `REMINDERS_MINUTE` в `.env`; выходные и праздники из производственного календаря пропускаются). Если воркер перезапустили днём, пропущенный запуск выполняется сразу. Запустить вручную, например после обновления:
+
+```bash
+docker compose -f docker-compose.yml exec worker python -m app.scripts.run_reminders
+```
+
+Повторный запуск в тот же день ничего не отправляет повторно: команда безопасна.
 
 ---
 

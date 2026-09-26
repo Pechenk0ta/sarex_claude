@@ -433,3 +433,10 @@ async def change_deadline(
         )
     )
     await session.flush()
+
+
+def mark_escalated(notification: Notification, moment: datetime) -> None:
+    """The deadline passed without an answer (TZ 4.3). The event and the letter to the project
+    manager are written by `app.services.reminders`."""
+    notification.status = NotificationStatus.ESCALATED
+    notification.escalated_at = moment

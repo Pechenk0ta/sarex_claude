@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     # Deadlines and reminders in working days (TZ 4.3)
     deadline_workdays: int = 10
     deadline_hour: int = 18  # local time on the deadline day
+    first_reminder_workdays: int = 1
+    second_reminder_workdays: int = 3
+    # Daily reminders job, local time; it skips days off from the production calendar
+    reminders_hour: int = Field(default=9, ge=0, le=23)
+    reminders_minute: int = Field(default=0, ge=0, le=59)
 
     # Mailbox of the system (TZ section 9, decision 1)
     mail_address: str = "rd@localhost"

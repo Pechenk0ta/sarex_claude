@@ -3,6 +3,7 @@
 <table role="presentation" width="100%" style="max-width:620px;margin:0 auto;background:#ffffff;border:1px solid #e7e9f0;border-radius:8px">
 <tr><td style="padding:24px">
 <p style="margin:0 0 12px">Добрый день!</p>
+{% if reminder %}<p style="margin:0 0 12px;padding:8px 12px;background:#fbf0d9;color:#a06207;border-radius:4px"><b>Повторное уведомление:</b> ознакомление с документацией пока не подтверждено.</p>{% endif %}
 <p style="margin:0 0 12px">Выпущена рабочая документация по проекту <b>{{ project }}</b>, {{ corpus }}.</p>
 <p style="margin:0 0 12px">Документация: <a href="{{ sarex_link }}" style="color:#1f35c8">{{ sarex_link }}</a></p>
 {% if message %}

@@ -1,0 +1,13 @@
+Срок ответа по рабочей документации прошёл, ознакомление не подтверждено.
+
+Проект: {{ project }}
+Корпус: {{ corpus }}
+Документация: {{ sarex_link }}
+Отправлено: {{ sent_on }}, срок ответа был до {{ deadline }}
+Координатор: {{ initiator }}
+
+Не подтвердили:
+{% for item in items %}- {{ item.contractor }} ({{ item.email }}): {{ item.workdays_without_answer }} р.д. без ответа
+  {{ item.card_url }}
+{% endfor %}
+Письмо отправлено системой «Ознакомление с РД».
