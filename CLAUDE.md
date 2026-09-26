@@ -44,7 +44,7 @@
 │   ├── main.py                 # создание FastAPI-приложения, подключение роутеров
 │   ├── config.py               # Settings (pydantic-settings), все параметры из env
 │   ├── db.py                   # async engine, sessionmaker, зависимость get_session
-│   ├── models/                 # SQLAlchemy-модели: object, corpus, contractor, user,
+│   ├── models/                 # SQLAlchemy-модели по разделу 3 ТЗ: object, corpus, contractor, user,
 │   │                           #   notification, notification_event, holiday
 │   ├── schemas/                # Pydantic-схемы запросов/ответов API
 │   ├── api/                    # JSON API (раздел 5 ТЗ): objects, notifications,
@@ -126,11 +126,8 @@ docker compose exec app alembic upgrade head
 - Магическая ссылка подтверждения — одноразовый подписанный токен (`itsdangerous` или HMAC c `SECRET_KEY`), с ограниченным сроком жизни.
 - Webhook-эндпоинты проверяют подпись/секрет провайдера; без проверки запрос отклоняется.
 
-### Пробелы в ТЗ, которые закрываем в коде
-- Нет таблицы `users` — добавить (`id`, `email`, `full_name`, `password_hash`, `role`: coordinator/admin, `is_active`).
-- Флаг «требует ручной проверки» (раздел 4.2) отсутствует в модели — добавить `notifications.needs_manual_review: bool`.
-- Не указано, откуда брать адрес РП для эскалации — добавить `objects.project_manager_email` (или FK на `users`).
-- Производственный календарь (открытый вопрос 3) — таблица `holidays(date, is_workday)`; при пустой таблице считаем рабочими пн–пт.
+### Модель данных
+- Таблицы и поля — строго по разделу 3 ТЗ (включая `users`, `holidays`, `notifications.needs_manual_review`, `objects.project_manager_email`). Новое поле или таблица сначала добавляется в ТЗ, потом в код.
 
 ### Миграции
 - Любое изменение моделей — новая миграция Alembic (`alembic revision --autogenerate -m "..."`), сгенерированный файл обязательно просматривается и правится руками.
