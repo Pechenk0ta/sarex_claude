@@ -173,7 +173,7 @@ test('date cells stored as Date objects or serial numbers are read', () => {
 });
 
 test('/add (date in any position), /edit, find, delete with confirmation', () => {
-  const t = ownerBot([[1, 'Караваев Сергей Игоревич', 'Генеральный директор', '02.05.1991', 'Absolut']]);
+  const t = ownerBot([[1, 'Сергеев Сергей Сергеевич', 'Генеральный директор', '02.05.1991', 'Absolut']]);
   let r = t.say('/add Иванов Иван Иванович; Менеджер продукта; 12.03.1990; Absolut');
   assert.match(r[0].text, /Добавил[\s\S]*Иванов Иван Иванович<\/b> \(#2\)[\s\S]*12\.03\.1990[\s\S]*💼 Менеджер продукта, Absolut/);
   assert.deepStrictEqual(t.grid[2], [2, 'Иванов Иван Иванович', 'Менеджер продукта', '12.03.1990', 'Absolut']);
@@ -229,7 +229,7 @@ test('/soon and /today', () => {
 
 test('reminder: only from 10:00 Moscow, exactly once a day', () => {
   const t = ownerBot([
-    [12, 'Орлова Елена Вадимовна', 'Руководитель центра достоверных данных', '26.10.1988', 'Absolut'],
+    [12, 'Смирнова Ольга Петровна', 'Руководитель отдела', '26.10.1988', 'Absolut'],
     [13, 'Боря', '', '27.10', ''],
   ]);
   t.setNow('2026-10-26T06:59:00Z'); // 09:59 MSK
@@ -238,7 +238,7 @@ test('reminder: only from 10:00 Moscow, exactly once a day', () => {
   const r = t.say('/help');
   assert.strictEqual(r.length, 2);
   assert.strictEqual(r[1].chat_id, '42');
-  assert.match(r[1].text, /Сегодня день рождения!\n\n<b>Орлова Елена Вадимовна<\/b> — 38 лет\n💼 Руководитель центра достоверных данных, Absolut$/);
+  assert.match(r[1].text, /Сегодня день рождения!\n\n<b>Смирнова Ольга Петровна<\/b> — 38 лет\n💼 Руководитель отдела, Absolut$/);
   t.setNow('2026-10-26T15:00:00Z');
   assert.strictEqual(t.say('/help').length, 1);
   t.setNow('2026-10-27T07:01:00Z');
