@@ -49,8 +49,16 @@ function editMessage_(chatId, messageId, text) {
   });
 }
 
+/**
+ * Stops the spinner on the pressed button. Best effort: Telegram accepts the answer only
+ * for a few seconds and we poll once a minute, so "query is too old" is normal here.
+ */
 function answerCallback_(callbackId, text) {
-  return tg_('answerCallbackQuery', { callback_query_id: callbackId, text: text || '' });
+  try {
+    tg_('answerCallbackQuery', { callback_query_id: callbackId, text: text || '' });
+  } catch (e) {
+    console.warn(e);
+  }
 }
 
 function esc_(s) {

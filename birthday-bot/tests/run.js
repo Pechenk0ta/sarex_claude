@@ -20,6 +20,7 @@ function formatDate(date, tz, pattern) {
 function makeSandbox(rows, tokenInCode) {
   const props = {};
   const sent = [];
+  const failing = new Set();
   const pendingUpdates = [];
   const grid = [['№', 'TASK', 'Должность', 'День рождения', '']].concat(rows || []);
 
@@ -63,6 +64,9 @@ function makeSandbox(rows, tokenInCode) {
     UrlFetchApp: { fetch(url, opts) {
       const method = url.split('/').pop();
       const payload = JSON.parse(opts.payload);
+      if (failing.has(method)) {
+        return { getContentText: () => JSON.stringify({ ok: false, description: 'Bad Request: query is too old' }) };
+      }
       let result = true;
       if (method === 'getUpdates') result = pendingUpdates.splice(0).filter((u) => u.update_id >= payload.offset);
       else sent.push({ method, ...payload });
@@ -75,7 +79,7 @@ function makeSandbox(rows, tokenInCode) {
   vm.runInContext(tokenInCode ? withToken(code, tokenInCode) : code, sandbox, { filename: 'Code.gs' });
   let updateId = 1;
   return {
-    sb: sandbox, props, sent, grid,
+    sb: sandbox, props, sent, grid, failing,
     setNow(iso) { sandbox.now_ = () => new Date(iso); },
     say(text, chatId = 42) {
       pendingUpdates.push({ update_id: updateId++, message: { chat: { id: chatId }, text } });
@@ -211,6 +215,15 @@ test('/add (date in any position), /edit, find, delete with confirmation', () =>
   assert.match(r.find((m) => m.method === 'editMessageText').text, /Удалил: Иванов Иван Петрович/);
   r = t.press('delok:2');
   assert.match(r.find((m) => m.method === 'editMessageText').text, /уже нет/);
+});
+
+test('buttons still work when Telegram rejects the late callback answer', () => {
+  const t = ownerBot([[67, 'Тест', '', '31.03.1991', 'Ромашка'], [97, 'Дубль', '', '18.03.1900', 'Absolut']]);
+  t.failing.add('answerCallbackQuery');
+  const r = t.press('delok:97');
+  assert.strictEqual(t.grid.length, 2);
+  assert.match(r.find((m) => m.method === 'editMessageText').text, /Удалил: Дубль/);
+  assert.ok(!r.some((m) => /Ошибка/.test(m.text || '')));
 });
 
 test('names are HTML-escaped', () => {
