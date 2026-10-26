@@ -105,6 +105,8 @@ test('parseBirthday_ accepts and rejects formats', () => {
   assert.strictEqual(sb.parseBirthday_('12.13.1990', 2026), null);
   assert.strictEqual(sb.parseBirthday_('12.03.2030', 2026), null);
   assert.strictEqual(sb.parseBirthday_('завтра', 2026), null);
+  assert.deepStrictEqual({ ...sb.parseBirthday_('16.09.1900', 2026) }, { day: 16, month: 9, year: null });
+  assert.strictEqual(sb.parseBirthday_('16.09.1899', 2026), null);
 });
 
 test('nextOccurrence_: days left, age, year wrap, 29 Feb', () => {
@@ -230,7 +232,7 @@ test('/soon and /today', () => {
 test('reminder: only from 10:00 Moscow, exactly once a day', () => {
   const t = ownerBot([
     [12, 'Смирнова Ольга Петровна', 'Руководитель отдела', '26.10.1988', 'Absolut'],
-    [13, 'Боря', '', '27.10', ''],
+    [13, 'Боря', '', '27.10.1900', ''],
   ]);
   t.setNow('2026-10-26T06:59:00Z'); // 09:59 MSK
   assert.strictEqual(t.say('/help').length, 1);
@@ -242,7 +244,7 @@ test('reminder: only from 10:00 Moscow, exactly once a day', () => {
   t.setNow('2026-10-26T15:00:00Z');
   assert.strictEqual(t.say('/help').length, 1);
   t.setNow('2026-10-27T07:01:00Z');
-  assert.match(t.say('/help')[1].text, /Боря/);
+  assert.match(t.say('/help')[1].text, /<b>Боря<\/b>$/); // year 1900 = unknown: no age
 });
 
 test('no message on days without birthdays', () => {

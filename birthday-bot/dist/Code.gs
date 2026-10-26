@@ -312,6 +312,8 @@ const BOT_TOKEN_IN_CODE = '';
 const TZ = 'Europe/Moscow';
 const REMIND_HOUR = 10;
 const SOON_DAYS_DEFAULT = 30;
+// The list uses this year when the real one is unknown: no age is shown for it.
+const UNKNOWN_YEAR = 1900;
 
 const SHEET_NAME = 'Люди';
 // Column order matches the list as it is kept today: № | ФИО | Должность | День рождения | Компания.
@@ -364,15 +366,16 @@ function daysInMonth_(month, year) {
   return [4, 6, 9, 11].indexOf(month) >= 0 ? 30 : 31;
 }
 
-/** "12.03", "12.03.1990", "1/3/1990", "12-03" → birthday, or null if not a valid date. */
+/** "12.03", "12.03.1990", "1/3/1990", "12-03" → birthday, or null if not a valid date. "dd.MM.1900" = year unknown. */
 function parseBirthday_(text, currentYear) {
   const m = String(text || '').trim().match(/^(\d{1,2})[.\/-](\d{1,2})(?:[.\/-](\d{4}))?$/);
   if (!m) return null;
   const day = Number(m[1]);
   const month = Number(m[2]);
-  const year = m[3] ? Number(m[3]) : null;
+  let year = m[3] ? Number(m[3]) : null;
+  if (year === UNKNOWN_YEAR) year = null;
   if (month < 1 || month > 12) return null;
-  if (year !== null && (year < 1900 || year > currentYear)) return null;
+  if (year !== null && (year < UNKNOWN_YEAR || year > currentYear)) return null;
   if (day < 1 || day > daysInMonth_(month, year)) return null;
   return { day: day, month: month, year: year };
 }

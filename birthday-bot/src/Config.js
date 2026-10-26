@@ -7,6 +7,8 @@ const BOT_TOKEN_IN_CODE = '';
 const TZ = 'Europe/Moscow';
 const REMIND_HOUR = 10;
 const SOON_DAYS_DEFAULT = 30;
+// The list uses this year when the real one is unknown: no age is shown for it.
+const UNKNOWN_YEAR = 1900;
 
 const SHEET_NAME = 'Люди';
 // Column order matches the list as it is kept today: № | ФИО | Должность | День рождения | Компания.
