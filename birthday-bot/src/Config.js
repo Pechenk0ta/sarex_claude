@@ -1,14 +1,18 @@
 /**
- * Settings. Secrets (bot token, owner chat id) live in Script Properties,
- * never in code: Project Settings → Script Properties.
+ * Settings. The bot token is taken from Script Properties (BOT_TOKEN) or, if it is
+ * not set there, from BOT_TOKEN_IN_CODE. Keep BOT_TOKEN_IN_CODE empty in git.
  */
+const BOT_TOKEN_IN_CODE = '';
+
 const TZ = 'Europe/Moscow';
 const REMIND_HOUR = 10;
 const SOON_DAYS_DEFAULT = 30;
 
 const SHEET_NAME = 'Люди';
-const HEADERS = ['ID', 'Имя', 'Дата рождения', 'Кто', 'Заметка'];
-const COL = { id: 1, name: 2, date: 3, group: 4, note: 5 }; // 1-based sheet columns
+// Column order matches the list as it is kept today: № | ФИО | Должность | День рождения | Компания.
+// Header texts may differ ("TASK" instead of "ФИО" is fine): columns are read by position.
+const HEADERS = ['№', 'ФИО', 'Должность', 'День рождения', 'Компания'];
+const COL = { id: 1, name: 2, position: 3, date: 4, company: 5 }; // 1-based sheet columns
 
 // Script Properties keys
 const P_TOKEN = 'BOT_TOKEN';
@@ -28,6 +32,10 @@ function setProp_(key, value) {
 
 function deleteProp_(key) {
   PropertiesService.getScriptProperties().deleteProperty(key);
+}
+
+function botToken_() {
+  return prop_(P_TOKEN) || BOT_TOKEN_IN_CODE;
 }
 
 /** Current moment; a separate function so tests can freeze time. */

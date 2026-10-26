@@ -6,8 +6,8 @@
 
 /** One-time setup: sheet, bot menu, triggers, link for binding the bot to you. */
 function setup() {
-  if (!prop_(P_TOKEN)) {
-    throw new Error('Сначала добавьте BOT_TOKEN: Настройки проекта → Свойства скрипта.');
+  if (!botToken_()) {
+    throw new Error('Не задан токен бота: впишите его в BOT_TOKEN_IN_CODE или в свойство скрипта BOT_TOKEN.');
   }
   getSheet_();
 
@@ -18,7 +18,7 @@ function setup() {
       { command: 'today', description: 'У кого сегодня день рождения' },
       { command: 'soon', description: 'Ближайшие 30 дней' },
       { command: 'list', description: 'Все, по ближайшей дате' },
-      { command: 'add', description: 'Добавить: /add Имя; ДД.ММ.ГГГГ; кто; заметка' },
+      { command: 'add', description: 'Добавить: /add ФИО; должность; ДД.ММ.ГГГГ; компания' },
       { command: 'edit', description: 'Изменить: /edit номер поле значение' },
       { command: 'delete', description: 'Удалить: /delete номер' },
       { command: 'help', description: 'Справка' },
@@ -96,8 +96,8 @@ function buildReminder_(people, today) {
   const blocks = todays.map(function (p) {
     const next = nextOccurrence_(p.birthday, today);
     const lines = ['<b>' + esc_(p.name) + '</b>' + (next.age !== null ? ' — ' + yearsText_(next.age) : '')];
-    if (p.group) lines.push('👥 ' + esc_(p.group));
-    if (p.note) lines.push('📝 ' + esc_(p.note));
+    const work = workText_(p);
+    if (work) lines.push('💼 ' + esc_(work));
     return lines.join('\n');
   });
   const title = todays.length === 1 ? '🎉 Сегодня день рождения!' : '🎉 Сегодня дни рождения!';

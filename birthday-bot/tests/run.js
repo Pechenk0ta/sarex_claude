@@ -17,11 +17,11 @@ function formatDate(date, tz, pattern) {
     .replace('H', String(Number(parts.hour)));
 }
 
-function makeSandbox(rows) {
+function makeSandbox(rows, tokenInCode) {
   const props = {};
   const sent = [];
   const pendingUpdates = [];
-  const grid = [['ID', 'Имя', 'Дата рождения', 'Кто', 'Заметка']].concat(rows || []);
+  const grid = [['№', 'TASK', 'Должность', 'День рождения', '']].concat(rows || []);
 
   const range = (r, c, nr = 1, nc = 1) => ({
     getValues: () => Array.from({ length: nr }, (_, i) =>
@@ -53,7 +53,8 @@ function makeSandbox(rows) {
       deleteProperty: (k) => { delete props[k]; },
     }) },
     SpreadsheetApp: { getActiveSpreadsheet: () => ({
-      getSheetByName: () => sheet,
+      getSheetByName: () => null,
+      getSheets: () => [sheet],
       getSpreadsheetTimeZone: () => 'Europe/Moscow',
     }) },
     Utilities: { formatDate, getUuid: () => '12345678-aaaa-bbbb-cccc-1234567890ab' },
@@ -69,9 +70,9 @@ function makeSandbox(rows) {
     } },
   };
   vm.createContext(sandbox);
-  for (const f of fs.readdirSync(path.join(__dirname, '../src')).sort()) {
-    vm.runInContext(fs.readFileSync(path.join(__dirname, '../src', f), 'utf8'), sandbox, { filename: f });
-  }
+  const { bundle, withToken } = require('../tools/bundle.js');
+  const code = bundle();
+  vm.runInContext(tokenInCode ? withToken(code, tokenInCode) : code, sandbox, { filename: 'Code.gs' });
   let updateId = 1;
   return {
     sb: sandbox, props, sent, grid,
@@ -150,8 +151,8 @@ function ownerBot(rows) {
   return t;
 }
 
-test('rows typed into the sheet without ID get IDs', () => {
-  const t = ownerBot([['', 'Аня', '05.11', 'друг', ''], ['', 'Боря', '01.01.1980', '', '']]);
+test('rows typed into the sheet without № get numbers', () => {
+  const t = ownerBot([['', 'Аня', '', '05.11', ''], ['', 'Боря', 'Архитектор', '01.01.1980', 'Absolut']]);
   const text = t.say('/list')[0].text;
   assert.match(text, /#1 Аня — 05\.11, через 10 дней/);
   assert.match(text, /#2 Боря — 01\.01, через 67 дней \(47 лет\)/);
@@ -159,41 +160,53 @@ test('rows typed into the sheet without ID get IDs', () => {
   assert.strictEqual(t.grid[2][0], 2);
 });
 
-test('date cells stored as Date objects are read', () => {
-  const t = ownerBot([[1, 'Вера', new Date('1985-11-03T00:00:00+03:00'), '', ''], [2, 'Гена', new Date('2026-12-01T00:00:00+03:00'), '', '']]);
+test('date cells stored as Date objects or serial numbers are read', () => {
+  const t = ownerBot([
+    [1, 'Вера', '', new Date('1985-11-03T00:00:00+03:00'), ''],
+    [2, 'Гена', '', new Date('2026-12-01T00:00:00+03:00'), ''],
+    [3, 'Даша', '', 33360, ''], // 02.05.1991
+  ]);
   const text = t.say('/list')[0].text;
   assert.match(text, /Вера — 03\.11, через 8 дней \(41 год\)/);
   assert.match(text, /Гена — 01\.12, через 36 дней$/m); // year equal to current = typed without year
+  assert.match(text, /Даша — 02\.05, через 188 дней \(36 лет\)/);
 });
 
-test('/add, /edit, find, delete with confirmation', () => {
-  const t = ownerBot([[1, 'Аня', '05.11', 'друг', '']]);
-  let r = t.say('/add Иван Петров; 12.03.1990; коллега; любит кофе; и чай');
-  assert.match(r[0].text, /Добавил[\s\S]*Иван Петров<\/b> \(#2\)[\s\S]*12\.03\.1990[\s\S]*коллега[\s\S]*любит кофе; и чай/);
-  assert.deepStrictEqual(t.grid[2], [2, 'Иван Петров', '12.03.1990', 'коллега', 'любит кофе; и чай']);
+test('/add (date in any position), /edit, find, delete with confirmation', () => {
+  const t = ownerBot([[1, 'Караваев Сергей Игоревич', 'Генеральный директор', '02.05.1991', 'Absolut']]);
+  let r = t.say('/add Иванов Иван Иванович; Менеджер продукта; 12.03.1990; Absolut');
+  assert.match(r[0].text, /Добавил[\s\S]*Иванов Иван Иванович<\/b> \(#2\)[\s\S]*12\.03\.1990[\s\S]*💼 Менеджер продукта, Absolut/);
+  assert.deepStrictEqual(t.grid[2], [2, 'Иванов Иван Иванович', 'Менеджер продукта', '12.03.1990', 'Absolut']);
+  t.say('/add Петров Пётр; 01.02');
+  assert.deepStrictEqual(t.grid[3], [3, 'Петров Пётр', '', '01.02', '']);
+  t.say('/delete 3'); t.press('delok:3');
 
-  assert.match(t.say('/add Иван; 31.02')[0].text, /Не понял дату/);
+  assert.match(t.say('/add Иван; 31.02')[0].text, /Не нашёл дату/);
   assert.match(t.say('/add Иван')[0].text, /Формат/);
 
   r = t.say('/edit 2 дата 1.4.1991');
-  assert.strictEqual(t.grid[2][2], '01.04.1991');
+  assert.strictEqual(t.grid[2][3], '01.04.1991');
   assert.match(r[0].text, /Сохранил/);
-  t.say('/edit 2 Имя Иван Сидоров');
-  assert.strictEqual(t.grid[2][1], 'Иван Сидоров');
-  assert.match(t.say('/edit 9 имя X')[0].text, /Нет человека с номером 9/);
+  t.say('/edit 2 ФИО Иванов Иван Петрович');
+  assert.strictEqual(t.grid[2][1], 'Иванов Иван Петрович');
+  t.say('/edit 2 должность Архитектор');
+  assert.strictEqual(t.grid[2][2], 'Архитектор');
+  t.say('/edit 2 компания Absolut Страхование');
+  assert.strictEqual(t.grid[2][4], 'Absolut Страхование');
+  assert.match(t.say('/edit 9 фио X')[0].text, /Нет человека с номером 9/);
   assert.match(t.say('/edit 2 возраст 5')[0].text, /Формат/);
 
-  r = t.say('сидоров');
-  assert.match(r[0].text, /Иван Сидоров/);
+  r = t.say('архитектор');
+  assert.match(r[0].text, /Иванов Иван Петрович/);
   assert.strictEqual(r[0].reply_markup.inline_keyboard[0][1].callback_data, 'del:2');
 
   r = t.press('del:2');
   assert.match(r[1].text, /Удалить\?/);
-  r = t.press('cancel');
+  t.press('cancel');
   assert.strictEqual(t.grid.length, 3);
   r = t.press('delok:2');
   assert.strictEqual(t.grid.length, 2);
-  assert.match(r.find((m) => m.method === 'editMessageText').text, /Удалил: Иван Сидоров/);
+  assert.match(r.find((m) => m.method === 'editMessageText').text, /Удалил: Иванов Иван Петрович/);
   r = t.press('delok:2');
   assert.match(r.find((m) => m.method === 'editMessageText').text, /уже нет/);
 });
@@ -205,7 +218,7 @@ test('names are HTML-escaped', () => {
 });
 
 test('/soon and /today', () => {
-  const t = ownerBot([[1, 'Аня', '26.10.2000', '', ''], [2, 'Боря', '20.11', '', ''], [3, 'Вася', '01.06', '', '']]);
+  const t = ownerBot([[1, 'Аня', '', '26.10.2000', ''], [2, 'Боря', '', '20.11', ''], [3, 'Вася', '', '01.06', '']]);
   const soon = t.say('/soon')[0].text;
   assert.match(soon, /Аня — 26\.10, сегодня \(26 лет\)/);
   assert.match(soon, /Боря — 20\.11, через 25 дней/);
@@ -215,15 +228,17 @@ test('/soon and /today', () => {
 });
 
 test('reminder: only from 10:00 Moscow, exactly once a day', () => {
-  const t = ownerBot([[1, 'Аня', '26.10.2000', 'сестра', 'позвонить'], [2, 'Боря', '27.10', '', '']]);
+  const t = ownerBot([
+    [12, 'Орлова Елена Вадимовна', 'Руководитель центра достоверных данных', '26.10.1988', 'Absolut'],
+    [13, 'Боря', '', '27.10', ''],
+  ]);
   t.setNow('2026-10-26T06:59:00Z'); // 09:59 MSK
   assert.strictEqual(t.say('/help').length, 1);
   t.setNow('2026-10-26T07:00:00Z'); // 10:00 MSK
   const r = t.say('/help');
   assert.strictEqual(r.length, 2);
   assert.strictEqual(r[1].chat_id, '42');
-  assert.match(r[1].text, /Сегодня день рождения![\s\S]*Аня<\/b> — 26 лет\n👥 сестра\n📝 позвонить/);
-  assert.doesNotMatch(r[1].text, /Боря/);
+  assert.match(r[1].text, /Сегодня день рождения!\n\n<b>Орлова Елена Вадимовна<\/b> — 38 лет\n💼 Руководитель центра достоверных данных, Absolut$/);
   t.setNow('2026-10-26T15:00:00Z');
   assert.strictEqual(t.say('/help').length, 1);
   t.setNow('2026-10-27T07:01:00Z');
@@ -231,14 +246,24 @@ test('reminder: only from 10:00 Moscow, exactly once a day', () => {
 });
 
 test('no message on days without birthdays', () => {
-  const t = ownerBot([[1, 'Аня', '01.01', '', '']]);
+  const t = ownerBot([[1, 'Аня', '', '01.01', '']]);
   t.setNow('2026-10-26T08:00:00Z');
   assert.strictEqual(t.say('/help').length, 1);
   assert.strictEqual(t.props.LAST_REMINDER_DATE, '2026-10-26');
 });
 
+test('token from code is used when Script Properties have none', () => {
+  for (const token of [undefined, '123:abc-DEF_1']) {
+    const t = makeSandbox([], token);
+    t.props.OWNER_CHAT_ID = '42';
+    t.setNow('2026-10-26T06:00:00Z');
+    if (token) assert.strictEqual(t.say('/help').length, 1);
+    else assert.throws(() => t.say('/help'), /Не задан токен/);
+  }
+});
+
 test('long lists are split into several messages', () => {
-  const rows = Array.from({ length: 200 }, (_, i) => [i + 1, 'Человек с длинным именем номер ' + (i + 1), '01.01', 'коллега', '']);
+  const rows = Array.from({ length: 200 }, (_, i) => [i + 1, 'Человек с длинным именем номер ' + (i + 1), 'Менеджер продукта', '01.01', 'Absolut']);
   const t = ownerBot(rows);
   const r = t.say('/list');
   assert.ok(r.length > 1);

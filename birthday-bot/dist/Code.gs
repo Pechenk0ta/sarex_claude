@@ -17,14 +17,14 @@ function helpText_() {
     'Просто напишите имя — найду человека и покажу кнопки «Изменить» и «Удалить».',
     '',
     '<b>Добавить</b>',
-    '<code>/add Иван Петров; 12.03.1990; коллега; любит кофе</code>',
-    'Обязательны имя и дата (год можно не указывать: 12.03). «Кто» и заметка — по желанию.',
+    '<code>/add Иванов Иван Иванович; Менеджер продукта; 12.03.1990; Absolut</code>',
+    'Обязательны ФИО и дата (год можно не указывать: 12.03). Должность и компания — по желанию.',
     '',
     '<b>Изменить</b> (номер — из /list)',
     '<code>/edit 5 дата 12.03.1991</code>',
-    '<code>/edit 5 имя Иван Сидоров</code>',
-    '<code>/edit 5 кто друг</code>',
-    '<code>/edit 5 заметка подарить книгу</code>',
+    '<code>/edit 5 фио Иванов Иван Петрович</code>',
+    '<code>/edit 5 должность Технический директор</code>',
+    '<code>/edit 5 компания Absolut</code>',
     '',
     '<b>Удалить</b>',
     '<code>/delete 5</code>',
@@ -32,10 +32,10 @@ function helpText_() {
 }
 
 const EDIT_FIELDS = {
-  'имя': 'name', 'name': 'name',
+  'фио': 'name', 'имя': 'name', 'name': 'name',
+  'должность': 'position', 'position': 'position',
   'дата': 'date', 'date': 'date', 'др': 'date',
-  'кто': 'group', 'группа': 'group', 'group': 'group',
-  'заметка': 'note', 'note': 'note',
+  'компания': 'company', 'company': 'company',
 };
 
 function handleUpdate_(update) {
@@ -120,9 +120,14 @@ function personCard_(p, today) {
   } else {
     lines.push('⚠️ Не понял дату «' + esc_(p.dateText) + '». Исправьте: /edit ' + p.id + ' дата ДД.ММ.ГГГГ');
   }
-  if (p.group) lines.push('👥 ' + esc_(p.group));
-  if (p.note) lines.push('📝 ' + esc_(p.note));
+  const work = workText_(p);
+  if (work) lines.push('💼 ' + esc_(work));
   return lines.join('\n');
+}
+
+/** "Менеджер продукта, Absolut" */
+function workText_(p) {
+  return [p.position, p.company].filter(Boolean).join(', ');
 }
 
 function personButtons_(p) {
@@ -144,7 +149,7 @@ function sortedByNext_(people, today) {
 function cmdList_(chatId) {
   const people = readPeople_();
   if (!people.length) {
-    sendMessage_(chatId, 'Список пуст. Добавьте человека:\n<code>/add Иван Петров; 12.03.1990; коллега</code>');
+    sendMessage_(chatId, 'Список пуст. Добавьте человека:\n<code>/add Иванов Иван Иванович; Менеджер продукта; 12.03.1990; Absolut</code>');
     return;
   }
   const today = today_();
@@ -173,7 +178,8 @@ function cmdSoon_(chatId, args) {
 function cmdFind_(chatId, query) {
   const q = query.toLowerCase();
   const found = readPeople_().filter(function (p) {
-    return p.name.toLowerCase().indexOf(q) >= 0 || p.group.toLowerCase().indexOf(q) >= 0 || String(p.id) === q.replace(/^#/, '');
+    return [p.name, p.position, p.company].some(function (f) { return f.toLowerCase().indexOf(q) >= 0; })
+      || String(p.id) === q.replace(/^#/, '');
   });
   if (!found.length) {
     sendMessage_(chatId, 'Никого не нашёл по «' + esc_(query) + '». /help — список команд.');
@@ -186,24 +192,28 @@ function cmdFind_(chatId, query) {
   found.slice(0, 10).forEach(function (p) { sendMessage_(chatId, personCard_(p, today), personButtons_(p)); });
 }
 
+/** /add ФИО; должность; дата; компания — the date may be in any position. */
 function cmdAdd_(chatId, args) {
-  const parts = args.split(/\s*[;\n]\s*/);
-  const name = (parts[0] || '').trim();
-  const dateText = (parts[1] || '').trim();
-  if (!name || !dateText) {
-    sendMessage_(chatId, 'Формат: <code>/add Имя Фамилия; ДД.ММ.ГГГГ; кто; заметка</code>\nНапример: <code>/add Иван Петров; 12.03.1990; коллега</code>');
+  const usage = 'Формат: <code>/add ФИО; должность; ДД.ММ.ГГГГ; компания</code>\n'
+    + 'Например: <code>/add Иванов Иван Иванович; Менеджер продукта; 12.03.1990; Absolut</code>';
+  const parts = args.split(/\s*[;\n]\s*/).map(function (x) { return x.trim(); }).filter(Boolean);
+  const year = today_().year;
+  const dateIndex = parts.findIndex(function (x, i) { return i > 0 && parseBirthday_(x, year); });
+  if (parts.length < 2) {
+    sendMessage_(chatId, usage);
     return;
   }
-  const birthday = parseBirthday_(dateText, today_().year);
-  if (!birthday) {
-    sendMessage_(chatId, 'Не понял дату «' + esc_(dateText) + '». Пишите ДД.ММ.ГГГГ или ДД.ММ, например 12.03.1990.');
+  if (dateIndex < 0) {
+    sendMessage_(chatId, 'Не нашёл дату рождения. Пишите ДД.ММ.ГГГГ или ДД.ММ, например 12.03.1990.\n\n' + usage);
     return;
   }
+  const birthday = parseBirthday_(parts[dateIndex], year);
+  const rest = parts.filter(function (x, i) { return i !== dateIndex; });
   const id = addPerson_({
-    name: name,
+    name: rest[0],
+    position: rest[1] || '',
     dateText: formatBirthday_(birthday),
-    group: (parts[2] || '').trim(),
-    note: parts.slice(3).join('; ').trim(),
+    company: rest.slice(2).join('; '),
   });
   sendMessage_(chatId, 'Добавил:\n\n' + personCard_(findPerson_(id), today_()));
 }
@@ -212,13 +222,13 @@ function cmdEdit_(chatId, args) {
   const m = args.match(/^#?(\d+)\s+(\S+)\s*([\s\S]*)$/);
   const field = m ? EDIT_FIELDS[m[2].toLowerCase()] : null;
   if (!m || !field) {
-    sendMessage_(chatId, 'Формат: <code>/edit номер поле значение</code>\nПоля: имя, дата, кто, заметка. Например: <code>/edit 5 дата 12.03.1990</code>');
+    sendMessage_(chatId, 'Формат: <code>/edit номер поле значение</code>\nПоля: фио, должность, дата, компания. Например: <code>/edit 5 дата 12.03.1990</code>');
     return;
   }
   const id = Number(m[1]);
   let value = m[3].trim();
   if (field === 'name' && !value) {
-    sendMessage_(chatId, 'Имя не может быть пустым.');
+    sendMessage_(chatId, 'ФИО не может быть пустым.');
     return;
   }
   if (field === 'date') {
@@ -269,10 +279,10 @@ function handleCallback_(cb) {
     answerCallback_(cb.id);
     sendMessage_(chatId, [
       'Скопируйте нужную строку, поправьте значение и отправьте:',
-      '<code>/edit ' + id + ' имя </code>',
+      '<code>/edit ' + id + ' фио </code>',
+      '<code>/edit ' + id + ' должность </code>',
       '<code>/edit ' + id + ' дата </code>',
-      '<code>/edit ' + id + ' кто </code>',
-      '<code>/edit ' + id + ' заметка </code>',
+      '<code>/edit ' + id + ' компания </code>',
     ].join('\n'));
   } else if (parts[0] === 'del') {
     answerCallback_(cb.id);
@@ -294,16 +304,20 @@ function handleCallback_(cb) {
 // ===== Config.js =====
 
 /**
- * Settings. Secrets (bot token, owner chat id) live in Script Properties,
- * never in code: Project Settings → Script Properties.
+ * Settings. The bot token is taken from Script Properties (BOT_TOKEN) or, if it is
+ * not set there, from BOT_TOKEN_IN_CODE. Keep BOT_TOKEN_IN_CODE empty in git.
  */
+const BOT_TOKEN_IN_CODE = '';
+
 const TZ = 'Europe/Moscow';
 const REMIND_HOUR = 10;
 const SOON_DAYS_DEFAULT = 30;
 
 const SHEET_NAME = 'Люди';
-const HEADERS = ['ID', 'Имя', 'Дата рождения', 'Кто', 'Заметка'];
-const COL = { id: 1, name: 2, date: 3, group: 4, note: 5 }; // 1-based sheet columns
+// Column order matches the list as it is kept today: № | ФИО | Должность | День рождения | Компания.
+// Header texts may differ ("TASK" instead of "ФИО" is fine): columns are read by position.
+const HEADERS = ['№', 'ФИО', 'Должность', 'День рождения', 'Компания'];
+const COL = { id: 1, name: 2, position: 3, date: 4, company: 5 }; // 1-based sheet columns
 
 // Script Properties keys
 const P_TOKEN = 'BOT_TOKEN';
@@ -323,6 +337,10 @@ function setProp_(key, value) {
 
 function deleteProp_(key) {
   PropertiesService.getScriptProperties().deleteProperty(key);
+}
+
+function botToken_() {
+  return prop_(P_TOKEN) || BOT_TOKEN_IN_CODE;
 }
 
 /** Current moment; a separate function so tests can freeze time. */
@@ -428,8 +446,8 @@ function whenText_(daysLeft) {
 
 /** One-time setup: sheet, bot menu, triggers, link for binding the bot to you. */
 function setup() {
-  if (!prop_(P_TOKEN)) {
-    throw new Error('Сначала добавьте BOT_TOKEN: Настройки проекта → Свойства скрипта.');
+  if (!botToken_()) {
+    throw new Error('Не задан токен бота: впишите его в BOT_TOKEN_IN_CODE или в свойство скрипта BOT_TOKEN.');
   }
   getSheet_();
 
@@ -440,7 +458,7 @@ function setup() {
       { command: 'today', description: 'У кого сегодня день рождения' },
       { command: 'soon', description: 'Ближайшие 30 дней' },
       { command: 'list', description: 'Все, по ближайшей дате' },
-      { command: 'add', description: 'Добавить: /add Имя; ДД.ММ.ГГГГ; кто; заметка' },
+      { command: 'add', description: 'Добавить: /add ФИО; должность; ДД.ММ.ГГГГ; компания' },
       { command: 'edit', description: 'Изменить: /edit номер поле значение' },
       { command: 'delete', description: 'Удалить: /delete номер' },
       { command: 'help', description: 'Справка' },
@@ -518,8 +536,8 @@ function buildReminder_(people, today) {
   const blocks = todays.map(function (p) {
     const next = nextOccurrence_(p.birthday, today);
     const lines = ['<b>' + esc_(p.name) + '</b>' + (next.age !== null ? ' — ' + yearsText_(next.age) : '')];
-    if (p.group) lines.push('👥 ' + esc_(p.group));
-    if (p.note) lines.push('📝 ' + esc_(p.note));
+    const work = workText_(p);
+    if (work) lines.push('💼 ' + esc_(work));
     return lines.join('\n');
   });
   const title = todays.length === 1 ? '🎉 Сегодня день рождения!' : '🎉 Сегодня дни рождения!';
@@ -547,8 +565,8 @@ function testReminderNow() {
 // ===== Sheet.js =====
 
 /**
- * The "Люди" sheet is the database: one person per row.
- * ID is assigned automatically, also for rows typed into the sheet by hand.
+ * The people sheet is the database: one person per row, columns as in HEADERS.
+ * The number (№) is assigned automatically, also for rows typed into the sheet by hand.
  */
 
 function getSpreadsheet_() {
@@ -556,31 +574,37 @@ function getSpreadsheet_() {
   return id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
 }
 
+/** Sheet named SHEET_NAME if there is one, otherwise the first sheet of the spreadsheet. */
 function getSheet_() {
   const ss = getSpreadsheet_();
-  let sh = ss.getSheetByName(SHEET_NAME);
-  if (!sh) {
-    sh = ss.insertSheet(SHEET_NAME);
+  const sh = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
+  if (sh.getLastRow() === 0) {
     sh.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]).setFontWeight('bold');
     sh.setFrozenRows(1);
   }
-  // Plain text, otherwise Sheets turns "12.03" into a date with the current year.
-  sh.getRange(1, COL.date, sh.getMaxRows(), 1).setNumberFormat('@');
   return sh;
 }
 
 /** Cell value of the date column as text "dd.MM[.yyyy]". */
 function dateCellText_(value, sheetTz, currentYear) {
+  let date = null;
   if (Object.prototype.toString.call(value) === '[object Date]') {
-    if (isNaN(value.getTime())) return '';
-    const text = Utilities.formatDate(value, sheetTz, 'dd.MM.yyyy');
+    date = value;
+  } else if (typeof value === 'number' && value > 0) {
+    // Date serial number (a date cell later formatted as a number or text).
+    date = new Date(Date.UTC(1899, 11, 30) + Math.round(value) * 86400000);
+    sheetTz = 'UTC';
+  }
+  if (date) {
+    if (isNaN(date.getTime())) return '';
+    const text = Utilities.formatDate(date, sheetTz, 'dd.MM.yyyy');
     // A date typed without a year was stored with the current one: drop it.
     return Number(text.slice(6)) >= currentYear ? text.slice(0, 5) : text;
   }
   return String(value === null || value === undefined ? '' : value).trim();
 }
 
-/** All people: [{row, id, name, dateText, birthday|null, group, note}]. */
+/** All people: [{row, id, name, position, dateText, birthday|null, company}]. */
 function readPeople_() {
   const sh = getSheet_();
   const last = sh.getLastRow();
@@ -598,10 +622,10 @@ function readPeople_() {
       row: i + 2,
       id: Number(r[COL.id - 1]) || null,
       name: name,
+      position: String(r[COL.position - 1]).trim(),
       dateText: dateText,
       birthday: parseBirthday_(dateText, currentYear),
-      group: String(r[COL.group - 1]).trim(),
-      note: String(r[COL.note - 1]).trim(),
+      company: String(r[COL.company - 1]).trim(),
     });
   });
 
@@ -624,17 +648,25 @@ function addPerson_(person) {
   const people = readPeople_();
   const id = people.reduce(function (m, p) { return Math.max(m, p.id); }, 0) + 1;
   const row = sh.getLastRow() + 1;
-  sh.getRange(row, 1, 1, HEADERS.length).setValues([
-    [id, person.name, person.dateText, person.group || '', person.note || ''],
-  ]);
+  const values = [];
+  values[COL.id - 1] = id;
+  values[COL.name - 1] = person.name;
+  values[COL.position - 1] = person.position || '';
+  values[COL.date - 1] = person.dateText;
+  values[COL.company - 1] = person.company || '';
+  // Plain text, otherwise Sheets turns "12.03" into a date with the current year.
+  sh.getRange(row, COL.date).setNumberFormat('@');
+  sh.getRange(row, 1, 1, HEADERS.length).setValues([values]);
   return id;
 }
 
-/** field: one of 'name' | 'date' | 'group' | 'note'. */
+/** field: one of 'name' | 'position' | 'date' | 'company'. */
 function updatePerson_(id, field, value) {
   const p = findPerson_(id);
   if (!p) return false;
-  getSheet_().getRange(p.row, COL[field]).setValue(value);
+  const cell = getSheet_().getRange(p.row, COL[field]);
+  if (field === 'date') cell.setNumberFormat('@');
+  cell.setValue(value);
   return true;
 }
 
@@ -652,8 +684,8 @@ function deletePerson_(id) {
 const TG_MAX_TEXT = 4000; // Telegram limit is 4096
 
 function tg_(method, payload) {
-  const token = prop_(P_TOKEN);
-  if (!token) throw new Error('Не задан BOT_TOKEN в свойствах скрипта');
+  const token = botToken_();
+  if (!token) throw new Error('Не задан токен бота (BOT_TOKEN_IN_CODE или свойство BOT_TOKEN)');
   const resp = UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/' + method, {
     method: 'post',
     contentType: 'application/json',

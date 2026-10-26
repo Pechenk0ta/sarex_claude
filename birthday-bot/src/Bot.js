@@ -13,14 +13,14 @@ function helpText_() {
     'Просто напишите имя — найду человека и покажу кнопки «Изменить» и «Удалить».',
     '',
     '<b>Добавить</b>',
-    '<code>/add Иван Петров; 12.03.1990; коллега; любит кофе</code>',
-    'Обязательны имя и дата (год можно не указывать: 12.03). «Кто» и заметка — по желанию.',
+    '<code>/add Иванов Иван Иванович; Менеджер продукта; 12.03.1990; Absolut</code>',
+    'Обязательны ФИО и дата (год можно не указывать: 12.03). Должность и компания — по желанию.',
     '',
     '<b>Изменить</b> (номер — из /list)',
     '<code>/edit 5 дата 12.03.1991</code>',
-    '<code>/edit 5 имя Иван Сидоров</code>',
-    '<code>/edit 5 кто друг</code>',
-    '<code>/edit 5 заметка подарить книгу</code>',
+    '<code>/edit 5 фио Иванов Иван Петрович</code>',
+    '<code>/edit 5 должность Технический директор</code>',
+    '<code>/edit 5 компания Absolut</code>',
     '',
     '<b>Удалить</b>',
     '<code>/delete 5</code>',
@@ -28,10 +28,10 @@ function helpText_() {
 }
 
 const EDIT_FIELDS = {
-  'имя': 'name', 'name': 'name',
+  'фио': 'name', 'имя': 'name', 'name': 'name',
+  'должность': 'position', 'position': 'position',
   'дата': 'date', 'date': 'date', 'др': 'date',
-  'кто': 'group', 'группа': 'group', 'group': 'group',
-  'заметка': 'note', 'note': 'note',
+  'компания': 'company', 'company': 'company',
 };
 
 function handleUpdate_(update) {
@@ -116,9 +116,14 @@ function personCard_(p, today) {
   } else {
     lines.push('⚠️ Не понял дату «' + esc_(p.dateText) + '». Исправьте: /edit ' + p.id + ' дата ДД.ММ.ГГГГ');
   }
-  if (p.group) lines.push('👥 ' + esc_(p.group));
-  if (p.note) lines.push('📝 ' + esc_(p.note));
+  const work = workText_(p);
+  if (work) lines.push('💼 ' + esc_(work));
   return lines.join('\n');
+}
+
+/** "Менеджер продукта, Absolut" */
+function workText_(p) {
+  return [p.position, p.company].filter(Boolean).join(', ');
 }
 
 function personButtons_(p) {
@@ -140,7 +145,7 @@ function sortedByNext_(people, today) {
 function cmdList_(chatId) {
   const people = readPeople_();
   if (!people.length) {
-    sendMessage_(chatId, 'Список пуст. Добавьте человека:\n<code>/add Иван Петров; 12.03.1990; коллега</code>');
+    sendMessage_(chatId, 'Список пуст. Добавьте человека:\n<code>/add Иванов Иван Иванович; Менеджер продукта; 12.03.1990; Absolut</code>');
     return;
   }
   const today = today_();
@@ -169,7 +174,8 @@ function cmdSoon_(chatId, args) {
 function cmdFind_(chatId, query) {
   const q = query.toLowerCase();
   const found = readPeople_().filter(function (p) {
-    return p.name.toLowerCase().indexOf(q) >= 0 || p.group.toLowerCase().indexOf(q) >= 0 || String(p.id) === q.replace(/^#/, '');
+    return [p.name, p.position, p.company].some(function (f) { return f.toLowerCase().indexOf(q) >= 0; })
+      || String(p.id) === q.replace(/^#/, '');
   });
   if (!found.length) {
     sendMessage_(chatId, 'Никого не нашёл по «' + esc_(query) + '». /help — список команд.');
@@ -182,24 +188,28 @@ function cmdFind_(chatId, query) {
   found.slice(0, 10).forEach(function (p) { sendMessage_(chatId, personCard_(p, today), personButtons_(p)); });
 }
 
+/** /add ФИО; должность; дата; компания — the date may be in any position. */
 function cmdAdd_(chatId, args) {
-  const parts = args.split(/\s*[;\n]\s*/);
-  const name = (parts[0] || '').trim();
-  const dateText = (parts[1] || '').trim();
-  if (!name || !dateText) {
-    sendMessage_(chatId, 'Формат: <code>/add Имя Фамилия; ДД.ММ.ГГГГ; кто; заметка</code>\nНапример: <code>/add Иван Петров; 12.03.1990; коллега</code>');
+  const usage = 'Формат: <code>/add ФИО; должность; ДД.ММ.ГГГГ; компания</code>\n'
+    + 'Например: <code>/add Иванов Иван Иванович; Менеджер продукта; 12.03.1990; Absolut</code>';
+  const parts = args.split(/\s*[;\n]\s*/).map(function (x) { return x.trim(); }).filter(Boolean);
+  const year = today_().year;
+  const dateIndex = parts.findIndex(function (x, i) { return i > 0 && parseBirthday_(x, year); });
+  if (parts.length < 2) {
+    sendMessage_(chatId, usage);
     return;
   }
-  const birthday = parseBirthday_(dateText, today_().year);
-  if (!birthday) {
-    sendMessage_(chatId, 'Не понял дату «' + esc_(dateText) + '». Пишите ДД.ММ.ГГГГ или ДД.ММ, например 12.03.1990.');
+  if (dateIndex < 0) {
+    sendMessage_(chatId, 'Не нашёл дату рождения. Пишите ДД.ММ.ГГГГ или ДД.ММ, например 12.03.1990.\n\n' + usage);
     return;
   }
+  const birthday = parseBirthday_(parts[dateIndex], year);
+  const rest = parts.filter(function (x, i) { return i !== dateIndex; });
   const id = addPerson_({
-    name: name,
+    name: rest[0],
+    position: rest[1] || '',
     dateText: formatBirthday_(birthday),
-    group: (parts[2] || '').trim(),
-    note: parts.slice(3).join('; ').trim(),
+    company: rest.slice(2).join('; '),
   });
   sendMessage_(chatId, 'Добавил:\n\n' + personCard_(findPerson_(id), today_()));
 }
@@ -208,13 +218,13 @@ function cmdEdit_(chatId, args) {
   const m = args.match(/^#?(\d+)\s+(\S+)\s*([\s\S]*)$/);
   const field = m ? EDIT_FIELDS[m[2].toLowerCase()] : null;
   if (!m || !field) {
-    sendMessage_(chatId, 'Формат: <code>/edit номер поле значение</code>\nПоля: имя, дата, кто, заметка. Например: <code>/edit 5 дата 12.03.1990</code>');
+    sendMessage_(chatId, 'Формат: <code>/edit номер поле значение</code>\nПоля: фио, должность, дата, компания. Например: <code>/edit 5 дата 12.03.1990</code>');
     return;
   }
   const id = Number(m[1]);
   let value = m[3].trim();
   if (field === 'name' && !value) {
-    sendMessage_(chatId, 'Имя не может быть пустым.');
+    sendMessage_(chatId, 'ФИО не может быть пустым.');
     return;
   }
   if (field === 'date') {
@@ -265,10 +275,10 @@ function handleCallback_(cb) {
     answerCallback_(cb.id);
     sendMessage_(chatId, [
       'Скопируйте нужную строку, поправьте значение и отправьте:',
-      '<code>/edit ' + id + ' имя </code>',
+      '<code>/edit ' + id + ' фио </code>',
+      '<code>/edit ' + id + ' должность </code>',
       '<code>/edit ' + id + ' дата </code>',
-      '<code>/edit ' + id + ' кто </code>',
-      '<code>/edit ' + id + ' заметка </code>',
+      '<code>/edit ' + id + ' компания </code>',
     ].join('\n'));
   } else if (parts[0] === 'del') {
     answerCallback_(cb.id);

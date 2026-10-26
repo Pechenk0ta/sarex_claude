@@ -3,8 +3,8 @@
 const TG_MAX_TEXT = 4000; // Telegram limit is 4096
 
 function tg_(method, payload) {
-  const token = prop_(P_TOKEN);
-  if (!token) throw new Error('Не задан BOT_TOKEN в свойствах скрипта');
+  const token = botToken_();
+  if (!token) throw new Error('Не задан токен бота (BOT_TOKEN_IN_CODE или свойство BOT_TOKEN)');
   const resp = UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/' + method, {
     method: 'post',
     contentType: 'application/json',
